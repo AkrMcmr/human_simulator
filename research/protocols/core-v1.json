@@ -1,0 +1,23 @@
+{
+  "id": "core-capabilities-v1",
+  "version": "1.0.0",
+  "evidenceLevel": "engineering-hypotheses-not-human-validation",
+  "developmentSeeds": [101, 102, 103, 104, 105, 106, 107, 108],
+  "validationSeeds": [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008],
+  "exposure": { "steps": 48, "recoverySteps": 48, "nearDistance": 2, "farDistance": 8, "painProbability": 0.5, "painMagnitude": 0.03 },
+  "prediction": { "phaseSteps": 80, "window": 30, "step": 0.08, "noise": 0.02, "initialDistance": 4 },
+  "body": { "steps": 120, "window": 20, "initialNeed": 0.85, "otherNeeds": 0.1, "coldEnvironment": 0.95 },
+  "bootstrapReplicates": 512,
+  "checks": [
+    { "id": "safe-learning", "domain": "caution", "label": "無害な近接による危険度の低下", "minimum": 0.15, "regressionTolerance": 0.02, "unit": "risk difference" },
+    { "id": "danger-discrimination", "domain": "caution", "label": "同じ距離で危害履歴を区別", "minimum": 0.15, "regressionTolerance": 0.02, "unit": "risk difference" },
+    { "id": "caution-policy", "domain": "caution", "label": "危害履歴が離隔対接近の評価に反映", "minimum": 0.15, "regressionTolerance": 0.02, "unit": "utility margin difference" },
+    { "id": "far-no-evidence", "domain": "caution", "label": "遠距離の無害を安全証拠にしない", "minimum": -0.001, "regressionTolerance": 0.001, "unit": "negative absolute risk shift" },
+    { "id": "risk-recovery", "domain": "caution", "label": "危害がなくなると危険度を更新", "minimum": 0.10, "regressionTolerance": 0.02, "unit": "risk difference" },
+    { "id": "prediction-gain", "domain": "prediction", "label": "定常移動でゼロ予測より誤差を削減", "minimum": 0.03, "regressionTolerance": 0.01, "unit": "MAE reduction in abstract distance" },
+    { "id": "prediction-reversal", "domain": "prediction", "label": "移動方向の反転後に予測を修正", "minimum": 0.02, "regressionTolerance": 0.01, "unit": "early minus late MAE" },
+    { "id": "hunger-relief", "domain": "body", "label": "行動で空腹を軽減", "minimum": 0.15, "regressionTolerance": 0.02, "unit": "need reduction versus disconnected actions" },
+    { "id": "fatigue-relief", "domain": "body", "label": "行動で疲労を軽減", "minimum": 0.15, "regressionTolerance": 0.02, "unit": "need reduction versus disconnected actions" },
+    { "id": "cold-relief", "domain": "body", "label": "行動で寒さを軽減", "minimum": 0.15, "regressionTolerance": 0.02, "unit": "need reduction versus disconnected actions" }
+  ]
+}

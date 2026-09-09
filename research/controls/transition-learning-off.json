@@ -1,0 +1,2813 @@
+{
+  "format": "human-world-lab/evaluation",
+  "schemaVersion": 1,
+  "provenance": {
+    "commit": "42c0ec2f0a2a648cad56c33396305d54a6c63b77",
+    "tree": "51425a34eaf859dcb969c27745b136431d8656c5",
+    "dirty": false,
+    "modelHash": "0f5d3615ba148d93f8e7d05ca3a4307aa0fa80f05be72c403cb36023cfa8592c",
+    "environmentHash": "e2d0929d417bb48e0d53988b2c20286230a7344a120a664b47e3cef0898ab86b",
+    "evaluatorHash": "a135a2881a73715e3eb1f858b43b3274a4c1d7f78f95f83e36da800d917eeced",
+    "dependencyLockHash": "7f1b86b4e1f673057e6622a450f60272ff2027af34c36368f641f7d12aaa3229",
+    "runtime": "Node v24.19.0 / linux / x64",
+    "versions": {
+      "contracts": "0.1.0",
+      "human": "0.1.0",
+      "world": "0.1.0",
+      "simulation": "0.1.0",
+      "rng": "keyed-fnv-mulberry-v1"
+    }
+  },
+  "evaluation": {
+    "evaluatorVersion": "0.1.1",
+    "protocol": {
+      "id": "core-capabilities-v1",
+      "version": "1.0.0",
+      "evidenceLevel": "engineering-hypotheses-not-human-validation",
+      "developmentSeeds": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108
+      ],
+      "validationSeeds": [
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008
+      ],
+      "exposure": {
+        "steps": 48,
+        "recoverySteps": 48,
+        "nearDistance": 2,
+        "farDistance": 8,
+        "painProbability": 0.5,
+        "painMagnitude": 0.03
+      },
+      "prediction": {
+        "phaseSteps": 80,
+        "window": 30,
+        "step": 0.08,
+        "noise": 0.02,
+        "initialDistance": 4
+      },
+      "body": {
+        "steps": 120,
+        "window": 20,
+        "initialNeed": 0.85,
+        "otherNeeds": 0.1,
+        "coldEnvironment": 0.95
+      },
+      "bootstrapReplicates": 512,
+      "checks": [
+        {
+          "id": "safe-learning",
+          "domain": "caution",
+          "label": "無害な近接による危険度の低下",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "unit": "risk difference"
+        },
+        {
+          "id": "danger-discrimination",
+          "domain": "caution",
+          "label": "同じ距離で危害履歴を区別",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "unit": "risk difference"
+        },
+        {
+          "id": "caution-policy",
+          "domain": "caution",
+          "label": "危害履歴が離隔対接近の評価に反映",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "unit": "utility margin difference"
+        },
+        {
+          "id": "far-no-evidence",
+          "domain": "caution",
+          "label": "遠距離の無害を安全証拠にしない",
+          "minimum": -0.001,
+          "regressionTolerance": 0.001,
+          "unit": "negative absolute risk shift"
+        },
+        {
+          "id": "risk-recovery",
+          "domain": "caution",
+          "label": "危害がなくなると危険度を更新",
+          "minimum": 0.1,
+          "regressionTolerance": 0.02,
+          "unit": "risk difference"
+        },
+        {
+          "id": "prediction-gain",
+          "domain": "prediction",
+          "label": "定常移動でゼロ予測より誤差を削減",
+          "minimum": 0.03,
+          "regressionTolerance": 0.01,
+          "unit": "MAE reduction in abstract distance"
+        },
+        {
+          "id": "prediction-reversal",
+          "domain": "prediction",
+          "label": "移動方向の反転後に予測を修正",
+          "minimum": 0.02,
+          "regressionTolerance": 0.01,
+          "unit": "early minus late MAE"
+        },
+        {
+          "id": "hunger-relief",
+          "domain": "body",
+          "label": "行動で空腹を軽減",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "unit": "need reduction versus disconnected actions"
+        },
+        {
+          "id": "fatigue-relief",
+          "domain": "body",
+          "label": "行動で疲労を軽減",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "unit": "need reduction versus disconnected actions"
+        },
+        {
+          "id": "cold-relief",
+          "domain": "body",
+          "label": "行動で寒さを軽減",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "unit": "need reduction versus disconnected actions"
+        }
+      ]
+    },
+    "parameters": {
+      "curiosity": 0.6,
+      "caution": 0.65,
+      "learningRate": 0,
+      "exploration": 0.08,
+      "memoryDecay": 0.002
+    },
+    "partitions": [
+      {
+        "name": "development",
+        "seeds": [
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108
+        ],
+        "checks": [
+          {
+            "id": "safe-learning",
+            "domain": "caution",
+            "label": "無害な近接による危険度の低下",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "risk difference",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "danger-discrimination",
+            "domain": "caution",
+            "label": "同じ距離で危害履歴を区別",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "risk difference",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 26
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 24
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 29
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 26
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 19
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 22
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 29
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 24
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "caution-policy",
+            "domain": "caution",
+            "label": "危害履歴が離隔対接近の評価に反映",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "utility margin difference",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9792127327450212,
+                  "safeMargin": 0.9792127327450212
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "far-no-evidence",
+            "domain": "caution",
+            "label": "遠距離の無害を安全証拠にしない",
+            "minimum": -0.001,
+            "regressionTolerance": 0.001,
+            "unit": "negative absolute risk shift",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "pass"
+          },
+          {
+            "id": "risk-recovery",
+            "domain": "caution",
+            "label": "危害がなくなると危険度を更新",
+            "minimum": 0.1,
+            "regressionTolerance": 0.02,
+            "unit": "risk difference",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "prediction-gain",
+            "domain": "prediction",
+            "label": "定常移動でゼロ予測より誤差を削減",
+            "minimum": 0.03,
+            "regressionTolerance": 0.01,
+            "unit": "MAE reduction in abstract distance",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.08099896300646173,
+                  "transitionLearningOffMAE": 0.08099896300646173
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.079999113697714,
+                  "transitionLearningOffMAE": 0.079999113697714
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07862376420246436,
+                  "transitionLearningOffMAE": 0.07862376420246436
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07979871958121668,
+                  "transitionLearningOffMAE": 0.07979871958121668
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07961291593157988,
+                  "transitionLearningOffMAE": 0.07961291593157988
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.0802583200641287,
+                  "transitionLearningOffMAE": 0.0802583200641287
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.08167200447727628,
+                  "transitionLearningOffMAE": 0.08167200447727628
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.08121298562704281,
+                  "transitionLearningOffMAE": 0.08121298562704281
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "prediction-reversal",
+            "domain": "prediction",
+            "label": "移動方向の反転後に予測を修正",
+            "minimum": 0.02,
+            "regressionTolerance": 0.01,
+            "unit": "early minus late MAE",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0.0002541416487655823,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.08057102026650682,
+                  "lateMAE": 0.08031687861774124,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0.0013922462741223912,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.08058103694859894,
+                  "lateMAE": 0.07918879067447655,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0.0008519806025238802,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.07971814638422803,
+                  "lateMAE": 0.07886616578170415,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 104,
+                "value": -0.004098747492302032,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.07685425688745476,
+                  "lateMAE": 0.08095300437975679,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0.0017195122153499248,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.08188642219919728,
+                  "lateMAE": 0.08016690998384736,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 106,
+                "value": -0.0015294617995001147,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.08021010927017773,
+                  "lateMAE": 0.08173957106967784,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0.0007938180589119326,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.08093614532053497,
+                  "lateMAE": 0.08014232726162304,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 108,
+                "value": -0.0012203763496750064,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.0782642813343557,
+                  "lateMAE": 0.07948465768403071,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": -0.0002296108552254303,
+              "sd": 0.0019465064551595227,
+              "interval95": [
+                -0.0017041808419355643,
+                0.000870155435385371
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "hunger-relief",
+            "domain": "body",
+            "label": "行動で空腹を軽減",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "need reduction versus disconnected actions",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0.7458503234138079,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.25414967658619214,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 46,
+                  "appliedRelief": 46,
+                  "disconnectedSelectedRelief": 105,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0.7844964999999998,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.21550350000000015,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 35,
+                  "appliedRelief": 35,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0.8675682356689463,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.1324317643310538,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 35,
+                  "appliedRelief": 35,
+                  "disconnectedSelectedRelief": 114,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0.8269955000000003,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.17300449999999967,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 31,
+                  "appliedRelief": 31,
+                  "disconnectedSelectedRelief": 117,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0.8437249999999998,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.1562750000000002,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 47,
+                  "appliedRelief": 47,
+                  "disconnectedSelectedRelief": 109,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0.7720004782673098,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.22799952173269022,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 49,
+                  "appliedRelief": 49,
+                  "disconnectedSelectedRelief": 115,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0.7894517499999998,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.21054825000000021,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 48,
+                  "appliedRelief": 48,
+                  "disconnectedSelectedRelief": 111,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0.8218063709314309,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.17819362906856911,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 52,
+                  "appliedRelief": 52,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0.8064867697851867,
+              "sd": 0.04037816993987933,
+              "interval95": [
+                0.7807736977036932,
+                0.8336474784922836
+              ]
+            },
+            "status": "pass"
+          },
+          {
+            "id": "fatigue-relief",
+            "domain": "body",
+            "label": "行動で疲労を軽減",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "need reduction versus disconnected actions",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0.6630049999999996,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.2974950000000004,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 29,
+                  "appliedRelief": 29,
+                  "disconnectedSelectedRelief": 102,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0.6379099999999995,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3225900000000005,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 29,
+                  "appliedRelief": 29,
+                  "disconnectedSelectedRelief": 114,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0.6320649999999997,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3284350000000003,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 28,
+                  "appliedRelief": 28,
+                  "disconnectedSelectedRelief": 116,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0.6648199999999997,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.2956800000000003,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 31,
+                  "appliedRelief": 31,
+                  "disconnectedSelectedRelief": 118,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0.6577699999999997,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.30273000000000033,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 29,
+                  "appliedRelief": 29,
+                  "disconnectedSelectedRelief": 111,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0.5705999999999994,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3899000000000006,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 26,
+                  "appliedRelief": 26,
+                  "disconnectedSelectedRelief": 114,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0.6364799999999995,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.32402000000000053,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 29,
+                  "appliedRelief": 29,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0.5991699999999995,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.36133000000000043,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 27,
+                  "appliedRelief": 27,
+                  "disconnectedSelectedRelief": 113,
+                  "disconnectedAppliedRelief": 0
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0.6327274999999997,
+              "sd": 0.0329525479179641,
+              "interval95": [
+                0.6115806249999995,
+                0.6519631249999996
+              ]
+            },
+            "status": "pass"
+          },
+          {
+            "id": "cold-relief",
+            "domain": "body",
+            "label": "行動で寒さを軽減",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "need reduction versus disconnected actions",
+            "samples": [
+              {
+                "seed": 101,
+                "value": 0.5107887328147234,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.43305059340022617,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9997996247869609,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 63,
+                  "appliedRelief": 63,
+                  "disconnectedSelectedRelief": 105,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 102,
+                "value": 0.4862757149527014,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.4575636112622482,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9997996247869609,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 69,
+                  "appliedRelief": 69,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 103,
+                "value": 0.5585444166487229,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3852949095662267,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 66,
+                  "appliedRelief": 66,
+                  "disconnectedSelectedRelief": 114,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 104,
+                "value": 0.5685672381882523,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.37527208802669726,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 75,
+                  "appliedRelief": 75,
+                  "disconnectedSelectedRelief": 117,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 105,
+                "value": 0.5782696231441556,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.36556970307079395,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 68,
+                  "appliedRelief": 68,
+                  "disconnectedSelectedRelief": 109,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 106,
+                "value": 0.5295689729643376,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.414270353250612,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 71,
+                  "appliedRelief": 71,
+                  "disconnectedSelectedRelief": 115,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 107,
+                "value": 0.5230583739721635,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.4207809522427861,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998011262991484,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 71,
+                  "appliedRelief": 71,
+                  "disconnectedSelectedRelief": 111,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 108,
+                "value": 0.571389169926592,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.37245015628835754,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9997272261663572,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 72,
+                  "appliedRelief": 72,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0.540807780326456,
+              "sd": 0.03325234344110042,
+              "interval95": [
+                0.5182303321123686,
+                0.561617557337947
+              ]
+            },
+            "status": "pass"
+          }
+        ]
+      },
+      {
+        "name": "validation",
+        "seeds": [
+          1001,
+          1002,
+          1003,
+          1004,
+          1005,
+          1006,
+          1007,
+          1008
+        ],
+        "checks": [
+          {
+            "id": "safe-learning",
+            "domain": "caution",
+            "label": "無害な近接による危険度の低下",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "risk difference",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "learning": 0.4166666666666667,
+                  "transitionLearningOff": 0.4166666666666667
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "danger-discrimination",
+            "domain": "caution",
+            "label": "同じ距離で危害履歴を区別",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "risk difference",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 27
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 25
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 26
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 20
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 20
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 23
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 23
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmful": 0.4166666666666667,
+                  "safe": 0.4166666666666667,
+                  "painEvents": 18
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "caution-policy",
+            "domain": "caution",
+            "label": "危害履歴が離隔対接近の評価に反映",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "utility margin difference",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9792127327450212,
+                  "safeMargin": 0.9792127327450212
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "harmfulMargin": 0.9192127327450212,
+                  "safeMargin": 0.9192127327450212
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "far-no-evidence",
+            "domain": "caution",
+            "label": "遠距離の無害を安全証拠にしない",
+            "minimum": -0.001,
+            "regressionTolerance": 0.001,
+            "unit": "negative absolute risk shift",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "farExposure": 0.4166666666666667,
+                  "fresh": 0.4166666666666667
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "pass"
+          },
+          {
+            "id": "risk-recovery",
+            "domain": "caution",
+            "label": "危害がなくなると危険度を更新",
+            "minimum": 0.1,
+            "regressionTolerance": 0.02,
+            "unit": "risk difference",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0,
+                "observations": 48,
+                "details": {
+                  "before": 0.4166666666666667,
+                  "after": 0.4166666666666667,
+                  "recoveryObservations": 48
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "prediction-gain",
+            "domain": "prediction",
+            "label": "定常移動でゼロ予測より誤差を削減",
+            "minimum": 0.03,
+            "regressionTolerance": 0.01,
+            "unit": "MAE reduction in abstract distance",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.08171721317370731,
+                  "transitionLearningOffMAE": 0.08171721317370731
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07773010601413753,
+                  "transitionLearningOffMAE": 0.07773010601413753
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07937163736810907,
+                  "transitionLearningOffMAE": 0.07937163736810907
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07764175932900982,
+                  "transitionLearningOffMAE": 0.07764175932900982
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07937844292757437,
+                  "transitionLearningOffMAE": 0.07937844292757437
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07903457813741044,
+                  "transitionLearningOffMAE": 0.07903457813741044
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07974605236124895,
+                  "transitionLearningOffMAE": 0.07974605236124895
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0,
+                "observations": 30,
+                "details": {
+                  "learningMAE": 0.07891022170847292,
+                  "transitionLearningOffMAE": 0.07891022170847292
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0,
+              "sd": 0,
+              "interval95": [
+                0,
+                0
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "prediction-reversal",
+            "domain": "prediction",
+            "label": "移動方向の反転後に予測を修正",
+            "minimum": 0.02,
+            "regressionTolerance": 0.01,
+            "unit": "early minus late MAE",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": -0.003801811836349339,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.07766541043156786,
+                  "lateMAE": 0.0814672222679172,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0.0020012884673970416,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.0836652829735538,
+                  "lateMAE": 0.08166399450615676,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0.004632615470482729,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.08398777918145069,
+                  "lateMAE": 0.07935516371096796,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 1004,
+                "value": -0.004433534332085501,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.07520623491331939,
+                  "lateMAE": 0.07963976924540489,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 1005,
+                "value": -0.0020154321730757596,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.07833199720922863,
+                  "lateMAE": 0.0803474293823044,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 1006,
+                "value": -0.00033087853544107315,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.07952728723688036,
+                  "lateMAE": 0.07985816577232144,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0.002378476678082997,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.0824454116057602,
+                  "lateMAE": 0.0800669349276772,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0.0002127120873578331,
+                "observations": 30,
+                "details": {
+                  "earlyMAE": 0.07940862067323166,
+                  "lateMAE": 0.07919590858587383,
+                  "earlyObservations": 10,
+                  "lateObservations": 30
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": -0.00016957052170388405,
+              "sd": 0.003144612023196162,
+              "interval95": [
+                -0.0021673434660965402,
+                0.0017836573838526347
+              ]
+            },
+            "status": "fail"
+          },
+          {
+            "id": "hunger-relief",
+            "domain": "body",
+            "label": "行動で空腹を軽減",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "need reduction versus disconnected actions",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0.8587432500000001,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.14125674999999996,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 36,
+                  "appliedRelief": 36,
+                  "disconnectedSelectedRelief": 113,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0.8145788638068587,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.18542113619314132,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 33,
+                  "appliedRelief": 33,
+                  "disconnectedSelectedRelief": 105,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0.7822127499999996,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.21778725000000043,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 50,
+                  "appliedRelief": 50,
+                  "disconnectedSelectedRelief": 110,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0.8028427499999996,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.19715725000000037,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 57,
+                  "appliedRelief": 57,
+                  "disconnectedSelectedRelief": 114,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0.7855832499999997,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.21441675000000027,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 43,
+                  "appliedRelief": 43,
+                  "disconnectedSelectedRelief": 110,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0.8645962500000001,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.13540374999999993,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 36,
+                  "appliedRelief": 36,
+                  "disconnectedSelectedRelief": 109,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0.8588269999999997,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.1411730000000003,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 39,
+                  "appliedRelief": 39,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0.8135199999999998,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.1864800000000002,
+                  "disconnectedNeed": 1,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9576999999999979,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 35,
+                  "appliedRelief": 35,
+                  "disconnectedSelectedRelief": 115,
+                  "disconnectedAppliedRelief": 0
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0.8226130142258571,
+              "sd": 0.03363866271586245,
+              "interval95": [
+                0.8027382954758571,
+                0.8455206874999999
+              ]
+            },
+            "status": "pass"
+          },
+          {
+            "id": "fatigue-relief",
+            "domain": "body",
+            "label": "行動で疲労を軽減",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "need reduction versus disconnected actions",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0.7307399999999997,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.22976000000000027,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 33,
+                  "appliedRelief": 33,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0.6417899999999995,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3187100000000005,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 29,
+                  "appliedRelief": 29,
+                  "disconnectedSelectedRelief": 107,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0.6072449999999996,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.35325500000000043,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 27,
+                  "appliedRelief": 27,
+                  "disconnectedSelectedRelief": 108,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0.6817349999999998,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.27876500000000026,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 30,
+                  "appliedRelief": 30,
+                  "disconnectedSelectedRelief": 113,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0.7015049999999996,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.2589950000000004,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 32,
+                  "appliedRelief": 32,
+                  "disconnectedSelectedRelief": 110,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0.6262599999999996,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3342400000000005,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 29,
+                  "appliedRelief": 29,
+                  "disconnectedSelectedRelief": 106,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0.5814949999999994,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3790050000000006,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 26,
+                  "appliedRelief": 26,
+                  "disconnectedSelectedRelief": 109,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0.5992549999999994,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3612450000000006,
+                  "disconnectedNeed": 0.9605,
+                  "activeMinimumHealth": 1,
+                  "disconnectedMinimumHealth": 0.9987400000000001,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 29,
+                  "appliedRelief": 29,
+                  "disconnectedSelectedRelief": 114,
+                  "disconnectedAppliedRelief": 0
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0.6462531249999997,
+              "sd": 0.0531755610446258,
+              "interval95": [
+                0.6139681249999995,
+                0.6820081249999996
+              ]
+            },
+            "status": "pass"
+          },
+          {
+            "id": "cold-relief",
+            "domain": "body",
+            "label": "行動で寒さを軽減",
+            "minimum": 0.15,
+            "regressionTolerance": 0.02,
+            "unit": "need reduction versus disconnected actions",
+            "samples": [
+              {
+                "seed": 1001,
+                "value": 0.5855397569261835,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.35829956928876605,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998011262991484,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 71,
+                  "appliedRelief": 71,
+                  "disconnectedSelectedRelief": 113,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1002,
+                "value": 0.5666451982918331,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.37719412792311646,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 71,
+                  "appliedRelief": 71,
+                  "disconnectedSelectedRelief": 105,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1003,
+                "value": 0.5644595956367715,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3793797305781781,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9997304391663573,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 67,
+                  "appliedRelief": 67,
+                  "disconnectedSelectedRelief": 109,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1004,
+                "value": 0.6122708678639349,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.33156845835101467,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 72,
+                  "appliedRelief": 72,
+                  "disconnectedSelectedRelief": 114,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1005,
+                "value": 0.6063215696520237,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3375177565629259,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 77,
+                  "appliedRelief": 77,
+                  "disconnectedSelectedRelief": 110,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1006,
+                "value": 0.4296420970837227,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.5141972291312269,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 74,
+                  "appliedRelief": 74,
+                  "disconnectedSelectedRelief": 109,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1007,
+                "value": 0.5594080570311383,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3844312691838113,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 59,
+                  "appliedRelief": 59,
+                  "disconnectedSelectedRelief": 112,
+                  "disconnectedAppliedRelief": 0
+                }
+              },
+              {
+                "seed": 1008,
+                "value": 0.598947202584825,
+                "observations": 20,
+                "details": {
+                  "activeNeed": 0.3448921236301246,
+                  "disconnectedNeed": 0.9438393262149496,
+                  "activeMinimumHealth": 0.9998695033965626,
+                  "disconnectedMinimumHealth": 0.9502785762714386,
+                  "activeAlive": 1,
+                  "disconnectedAlive": 1,
+                  "selectedRelief": 64,
+                  "appliedRelief": 64,
+                  "disconnectedSelectedRelief": 115,
+                  "disconnectedAppliedRelief": 0
+                }
+              }
+            ],
+            "summary": {
+              "n": 8,
+              "mean": 0.5654042931338041,
+              "sd": 0.058396457871895874,
+              "interval95": [
+                0.5220440009243439,
+                0.5967320987201178
+              ]
+            },
+            "status": "pass"
+          }
+        ]
+      }
+    ]
+  },
+  "comparison": {
+    "baseline": {
+      "path": "research/baselines/v0.1.0-core-v1.json",
+      "provenance": {
+        "commit": "648a0f228f6a847f671614bd492145dcb27ebbb9",
+        "tree": "967a247155f3fae34f21b527fd0a6fe4ba405e85",
+        "dirty": false,
+        "modelHash": "0f5d3615ba148d93f8e7d05ca3a4307aa0fa80f05be72c403cb36023cfa8592c",
+        "environmentHash": "e2d0929d417bb48e0d53988b2c20286230a7344a120a664b47e3cef0898ab86b",
+        "evaluatorHash": "a135a2881a73715e3eb1f858b43b3274a4c1d7f78f95f83e36da800d917eeced",
+        "dependencyLockHash": "7f1b86b4e1f673057e6622a450f60272ff2027af34c36368f641f7d12aaa3229",
+        "runtime": "Node v24.19.0 / linux / x64",
+        "versions": {
+          "contracts": "0.1.0",
+          "human": "0.1.0",
+          "world": "0.1.0",
+          "simulation": "0.1.0",
+          "rng": "keyed-fnv-mulberry-v1"
+        }
+      },
+      "parameters": {
+        "curiosity": 0.6,
+        "caution": 0.65,
+        "learningRate": 0.18,
+        "exploration": 0.08,
+        "memoryDecay": 0.002
+      }
+    },
+    "results": [
+      {
+        "partition": "development",
+        "id": "safe-learning",
+        "label": "無害な近接による危険度の低下",
+        "delta": {
+          "n": 8,
+          "mean": -0.399203699547392,
+          "sd": 0,
+          "interval95": [
+            -0.399203699547392,
+            -0.399203699547392
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "development",
+        "id": "danger-discrimination",
+        "label": "同じ距離で危害履歴を区別",
+        "delta": {
+          "n": 8,
+          "mean": -0.41437629768044715,
+          "sd": 0.05665054004512573,
+          "interval95": [
+            -0.4499529607279308,
+            -0.3774429191325905
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "development",
+        "id": "caution-policy",
+        "label": "危害履歴が離隔対接近の評価に反映",
+        "delta": {
+          "n": 8,
+          "mean": -0.6614270243814976,
+          "sd": 0.09575277214685528,
+          "interval95": [
+            -0.7326055684753615,
+            -0.6059983368887961
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "development",
+        "id": "far-no-evidence",
+        "label": "遠距離の無害を安全証拠にしない",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      },
+      {
+        "partition": "development",
+        "id": "risk-recovery",
+        "label": "危害がなくなると危険度を更新",
+        "delta": {
+          "n": 8,
+          "mean": -0.22124654875901334,
+          "sd": 0.029136303887220102,
+          "interval95": [
+            -0.23874357318089998,
+            -0.20094632467134643
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "development",
+        "id": "prediction-gain",
+        "label": "定常移動でゼロ予測より誤差を削減",
+        "delta": {
+          "n": 8,
+          "mean": -0.06503694097014748,
+          "sd": 0.0031816222122264416,
+          "interval95": [
+            -0.06701819411966177,
+            -0.06266392382519627
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "development",
+        "id": "prediction-reversal",
+        "label": "移動方向の反転後に予測を修正",
+        "delta": {
+          "n": 8,
+          "mean": -0.10246459662205329,
+          "sd": 0.007526626443033997,
+          "interval95": [
+            -0.1081615351159595,
+            -0.09775142928390314
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "development",
+        "id": "hunger-relief",
+        "label": "行動で空腹を軽減",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      },
+      {
+        "partition": "development",
+        "id": "fatigue-relief",
+        "label": "行動で疲労を軽減",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      },
+      {
+        "partition": "development",
+        "id": "cold-relief",
+        "label": "行動で寒さを軽減",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      },
+      {
+        "partition": "validation",
+        "id": "safe-learning",
+        "label": "無害な近接による危険度の低下",
+        "delta": {
+          "n": 8,
+          "mean": -0.399203699547392,
+          "sd": 0,
+          "interval95": [
+            -0.399203699547392,
+            -0.399203699547392
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "validation",
+        "id": "danger-discrimination",
+        "label": "同じ距離で危害履歴を区別",
+        "delta": {
+          "n": 8,
+          "mean": -0.3784609782148485,
+          "sd": 0.05406648862710742,
+          "interval95": [
+            -0.4137842827621903,
+            -0.3427207170496669
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "validation",
+        "id": "caution-policy",
+        "label": "危害履歴が離隔対接近の評価に反映",
+        "delta": {
+          "n": 8,
+          "mean": -0.5903991260151636,
+          "sd": 0.08434372225828758,
+          "interval95": [
+            -0.6473648407206374,
+            -0.5412429059798867
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "validation",
+        "id": "far-no-evidence",
+        "label": "遠距離の無害を安全証拠にしない",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      },
+      {
+        "partition": "validation",
+        "id": "risk-recovery",
+        "label": "危害がなくなると危険度を更新",
+        "delta": {
+          "n": 8,
+          "mean": -0.20277470963227742,
+          "sd": 0.027807283769925396,
+          "interval95": [
+            -0.2200798750710389,
+            -0.18654562740127126
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "validation",
+        "id": "prediction-gain",
+        "label": "定常移動でゼロ予測より誤差を削減",
+        "delta": {
+          "n": 8,
+          "mean": -0.06574665496757481,
+          "sd": 0.0024506263229838237,
+          "interval95": [
+            -0.0673226896782855,
+            -0.06430790780081734
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "validation",
+        "id": "prediction-reversal",
+        "label": "移動方向の反転後に予測を修正",
+        "delta": {
+          "n": 8,
+          "mean": -0.10710440863617401,
+          "sd": 0.00804636109796204,
+          "interval95": [
+            -0.1121143149078845,
+            -0.10128950897256636
+          ]
+        },
+        "status": "regressed"
+      },
+      {
+        "partition": "validation",
+        "id": "hunger-relief",
+        "label": "行動で空腹を軽減",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      },
+      {
+        "partition": "validation",
+        "id": "fatigue-relief",
+        "label": "行動で疲労を軽減",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      },
+      {
+        "partition": "validation",
+        "id": "cold-relief",
+        "label": "行動で寒さを軽減",
+        "delta": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "within-tolerance"
+      }
+    ]
+  },
+  "decision": "requires-human-review"
+}

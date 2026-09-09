@@ -13,6 +13,7 @@
 | `packages/world` | 位置、可視・可聴範囲、音、食料、熱環境、衝突 |
 | `packages/simulation` | 同時更新、乱数、実験記録、再現検証 |
 | `packages/experiments` | 初期条件、介入、評価指標、複数シード比較 |
+| `packages/evaluation` | 基礎能力の仮説検証、対照実験、旧版との比較 |
 | `packages/observer` | 記録から表示情報を作る読み取り専用の層 |
 | `app` | 観察UI。CLIと同じ実行エンジンを使用 |
 | `cli` | 画面なしでの実行、比較、記録の保存・再開 |
@@ -45,6 +46,18 @@ node --test tests/rendered-html.test.mjs
 UIは最初は停止しています。「再生」で実行し、個体の知覚、効用値、身体状態、音の分類を観察します。スライダーで過去の記録を表示できます。条件変更は「この条件で新しい実験」を押すまで適用しません。画面内の履歴はページを閉じると失われるので、残したい実験はJSONを書き出してください。
 
 「条件比較」は二人の好奇心を0.15/0.55/0.90に変え、同じ8シードを各条件で実行します。表示は平均と標本標準偏差です。統計的有意性の主張は行いません。
+
+## 継続評価
+
+```bash
+npm run evaluate -- --out outputs/evaluation.json
+npm run evaluate -- --baseline research/baselines/v0.1.0-core-v1.json --out outputs/candidate.json
+npm run test:evaluation
+```
+
+警戒・予測・身体対処の10項目を、開発8シードと確認8シードで評価し、JSONとMarkdownを出力します。`--check`で基準未達・旧版からの悪化を終了コードに反映できます。判定は工学的仮説の達成状況で、人間らしさの総合点ではありません。
+
+仮説登録から採否の記録までの手順、対照条件と限界は [研究ループ](research/LOOP.md) を参照してください。
 
 ## 進化させる手順
 
