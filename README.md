@@ -15,6 +15,8 @@ npm run study:policy -- --split development --out outputs/policy-development.jso
 npm run test:policy
 ```
 
+中期の開発方針と達成条件は[中期目標](docs/MIDTERM_GOALS.md)にまとめています。
+
 ## 構造
 
 | 場所 | 責務 |
