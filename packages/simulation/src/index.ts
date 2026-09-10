@@ -29,6 +29,8 @@ export type SimulatorState = {
 export type AgentView = {
   id: string; body: Body; action: string; producedSounds: VoiceCategory[]; heardSounds: VoiceCategory[];
   learnedTransitions: number; trace: DecisionTrace | null;
+  /** Observer-only snapshot after learning/decision, before the next observation. Not fed to humans. */
+  memorySnapshot?: { peers: HumanState["peers"]; pending: HumanState["pending"] };
   peerEvidence: { id: string; harmEstimate: number; closeEvidence: number }[];
 };
 export type Frame = {
@@ -127,6 +129,7 @@ export function observeSimulation(state: SimulatorState): Frame {
       id: h.id, body: { ...h.body }, action: h.lastAction, producedSounds: structuredClone(h.producedSounds),
       heardSounds: structuredClone(h.heardSounds), learnedTransitions: h.learnedTransitions,
       trace: state.traces[h.id] ? structuredClone(state.traces[h.id]) : null,
+      memorySnapshot: { peers: structuredClone(h.peers), pending: structuredClone(h.pending) },
       peerEvidence: Object.entries(h.peers).map(([id, m]) => ({
         id, harmEstimate: m.harmAlpha / (m.harmAlpha + m.harmBeta), closeEvidence: m.harmAlpha + m.harmBeta - 2,
       })),

@@ -17,3 +17,37 @@ export function eventLines(frames: Frame[]): { tick: number; id: string; text: s
   }
   return lines.slice(-60);
 }
+
+
+/** Align decision t, physical outcome t+1, and the next perception at t+1 (stored in frame t+2).
+ * Only supplied frames are used: passing a prefix cannot reveal a later observation.
+ */
+export function decisionHistory(frames: Frame[], id: string, peerId?: string) {
+  return frames.flatMap((frame, index) => {
+    const agent = frame.agents.find(a => a.id === id), trace = agent?.trace;
+    if (!agent || !trace || trace.tick !== frame.tick - 1) return [];
+    if (peerId && trace.peerTrackId !== peerId) return [];
+    const pending = agent.memorySnapshot?.pending;
+    const next = frames[index + 1]?.agents.find(a => a.id === id)?.trace;
+    const target = pending && next?.tick === trace.tick + 1
+      ? next.observation.animals.find(a => a.trackId === pending.peerId) : undefined;
+    const observedDelta = target && pending ? Math.hypot(target.relativePosition.x, target.relativePosition.y) - pending.distance : null;
+    const learningDelta = observedDelta === null ? null : Math.min(2, Math.max(-2, observedDelta));
+    const predictedDelta = pending?.predictedDelta ?? null;
+    const prior = frames[index - 1]?.agents.find(a => a.id === id);
+    const peer = trace.peerTrackId ? agent.memorySnapshot?.peers[trace.peerTrackId] : undefined;
+    return [{ frameTick: frame.tick, decisionTick: trace.tick, peerId: trace.peerTrackId,
+      selected: trace.selected, exploratory: trace.exploratory, risk: trace.perceivedRisk,
+      harmEstimate: peer ? peer.harmAlpha / (peer.harmAlpha + peer.harmBeta) : null,
+      evidence: peer ? peer.harmAlpha + peer.harmBeta - 2 : null,
+      forecasts: structuredClone(peer?.responses ?? {}), scores: structuredClone(trace.scores),
+      predictedDelta, observedDelta, learningDelta,
+      residual: predictedDelta !== null && learningDelta !== null ? learningDelta - predictedDelta : null,
+      feedback: !pending ? "no-prediction" : !next || next.tick !== trace.tick + 1 ? "awaiting-observation" : !target ? "peer-not-seen" : "observed",
+      bodyBefore: prior ? { ...prior.body } : null,
+      bodyAfter: { ...agent.body },
+      contact: frame.events.filter(e => e.actorId === id && e.kind === "contact").reduce((s, e) => s + e.value, 0),
+      food: frame.events.filter(e => e.actorId === id && e.kind === "food").reduce((s, e) => s + e.value, 0),
+    }];
+  });
+}

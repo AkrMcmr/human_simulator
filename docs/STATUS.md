@@ -26,7 +26,7 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 
 ## 中期の到達点
 
-次の3か月程度は、二人が経験から関わり方を変え、最小限の合図の成立条件を再現・検証できる実験室を目指します。[中期目標と達成条件](MIDTERM_GOALS.md)にM1〜M4を定めました。M1（protocol、比較CLI、シード別結果、採否記録、モデル選択と版記録、既定化）は完了。M2は履歴介入実験（[判断0005](../research/decisions/0005-experience-history-m2.md)）を完了し、観察画面の表示が残っています。
+次の3か月程度は、二人が経験から関わり方を変え、最小限の合図の成立条件を再現・検証できる実験室を目指します。[中期目標と達成条件](MIDTERM_GOALS.md)にM1〜M4を定めました。M1（protocol、比較CLI、シード別結果、採否記録、モデル選択と版記録、既定化）は完了。M2は履歴介入実験（[判断0005](../research/decisions/0005-experience-history-m2.md)）を完了し、観察画面の時系列表示も追加しました。相手の反応の途中変化は次の研究課題です。
 
 ## M2: 経験履歴と記憶介入
 
@@ -40,7 +40,7 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 
 ## 次の作業
 
-1. M2の残り: 観察画面で経験→予測→判断→結果をたどれる表示（相手ごとの危害推定・行動別予測・効用内訳の履歴）。UI変更なので型検査とビルドで確認する。
+1. M2の観察表示を実装済み。「経験から判断へ」で個体と相手を選び、危害推定、行動別の距離予測・分散・経験数、効用内訳、次の知覚、接触痛・摂食量を追跡できる。時点のボタンと既存スライダーで過去を確認する。
 2. 相手の反応が途中で変わる条件（危害→無害、無害→危害）のprotocolと、忘却が事前分布へ戻る仮定の見直し。見直す場合は候補として`prospective`登録し、core-v1・world-v1・history-v1で回帰を確認する。
 3. M3の最小合図protocolの設計。M1の通常world評価とM2の履歴操作を土台にする。機構分析（共有配置で摂食・保温が減る経路、混在条件）は並行課題。
 
@@ -55,3 +55,7 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 [モデル改訂CLI](../research/evolution/README.md)で、登録→実装固定→旧版/候補/寄与無効の比較→採否→次課題を記録します。`npm run evolve -- next`で続きの課題を確認できます。評価器は`study`で選べ、core-v1（基礎能力）に加えてworld-v1（通常world）に接続しました。world-v1のサイクルでもcore-v1の回帰は常に確認します。
 
 初回サイクル`predictive-retrospective`（core-v1、回帰確認のみ）に続き、子サイクル`predictive-normal-world-m1`（world-v1、主要基準contact-harm ≥ 0.01）を登録・固定・比較・判断しました。両群で改善ゲートを達成し`retain-candidate`。結果を先にstudy:world CLIで見た後の再評価なので登録種別はretrospectiveです。[結果](../research/evolution/cycles/predictive-normal-world-m1/result.json)と[判断](../research/evolution/cycles/predictive-normal-world-m1/decision.json)を保存しています。
+
+## 今回の引き継ぎと反映先
+
+Claudeの作業ブランチ`claude/repository-model-evolution-m5s86u`の`c2fc1af`まで（M1、0.2.0採用、M2実験）を確認し、その履歴を親に`codex/m2-observation-history`で観察表示を追加しました。mainへの統合と公開画面の更新は別です。今回の作業では公開していません。UIは通常の実験/再生記録を扱い、history-v1の集計JSONをシミュレーション記録として読み込む機能は含みません。

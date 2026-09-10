@@ -57,3 +57,5 @@ npm run study:history -- --split validation --out outputs/history-validation.jso
 specの`study`で評価器を選びます。省略か`core-v1`なら基礎能力10項目、`world-v1`なら通常worldの8条件比較を主要基準に使い、core-v1の回帰も常に確認します。world-v1のサイクルは`run`と`replay`に1分強かかります。評価器ハッシュにはworld-v1の研究コード・protocol・experiments・simulationの実行器を含めるため、これらの変更後は既存サイクルの`replay`が拒否されます。保存済みの結果は証拠として残り、新しいサイクルを登録します。
 
 初回の検証: `npm run test:evolution` 3/3、型チェック成功。実際の予測候補でregister→seal→run→decideを完走し、`replay`で再現を確認。2026-09-10: `predictive-normal-world-m1`（world-v1）を固定ソースからrun・decide・replayし一致を確認、`npm run test:evolution` 4/4。
+
+観察用の変換を変更したときは`node --experimental-strip-types --test tests/observer/*.test.ts`で、入力の不変性と時点の整合を確認します。UI変更時の型チェックとビルドも実施します。

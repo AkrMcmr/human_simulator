@@ -1,0 +1,42 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createSimulation, stepSimulation, observeSimulation, runExperiment, archiveRun, restoreRun } from "../../packages/simulation/src/index.ts";
+import { pairExperiment, DEFAULT_SETTINGS } from "../../packages/experiments/src/index.ts";
+import { decisionHistory } from "../../packages/observer/src/index.ts";
+const config = pairExperiment({ ...structuredClone(DEFAULT_SETTINGS), initialDistance: 6, horizon: 40 });
+test("memory projection and history are detached and cannot change the simulation", () => {
+  const state = stepSimulation(stepSimulation(createSimulation(config))), before = structuredClone(state);
+  const frame = observeSimulation(state);
+  frame.agents[0].memorySnapshot!.peers.B.harmAlpha = 99;
+  frame.agents[0].memorySnapshot!.pending!.predictedDelta = 99;
+  assert.deepEqual(state, before);
+  const frames = runExperiment(config).frames, saved = structuredClone(frames);
+  const rows = decisionHistory(frames, "A");
+  rows[0].scores[0].utility = 99;
+  rows.at(-1)!.forecasts.observe = { mean: 99, variance: 0, samples: 10 };
+  assert.deepEqual(frames, saved);
+});
+test("decision/outcome/next-observation timing is explicit and no future observation leaks", () => {
+  const { frames } = runExperiment(config);
+  const first = decisionHistory(frames.slice(0, 2), "A")[0];
+  assert.equal(first.decisionTick, 0); assert.equal(first.frameTick, 1);
+  assert.equal(first.feedback, "awaiting-observation"); assert.equal(first.observedDelta, null);
+  const completed = decisionHistory(frames.slice(0, 3), "A")[0];
+  const next = frames[2].agents[0].trace!.observation.animals.find(a => a.trackId === "B")!;
+  const expected = Math.hypot(next.relativePosition.x, next.relativePosition.y) - frames[1].agents[0].memorySnapshot!.pending!.distance;
+  assert.equal(completed.observedDelta, expected);
+  assert.equal(completed.predictedDelta, frames[1].agents[0].memorySnapshot!.pending!.predictedDelta);
+  assert.equal(completed.residual, Math.max(-2, Math.min(2, expected)) - completed.predictedDelta!);
+  const absent = structuredClone(frames.slice(0, 3)); absent[2].agents[0].trace!.observation.animals = [];
+  assert.equal(decisionHistory(absent, "A")[0].feedback, "peer-not-seen");
+  assert.equal(decisionHistory(absent, "A")[0].observedDelta, null);
+  assert.deepEqual(decisionHistory(frames, "A", "unknown-peer"), []);
+});
+test("existing 0.2.0 archives regenerate observer snapshots and preserve checkpoint behavior", () => {
+  const { state, frames } = runExperiment(config);
+  const archive = archiveRun(config, state, frames, { sourceCommit: "test", sourceHash: "test", dependencyLockHash: "test", runtime: "test", dirty: false });
+  for (const f of archive.frames) for (const a of f.agents) delete a.memorySnapshot;
+  const restored = restoreRun(archive);
+  assert.deepEqual(restored.state, state);
+  assert.deepEqual(decisionHistory(restored.frames, "A"), decisionHistory(frames, "A"));
+});

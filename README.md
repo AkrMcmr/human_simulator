@@ -115,3 +115,5 @@ Sites用の設定を同梱しています。GitHubでソースを管理し、Sit
 ## 人間モデルのロジックを育てる
 
 個体内の学習に加え、開発者・LLMがモデル自体を改訂する[外側のループ](research/evolution/README.md)を備えています。`npm run evolve -- status`で候補の状態、`npm run evolve -- next`で次の課題を確認できます。評価器はcore-v1（基礎能力）とworld-v1（通常world）から選べます。
+
+観察タブの「経験から判断へ」で、個体と相手を選び、危害推定・行動別予測・効用・結果の履歴を確認できます。詳細は[観察の情報境界](docs/development/ARCHITECTURE.md)を参照。
