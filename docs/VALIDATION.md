@@ -39,3 +39,9 @@ TypeScriptの型検査とESLintは成功。UIのビルドとHTMLのサーバー�
 ## 継続評価の追加
 
 [core-v1 の基準測定](../research/baselines/v0.1.0-core-v1.md) と [負の対照](../research/controls/transition-learning-off.md) を保存しました。評価器の6件のテストで再現性、学習を止めた際の悪化検出、異なる評価器/環境/シードの比較拒否、欠損・非有限値・集計改変の拒否、CLIの失敗終了と基準ファイルの保護を確認しています。モデル本体の13件のテストと型検査も成功しています。
+
+## 2026-09-10: 予測政策の候補
+
+policy-v1は開発8・確認8シードで5条件達成、寄与無効版は旧版と一致。core-v1の10項目に基準未達・許容幅超過の悪化なし。通常worldへの採用と人間への妥当性は未確認です。[結果・採否](../research/decisions/0003-prediction-to-policy.md)、[再現コマンド](development/VALIDATION.md)を参照。
+
+今回の検証: `npm run test:model` 16/16、`npm run test:evaluation` 6/6、`npm run typecheck`成功。既定版のcore-v1全保存測定値との一致も確認しました。比較テストは初回にJSONが負のゼロを0として保存する差で失敗したため、保存形式にそろえて比較するよう修正しています。モデルの計算や評価閾値は変更していません。新規文書の相対リンクと`git diff --check`も確認済み。UI変更・公開・ブラウザQAは今回の対象外です。

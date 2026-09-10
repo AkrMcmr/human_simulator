@@ -1,0 +1,24 @@
+{
+  "id": "prediction-to-policy-v1",
+  "version": "1.0.0",
+  "evidence": "engineering-intervention-not-human-validation",
+  "developmentSeeds": [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008],
+  "validationSeeds": [3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008],
+  "trials": 192,
+  "reversalAt": 96,
+  "window": 48,
+  "distance": 4,
+  "delta": 1,
+  "otherDelta": -0.2,
+  "noise": 0.02,
+  "parameters": { "curiosity": 0.1, "caution": 0.95 },
+  "body": { "hunger": 0.1, "fatigue": 0.1, "cold": 0.1, "health": 1 },
+  "candidate": { "gain": 4, "cap": 0.2, "minimumSamples": 4, "priorSamples": 8 },
+  "checks": [
+    { "id": "standard", "label": "通常の反応で悪化しない", "minimum": -0.1 },
+    { "id": "reversed", "label": "逆の反応で結果を改善", "minimum": 0.15 },
+    { "id": "reversal", "label": "途中の反転後に結果を改善", "minimum": 0.15 },
+    { "id": "uncontrollable", "label": "行動と無関係な結果で見かけの改善を出さない", "minimum": -0.001 },
+    { "id": "null-bonus", "label": "無関係な結果への過度な確信を避ける", "minimum": -0.05 }
+  ]
+}

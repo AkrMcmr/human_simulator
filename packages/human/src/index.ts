@@ -44,7 +44,9 @@ function rememberSound(categories: VoiceCategory[], shape: SoundShape, threshold
 }
 
 /** Pure transition. This function has no access to WorldState or another HumanState. */
-export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource): {
+export type OutcomeBonus = (action: ActionKind, human: HumanState, peerDistance: number | null, peerId: string | null) => number;
+
+export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus?: OutcomeBonus): {
   human: HumanState; action: ActionIntent; trace: DecisionTrace;
 } {
   const human: HumanState = structuredClone(previous);
@@ -132,6 +134,7 @@ export function decideHuman(previous: HumanState, observation: Observation, rand
   }
   const scores: Score[] = [];
   const addScore = (action: ActionKind, terms: Record<string, number>) => {
+    if (outcomeBonus) terms = { ...terms, predictedSafety: outcomeBonus(action, human, peerDistance, peer?.trackId ?? null) };
     scores.push({ action, utility: Object.values(terms).reduce((sum, v) => sum + v, 0), terms });
   };
   const inertia = (action: ActionKind) => human.lastAction === action ? 0.06 : 0;

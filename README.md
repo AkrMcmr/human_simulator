@@ -4,6 +4,17 @@
 
 **v0.1は未校正の探索モデルです。高精度な人間の再現や、言語の創発を達成したものではありません。** 実行時のLLM・外部API・ネットワークは、人間モデルに含まれません。
 
+## 開発者・LLMの入口
+
+[参加ガイド](CONTRIBUTING.md) → [現在地](docs/STATUS.md) → [設計](docs/development/ARCHITECTURE.md) → [検証手順](docs/development/VALIDATION.md)。版と採用のルールは[こちら](docs/development/VERSIONING.md)、作業の引き継ぎは[テンプレート](docs/development/HANDOFF.md)を使います。
+
+距離予測を行動選択へつなぐ実験候補`0.2.0-experimental.1`を追加しました。制御課題の開発・確認評価は合格していますが、通常worldでの検証前なので既定版は0.1.0です。
+
+```bash
+npm run study:policy -- --split development --out outputs/policy-development.json
+npm run test:policy
+```
+
 ## 構造
 
 | 場所 | 責務 |
