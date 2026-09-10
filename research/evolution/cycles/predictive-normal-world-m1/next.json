@@ -1,0 +1,7 @@
+{
+  "cycle": "predictive-normal-world-m1",
+  "resultHash": "4320ee5343747e8ce36d781e1fec6e7a31faf5f9c4ca6a257f1c11c24907db6a",
+  "tasks": [
+    "既定化のレビュー判断: 採用ならhuman 0.2.0として版を上げ、core-v1基準とUI/CLI既定を更新する。並行してM2の履歴介入protocolと、片方だけ候補の混在条件・生活技能低下の機構分析を登録する"
+  ]
+}
