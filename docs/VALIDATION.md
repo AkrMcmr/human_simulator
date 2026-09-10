@@ -57,3 +57,7 @@ world-v1（資源配置×初期距離×身体要求の8条件、600ステップ�
 ## 2026-09-10: human 0.2.0への既定化
 
 所有者の承認で予測効用の候補を既定にし、human 0.2.0へ版を上げました。旧0.1.0は`decideLegacyHuman`（登録簿`human-0.1.0`）として残り、保存済みの0.1.0 core-v1基準を引き続き完全に再現します（テストで確認）。0.2.0のcore-v1基準を[再記録](../research/baselines/v0.2.0-core-v1.md)し、0.1.0基準との差は開発・確認とも全項目が許容幅内でした。今回の検証: `npm run test:model` 27/27、`npm run test:evaluation` 6/6、`npm run test:evolution` 4/4、型検査・lint・ビルド・画面テスト成功。既定が変わったため、改訂サイクル`predictive-retrospective`と`predictive-normal-world-m1`の`replay`はモデルハッシュ不一致で拒否されます。保存済みの結果と判断は証拠として残ります。
+
+## 2026-09-10: 経験履歴と記憶介入（M2）
+
+history-v1（履歴60ステップ、記憶介入3種、強制近接96ステップ、自由行動120ステップ×2配置）で既定0.2.0を測り、開発6001–6008・確認7001–7008で7項目すべて達成。参照0.1.0はP1と強制近接で同値。パイロット6101–6104で尺度を確認し、自由行動の配置を追加した設計変更を[判断0005](../research/decisions/0005-experience-history-m2.md)に記録しています。今回の検証: `npm run test:model` 32/32（history研究5件を追加）、`npm run test:evaluation` 6/6、`npm run test:evolution` 4/4、型検査・lint・ビルド・画面テスト成功。

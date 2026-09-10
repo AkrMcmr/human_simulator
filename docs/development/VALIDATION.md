@@ -12,6 +12,7 @@
 | 予測政策の候補（制御課題） | `npm run test:policy`、`npm run study:policy -- --split development`。候補を固定後にvalidation |
 | 候補の通常world比較 | `npm run study:world -- --split development`。protocolをコミットしてから実行し、validationは一度だけ新規確認として扱う |
 | モデル登録簿・選択 | `npm run test:model`（`tests/model/selection.test.ts`）、`npm run typecheck`。UIの選択肢も登録簿から生成 |
+| 履歴介入の現象確認 | `npm run study:history -- --split development`。パイロットは`--split pilot`で尺度確認のみ。既定モデルの現象確認で候補比較ではない |
 | UI | `npm run typecheck`、`npm run build`、`node --test tests/*.test.mjs`。ブラウザQAは明示的に依頼された範囲 |
 
 `test:model`は`tests/model/*.test.ts`なのでpolicyのテストも含みます。`test:policy`はその絞り込みです。`npm test`はスターター由来のビルド＋画面側テストであり、モデル・評価器のテストすべてを実行するコマンドではありません。
@@ -24,7 +25,8 @@ npm run study:policy -- --split development --out outputs/policy-development.jso
 npm run study:policy -- --split validation --out outputs/policy-validation.json --check
 npm run study:world -- --split development --out outputs/world-development.json
 npm run study:world -- --split validation --out outputs/world-validation.json --check
-npm run experiment -- --seed 42 --steps 600 --model predictive-0.2.0-experimental.1 --out outputs/candidate-run.json
+npm run experiment -- --seed 42 --steps 600 --model human-0.1.0 --out outputs/legacy-run.json
+npm run study:history -- --split validation --out outputs/history-validation.json --check
 ```
 
 `evaluate --check`は工学的基準未達や許容幅を超える悪化で終了コード1です。通常実行は未達でもレポートを保存します。policy study・world studyも同様で、core-v1の副作用と候補寄与無効の一致を確認します。world studyは8条件×8シード×3版で1分前後かかり、条件別の表も出力します。JSONと同名のMarkdownを出力します。保存済みの結果は`research/results/world-v1-*.json`（改行なしの圧縮JSON）です。

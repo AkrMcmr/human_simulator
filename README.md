@@ -78,6 +78,12 @@ npm run study:world -- --split validation --out outputs/world-validation.json --
 
 通常worldの8条件（資源配置×初期距離×身体要求）で旧版・候補・寄与無効を同じシードから比較し、接触痛・危険度・健康・身体要求・生活技能・離隔・予測誤差の差と条件別の表を出力します。
 
+```bash
+npm run study:history -- --split development --out outputs/history-development.json
+```
+
+危害あり/なしの経験履歴と記憶の保持・消去・入れ替え、危害後の強制近接と自由行動（食料共有/分離）を実験者が操作し、既定モデルの危険度と行動評価の変化を測ります（[判断0005](research/decisions/0005-experience-history-m2.md)）。
+
 仮説登録から採否の記録までの手順、対照条件と限界は [研究ループ](research/LOOP.md) を参照してください。
 
 ## 進化させる手順
