@@ -97,3 +97,7 @@ JSON読み込み時は、同版の初期条件から再実行し、チェック�
 観察画面: [Human World Lab](https://human-world-lab.diodario.chatgpt.site)（所有者専用）
 
 Sites用の設定を同梱しています。GitHubでソースを管理し、Sitesの公開用ソース保存先とは分けて運用します。GitHubへの初回登録は内容を同期するため、コミットIDは公開版のソースIDと異なります。公開済み初版のソースIDは `dd905ad144e31478cf9848e6114266968c6aa10a` です。公開ライセンスはまだ選択していません。
+
+## 人間モデルのロジックを育てる
+
+個体内の学習に加え、開発者・LLMがモデル自体を改訂する[外側のループ](research/evolution/README.md)を備えています。`npm run evolve -- status`で候補の状態、`npm run evolve -- next`で次の課題を確認できます。

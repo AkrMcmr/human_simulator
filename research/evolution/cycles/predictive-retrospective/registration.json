@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "spec": {
+    "id": "predictive-retrospective",
+    "parentCycle": null,
+    "registration": "retrospective",
+    "hypothesis": "距離予測を行動効用へ接続する既存候補は、基礎能力を損なわずに拡張できる",
+    "mechanism": "行動別距離予測から安全性の効用を計算する新しい経路。係数調整だけでなく判断ロジックの変更を扱う",
+    "falsifier": "core-v1の必須能力未達、許容幅を超える悪化、寄与無効で旧版を復元できない",
+    "assumptions": [
+      "危険度の低下を効用へ加える",
+      "分散と経験数が寄与の重みになる",
+      "既存の人間状態形式と追跡IDを利用する"
+    ],
+    "baseline": "human-0.1.0",
+    "candidate": "predictive-0.2.0-experimental.1",
+    "ablated": "predictive-ablated-0.2.0-experimental.1",
+    "primary": [],
+    "nextStudy": "M1: 通常worldの8条件以上と未使用シードを事前登録し、予測政策の効果・生活技能・過剰な回避を比較する。core-v1の合格だけでは既定化しない"
+  },
+  "specHash": "b426e1b74f7494e115847b259b9c4c4bd5886f10b461846cb0a3a61b0d9b6f8a",
+  "registered": {
+    "commit": "6cc3726c4d4a87b6232b7df873c9be878c3639de",
+    "tree": "b6acf9173b322771b0057fc955d69b2574f31e2a",
+    "dirty": false,
+    "hash": "bf1484bca855e8431913c7ea5c09a0e88b9060322f1073ebe06c1519f340eeac"
+  },
+  "evaluationHash": "ae89b0a9213e10aed3b41358a392bf983f74ef3f446eb90216ef34c4df2e3cd8"
+}

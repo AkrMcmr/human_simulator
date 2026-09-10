@@ -1,0 +1,10 @@
+{
+  "specHash": "b426e1b74f7494e115847b259b9c4c4bd5886f10b461846cb0a3a61b0d9b6f8a",
+  "evaluationHash": "ae89b0a9213e10aed3b41358a392bf983f74ef3f446eb90216ef34c4df2e3cd8",
+  "sealed": {
+    "commit": "aa7bdb4515ac78305ecea06519e20940a135e042",
+    "tree": "b638fc2daee6617c5cda0ec772dabe4a8c3aba2c",
+    "dirty": false,
+    "hash": "bf1484bca855e8431913c7ea5c09a0e88b9060322f1073ebe06c1519f340eeac"
+  }
+}

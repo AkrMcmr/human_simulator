@@ -32,3 +32,9 @@ human **0.2.0-experimental.1**は、学習した距離変化から危険度の�
 ## 参加するには
 
 [CONTRIBUTING](../CONTRIBUTING.md)から環境構築、設計、テスト、引き継ぎへ進めます。開発者はGitHubをcloneしてローカルで作業できます。公開画面は所有者専用で、今回の研究候補や文書変更では更新していません。
+
+## ロジック自体の改訂基盤
+
+[モデル改訂CLI](../research/evolution/README.md)を追加。登録→実装固定→旧版/候補/寄与無効の比較→採否→次課題を記録します。`npm run evolve -- next`で続きの課題を確認できます。個体内学習とは別の開発ループで、現在の自動評価接続はcore-v1です。通常worldのM1評価は引き続き未実装です。
+
+初回サイクル`predictive-retrospective`を登録・固定・比較・判断まで実行しました。既知シードでcore-v1の未達と許容悪化超過なし、寄与無効は旧版と一致。改善証明ではなく回帰確認として候補保持。次課題はM1です。サイクルの[結果](../research/evolution/cycles/predictive-retrospective/result.json)と[判断](../research/evolution/cycles/predictive-retrospective/decision.json)を保存しています。

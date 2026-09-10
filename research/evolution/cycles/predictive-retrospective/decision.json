@@ -1,0 +1,13 @@
+{
+  "outcome": "retain-candidate",
+  "reason": "基礎能力の未達・許容悪化超過なし、寄与無効は旧版と一致。既知シードの回帰確認として候補を保持し、M1の通常world評価を次に行う。既定化や人間への妥当性は未確認。",
+  "resultHash": "8b8815e4fcba2429d654e017649263ac12d3c91457537e1510f85e32987da5cb",
+  "specHash": "b426e1b74f7494e115847b259b9c4c4bd5886f10b461846cb0a3a61b0d9b6f8a",
+  "source": {
+    "commit": "1220da34ef3a0f906f646cbeaa21a990aa3d5631",
+    "tree": "08ddaff6c6da64f1e6109cf48ca5d8dea8ab941a",
+    "dirty": true,
+    "hash": "bf1484bca855e8431913c7ea5c09a0e88b9060322f1073ebe06c1519f340eeac"
+  },
+  "defaultChanged": false
+}

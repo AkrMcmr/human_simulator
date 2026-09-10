@@ -20,7 +20,9 @@
     "evaluate": "node --experimental-strip-types cli/evaluate.ts",
     "test:evaluation": "node --experimental-strip-types --test tests/evaluation/*.test.ts",
     "study:policy": "node --experimental-strip-types cli/study-policy.ts",
-    "test:policy": "node --experimental-strip-types --test tests/model/policy.test.ts"
+    "test:policy": "node --experimental-strip-types --test tests/model/policy.test.ts",
+    "evolve": "node --experimental-strip-types cli/evolve.ts",
+    "test:evolution": "node --experimental-strip-types --test tests/evolution/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

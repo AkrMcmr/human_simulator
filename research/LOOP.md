@@ -42,3 +42,7 @@ JSONと同名のMarkdownレポートを出力します。全フレームの実�
 初回は工学的な検証です。研究と結びつける際は、原論文、対象（人間/動物/理論モデル）、実験課題、取得可能データ、対応させる変数、再現できない点を記録します。
 
 参照候補: Keramati & Gutkin (2014), [Homeostatic reinforcement learning for integrating reward collection and physiological stability](https://elifesciences.org/articles/04811), DOI 10.7554/eLife.04811。恒常性と行動選択を結ぶ理論的出発点として参照しています。現モデルはこの論文の実装や再現ではなく、今回の係数・閾値・評価データの根拠にもしていません。原論文の詳細レビューと人間の行動データへの対応づけは未完了です。
+
+## 実行できる改訂サイクル
+
+[モデル改訂CLI](evolution/README.md)で仮説登録、ソース固定、3版比較、採否、次課題を追跡できます。現在はcore-v1へ接続しており、新しい能力固有の評価は個別に追加します。

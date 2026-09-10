@@ -42,3 +42,9 @@ npm run study:policy -- --split validation --out outputs/policy-validation.json 
 `outputs/`は作業用でGit対象外です。研究として採用するコンパクトな測定値は`research/baselines`、対照は`research/controls`、個別研究結果は`research/results`へ保存し、判断記録からリンクします。全フレームや個人データを通常のコミットへ大量に含めないでください。
 
 確認用シードの結果を一度見たら、次回からは既知の回帰チェックです。`validation`という名前だけで未使用データだとは言えません。
+
+## 改訂サイクル
+
+`npm run test:evolution`は登録順序、固定後の変更拒否、回帰判定、再実行、証拠の保持を検証します。engineやCLI変更時は型チェックと合わせて実行してください。モデルの実装を変更した場合には従来のモデルテストも必要です。
+
+初回の検証: `npm run test:evolution` 3/3、型チェック成功。実際の予測候補でregister→seal→run→decideを完走し、`replay`で再現を確認。今回は既存human/worldのロジック変更を含みません。
