@@ -2,13 +2,13 @@
 
 人間の知覚・判断・行動・フィードバックを、LLMに判断を委ねずに実験するための基盤です。最初の実験は、生活技能を持つ二人の個体が、コミュニケーションの定石を持たずに出会う場面です。
 
-**v0.1は未校正の探索モデルです。高精度な人間の再現や、言語の創発を達成したものではありません。** 実行時のLLM・外部API・ネットワークは、人間モデルに含まれません。
+**既定モデルhuman 0.2.0は未校正の探索モデルです。高精度な人間の再現や、言語の創発を達成したものではありません。** 実行時のLLM・外部API・ネットワークは、人間モデルに含まれません。
 
 ## 開発者・LLMの入口
 
 [参加ガイド](CONTRIBUTING.md) → [現在地](docs/STATUS.md) → [設計](docs/development/ARCHITECTURE.md) → [検証手順](docs/development/VALIDATION.md)。版と採用のルールは[こちら](docs/development/VERSIONING.md)、作業の引き継ぎは[テンプレート](docs/development/HANDOFF.md)を使います。
 
-距離予測を行動選択へつなぐ実験候補`0.2.0-experimental.1`があります。制御課題と、通常worldの8条件比較（[判断0004](research/decisions/0004-normal-world-m1.md)）の両方で事前登録した基準を達成しましたが、既定化はレビュー後の版更新として行うため、既定版は0.1.0のままです。候補は`--model`で名指しして動かせます。
+距離予測を行動選択へつなぐ候補`0.2.0-experimental.1`は、制御課題と通常worldの8条件比較（[判断0004](research/decisions/0004-normal-world-m1.md)）の両方で事前登録した基準を達成し、human **0.2.0**として既定化しました。旧0.1.0は`--model human-0.1.0`で動かせます。
 
 ```bash
 npm run study:policy -- --split development --out outputs/policy-development.json
@@ -47,7 +47,7 @@ npm run compare -- --seed 42 --steps 400 --out outputs/comparison.json
 npm run experiment -- --resume outputs/encounter.json --out outputs/resumed.json
 ```
 
-`--distance 12`、`--curiosity-a 0.6`、`--curiosity-b 0.6`、`--layout shared|separate`、`--mute`、`--model <登録済みID>` で条件を変更できます。`--mute` は音の伝達だけを無効にし、発声そのものは残します。`--model`の既定は`human-0.1.0`で、登録簿は`packages/simulation/src/models.ts`です。記録にはモデルIDと版が残り、別のモデルの記録として再生することはできません。
+`--distance 12`、`--curiosity-a 0.6`、`--curiosity-b 0.6`、`--layout shared|separate`、`--mute`、`--model <登録済みID>` で条件を変更できます。`--mute` は音の伝達だけを無効にし、発声そのものは残します。`--model`の既定は`human-0.2.0`で、登録簿は`packages/simulation/src/models.ts`です。記録にはモデルIDと版が残り、別のモデルの記録として再生することはできません。
 
 UIの開発・ビルド:
 
@@ -66,7 +66,7 @@ UIは最初は停止しています。「再生」で実行し、個体の知覚
 
 ```bash
 npm run evaluate -- --out outputs/evaluation.json
-npm run evaluate -- --baseline research/baselines/v0.1.0-core-v1.json --out outputs/candidate.json
+npm run evaluate -- --baseline research/baselines/v0.2.0-core-v1.json --out outputs/candidate.json
 npm run test:evaluation
 ```
 

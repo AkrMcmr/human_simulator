@@ -8,7 +8,7 @@
 2. **評価を固定**: protocol、シード、対照条件、主要指標、許容悪化量を結果を見る前にコミットする。評価器のコードもハッシュで固定する。
 3. **基準版を記録**: `npm run evaluate -- --out outputs/baseline.json`。既存の基準版があれば使い、評価基準の変更時は旧モデルも新しい評価器で再評価する。
 4. **変更する**: 一度に一つの仮説を実装。人間の挙動を変える場合はモデル版を上げる。学習器と評価器を同時に調整しない。
-5. **比較する**: `npm run evaluate -- --baseline research/baselines/v0.1.0-core-v1.json --out outputs/candidate.json`。同じ評価器・protocol・シードでの差分だけを比較する。
+5. **比較する**: `npm run evaluate -- --baseline research/baselines/v0.2.0-core-v1.json --out outputs/candidate.json`。同じ評価器・protocol・シードでの差分だけを比較する。旧0.1.0との比較には`v0.1.0-core-v1.json`を使う。
 6. **判断を残す**: 採用/保留/棄却、測定結果、悪化、限界、次の問いを記録しGitHubへ保存する。採用は自動化しない。
 
 `npm run evaluate -- --check` は工学的基準の未達があれば終了コード1、`--baseline ... --check` は未達または許容範囲を超える悪化で1です。通常実行は未達でもレポートを保存します。形式不正・比較不能・非有限値はエラーです。

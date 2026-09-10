@@ -22,7 +22,7 @@
 
 成果物: protocol、比較CLI、シード別結果、採否記録。最初の作業はprotocol作成。
 
-進捗（2026-09-10）: [`world-v1`](../research/protocols/world-v1.json)、`npm run study:world`、[結果](../research/results/world-v1-validation.md)、[判断0004](../research/decisions/0004-normal-world-m1.md)、`ExperimentConfig.model`によるモデル選択と版記録を揃え、候補は開発・確認の両群で主要効果と副作用の条件を達成した。既定化の判断はレビュー待ち。片方だけ候補の混在条件は未実施。
+進捗（2026-09-10）: [`world-v1`](../research/protocols/world-v1.json)、`npm run study:world`、[結果](../research/results/world-v1-validation.md)、[判断0004](../research/decisions/0004-normal-world-m1.md)、`ExperimentConfig.model`によるモデル選択と版記録を揃え、候補は開発・確認の両群で主要効果と副作用の条件を達成した。所有者の承認でhuman 0.2.0として既定化。片方だけ0.2.0の混在条件は未実施。
 
 ## M2: 相手との経験による違いを説明できる
 

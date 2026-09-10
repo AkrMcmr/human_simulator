@@ -39,7 +39,7 @@
 
 評価器ハッシュには評価コード、契約、world、experiments、simulationの実行器と乱数、両protocol、engine、CLI、依存ロックを含めます。モデルハッシュにはhumanのソースと二つの登録簿（`packages/simulation/src/models.ts`、`research/evolution/models.ts`）を含めます。
 
-最初のサイクル`predictive-retrospective`は既存予測政策の**事後的な移行・動作確認**です。過去のpolicy-v1研究を事前登録し直したものではありません。主要改善基準を空にして、基礎能力を維持することだけを確認します。二つ目の`predictive-normal-world-m1`はworld-v1を主要基準にした子サイクルで、`study:world` CLIで結果を確認した後に登録したためretrospectiveです。以後の新しい仮説はprospectiveで登録し、結果を見る前にコミットしてください。
+最初のサイクル`predictive-retrospective`は既存予測政策の**事後的な移行・動作確認**です。過去のpolicy-v1研究を事前登録し直したものではありません。主要改善基準を空にして、基礎能力を維持することだけを確認します。二つ目の`predictive-normal-world-m1`はworld-v1を主要基準にした子サイクルで、`study:world` CLIで結果を確認した後に登録したためretrospectiveです。この結果をもとに候補は既定human 0.2.0になりました（既定化はこのCLIの外で、[判断0004](../decisions/0004-normal-world-m1.md)に記録）。以後の新しい仮説は`human-0.2.0`を旧版としてprospectiveで登録し、結果を見る前にコミットしてください。
 
 新しい能力の実験を自動発明したり、論文を自動収集したり、コードを無人で書き換えるエージェント/定期ジョブはこのCLIに含めません。開発者や任意のLLMが外側の作業者です。状態形式は現行`ModelAdapter`に依存しており、別形式の記憶へ移る際はアダプターの更新が必要です。
 

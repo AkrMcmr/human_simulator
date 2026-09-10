@@ -1,7 +1,9 @@
 import { add, clamp, magnitude, soundDistance } from "../../contracts/src/index.ts";
 import type { ActionIntent, ActionKind, Body, DecisionTrace, HumanParameters, Observation, PhysicalEffect, RandomSource, Score, SoundShape, Vec2 } from "../../contracts/src/index.ts";
 
-export const HUMAN_VERSION = "0.1.0";
+/** Default model. 0.2.0 adds the predicted-safety utility term to every action; 0.1.0 remains callable as decideLegacyHuman. */
+export const HUMAN_VERSION = "0.2.0";
+export const LEGACY_HUMAN_VERSION = "0.1.0";
 export const DEFAULT_PARAMETERS: HumanParameters = {
   curiosity: 0.6, caution: 0.65, learningRate: 0.18, exploration: 0.08, memoryDecay: 0.002,
 };
@@ -46,7 +48,36 @@ function rememberSound(categories: VoiceCategory[], shape: SoundShape, threshold
 /** Pure transition. This function has no access to WorldState or another HumanState. */
 export type OutcomeBonus = (action: ActionKind, human: HumanState, peerDistance: number | null, peerId: string | null) => number;
 
-export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus?: OutcomeBonus): {
+/**
+ * Predicted-safety term (default since 0.2.0; candidate 0.2.0-experimental.1 before adoption).
+ * Uses the individual's own learned distance change per action toward the tracked peer, weighted by
+ * experience count, prediction variance, caution, and bodily slack. Uncalibrated engineering assumption;
+ * evidence: research/decisions/0003 (controlled task) and 0004 (normal world).
+ */
+export const PREDICTIVE_POLICY = { gain: 4, cap: .2, minimumSamples: 4, priorSamples: 8 };
+export const predictedSafety: OutcomeBonus = (action, human, peerDistance, peerId) => {
+  if (peerDistance === null || peerId === null) return 0;
+  const memory = human.peers[peerId];
+  const estimate = memory?.responses[action];
+  if (!estimate || estimate.samples < PREDICTIVE_POLICY.minimumSamples) return 0;
+  const confidence = estimate.samples / (estimate.samples + PREDICTIVE_POLICY.priorSamples) / (1 + estimate.variance);
+  const harm = memory.harmAlpha / (memory.harmAlpha + memory.harmBeta);
+  const risk = (distance: number) => clamp(clamp(1 - distance / 12) * harm + (distance < 1.5 ? .25 : 0));
+  const future = Math.max(0, peerDistance + clamp(estimate.mean, -2, 2));
+  const bodilyBudget = 1 - Math.max(human.body.hunger, human.body.fatigue, human.body.cold);
+  return clamp(PREDICTIVE_POLICY.gain * human.parameters.caution * confidence * bodilyBudget * (risk(peerDistance) - risk(future)), -PREDICTIVE_POLICY.cap, PREDICTIVE_POLICY.cap);
+};
+
+/** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
+export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
+  return decideWithBonus(previous, observation, random, outcomeBonus);
+}
+/** Previous default (human 0.1.0): no outcome term at all. Kept so recorded 0.1.0 runs and baselines stay reproducible. */
+export function decideLegacyHuman(previous: HumanState, observation: Observation, random: RandomSource) {
+  return decideWithBonus(previous, observation, random);
+}
+
+function decideWithBonus(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus?: OutcomeBonus): {
   human: HumanState; action: ActionIntent; trace: DecisionTrace;
 } {
   const human: HumanState = structuredClone(previous);

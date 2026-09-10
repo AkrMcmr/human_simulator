@@ -48,8 +48,12 @@ policy-v1は開発8・確認8シードで5条件達成、寄与無効版は旧�
 
 ## 2026-09-10: 通常worldでの候補比較（M1）とモデル選択
 
-simulation 0.2.0で人間モデルを名前で選択し、記録にモデルIDと版を残すようにしました。候補の記録を既定版として再生する、版を書き換える、0.1.0形式の記録を読む、未登録のモデルIDを使う、のいずれも拒否します。寄与無効の対照は既定版と同じworld・身体・行動を再現します。
+simulation 0.2.0で人間モデルを名前で選択し、記録にモデルIDと版を残すようにしました。候補の記録を既定版として再生する、版を書き換える、0.1.0形式の記録を読む、未登録のモデルIDを使う、のいずれも拒否します。寄与無効の対照は旧0.1.0と同じworld・身体・行動を再現します。
 
 world-v1（資源配置×初期距離×身体要求の8条件、600ステップ、二人とも同じモデル）で旧版・候補・寄与無効を比較しました。開発4001–4008と確認5001–5008の両群で、主要効果（共有配置の接触ステップ割合を0.01以上削減）と副作用7項目を達成、寄与無効は全64対で旧版と一致、core-v1に回帰なし。[結果・採否](../research/decisions/0004-normal-world-m1.md)、[再現コマンド](development/VALIDATION.md)を参照。閾値は旧版だけの測定から決め、候補の結果を見る前に固定しました。
 
 今回の検証: `npm run test:model` 26/26（モデル選択6件、world研究4件を追加）、`npm run test:evaluation` 6/6、`npm run test:evolution` 4/4（world-v1接続1件を追加）、`npm run typecheck`と`npm run lint`成功、`npm run build`と`node --test tests/*.test.mjs` 5/5成功。既定版のcore-v1保存測定値との一致も維持。改訂サイクル`predictive-normal-world-m1`を固定ソースからrun・replayし一致を確認。ブラウザ操作によるUI QAは未実施です。人間モデルの計算式は変更していません。
+
+## 2026-09-10: human 0.2.0への既定化
+
+所有者の承認で予測効用の候補を既定にし、human 0.2.0へ版を上げました。旧0.1.0は`decideLegacyHuman`（登録簿`human-0.1.0`）として残り、保存済みの0.1.0 core-v1基準を引き続き完全に再現します（テストで確認）。0.2.0のcore-v1基準を[再記録](../research/baselines/v0.2.0-core-v1.md)し、0.1.0基準との差は開発・確認とも全項目が許容幅内でした。今回の検証: `npm run test:model` 27/27、`npm run test:evaluation` 6/6、`npm run test:evolution` 4/4、型検査・lint・ビルド・画面テスト成功。既定が変わったため、改訂サイクル`predictive-retrospective`と`predictive-normal-world-m1`の`replay`はモデルハッシュ不一致で拒否されます。保存済みの結果と判断は証拠として残ります。

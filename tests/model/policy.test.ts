@@ -1,15 +1,29 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { createHuman } from "../../packages/human/src/index.ts";
-import { predictedSafety } from "../../packages/human/src/predictive-policy.ts";
+import { createHuman, decideHuman, decideLegacyHuman, predictedSafety, applyPhysicalEffect, HUMAN_VERSION, LEGACY_HUMAN_VERSION } from "../../packages/human/src/index.ts";
+import { decidePredictive } from "../../packages/human/src/predictive-policy.ts";
 import { runEvaluation } from "../../packages/evaluation/src/index.ts";
 import { trialRun, baselineModel, ablatedModel, candidateModel } from "../../research/studies/policy-v1.ts";
 
-test("default policy preserves all recorded core-v1 measurements", () => {
+test("the legacy 0.1.0 model still reproduces its recorded core-v1 measurements", () => {
   const saved = JSON.parse(readFileSync("research/baselines/v0.1.0-core-v1.json", "utf8"));
+  const legacy = { create: createHuman, decide: decideLegacyHuman, apply: applyPhysicalEffect };
   // JSON records normalize negative zero; compare in the same serialized domain.
+  assert.deepEqual(JSON.parse(JSON.stringify(runEvaluation({}, legacy).partitions)), saved.evaluation.partitions);
+  assert.equal(LEGACY_HUMAN_VERSION, "0.1.0");
+});
+
+test("the default 0.2.0 model reproduces its recorded core-v1 baseline and equals the former candidate", () => {
+  const saved = JSON.parse(readFileSync("research/baselines/v0.2.0-core-v1.json", "utf8"));
+  assert.equal(HUMAN_VERSION, "0.2.0");
+  assert.equal(saved.provenance.versions.human, HUMAN_VERSION);
   assert.deepEqual(JSON.parse(JSON.stringify(runEvaluation().partitions)), saved.evaluation.partitions);
+  const candidate = { create: createHuman, decide: decidePredictive, apply: applyPhysicalEffect };
+  assert.deepEqual(runEvaluation({}, candidate).partitions, runEvaluation().partitions);
+  const human = createHuman("A");
+  const observation = { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [] };
+  assert.deepEqual(decideHuman(human, observation, () => 0.5), decideHuman(human, observation, () => 0.5, predictedSafety));
 });
 
 test("prediction bonus uses learned local evidence and falls away under bodily urgency", () => {

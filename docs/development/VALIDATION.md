@@ -19,7 +19,7 @@
 ## 基準版との比較
 
 ```bash
-npm run evaluate -- --baseline research/baselines/v0.1.0-core-v1.json --out outputs/core-comparison.json --check
+npm run evaluate -- --baseline research/baselines/v0.2.0-core-v1.json --out outputs/core-comparison.json --check
 npm run study:policy -- --split development --out outputs/policy-development.json
 npm run study:policy -- --split validation --out outputs/policy-validation.json --check
 npm run study:world -- --split development --out outputs/world-development.json
