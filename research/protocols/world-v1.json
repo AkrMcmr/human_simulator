@@ -1,0 +1,38 @@
+{
+  "id": "normal-world-v1",
+  "version": "1.0.0",
+  "evidence": "engineering-comparison-in-abstract-two-person-world-not-human-validation",
+  "purpose": "M1: 通常worldで予測政策候補の効果と副作用を、旧版・候補・寄与無効の三版で同じ条件・シードから比較する",
+  "thresholdBasis": "旧版human-0.1.0だけを開発シード4001-4008の8条件で測り、指標の尺度を確認してから閾値を固定した。候補・寄与無効の結果は閾値固定前に観察していない",
+  "developmentSeeds": [4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008],
+  "validationSeeds": [5001, 5002, 5003, 5004, 5005, 5006, 5007, 5008],
+  "horizon": 600,
+  "models": {
+    "baseline": "human-0.1.0",
+    "candidate": "predictive-0.2.0-experimental.1",
+    "ablated": "predictive-ablated-0.2.0-experimental.1"
+  },
+  "factors": {
+    "resourceLayout": ["shared", "separate"],
+    "initialDistance": [6, 18],
+    "bodilyNeed": { "low": {}, "high": { "hunger": 0.55, "fatigue": 0.4, "cold": 0.35 } }
+  },
+  "closeDistance": 4,
+  "reliefActions": ["forage", "warm", "rest"],
+  "unit": "条件×シードの対になった差。primaryScope=sharedの項目は資源共有の4条件×8シード、allは8条件×8シード",
+  "primaryScope": "shared",
+  "primaryScopeReason": "候補の効用寄与は同じ相手への行動別遷移が4件以上で初めて非ゼロになる。資源が分かれた配置では二人の視認が1〜11%で寄与が生じにくいため、主要効果は資源共有の配置で判定し、分離配置は副作用の対照として全項目に含める",
+  "checks": [
+    { "id": "contact-harm", "role": "primary", "metric": "contactTicks", "direction": "baseline-minus-candidate", "scope": "shared", "minimum": 0.01, "label": "接触痛が起きるステップの割合を減らす", "unit": "fraction of ticks with a contact event" },
+    { "id": "risk-experienced", "role": "side-effect", "metric": "meanRisk", "direction": "baseline-minus-candidate", "scope": "all", "minimum": -0.01, "label": "知覚した危険度の平均を悪化させない", "unit": "mean perceived risk" },
+    { "id": "health-safety", "role": "side-effect", "metric": "minimumHealth", "direction": "candidate-minus-baseline", "scope": "all", "minimum": -0.01, "label": "最低健康を悪化させない", "unit": "minimum health" },
+    { "id": "need-burden", "role": "side-effect", "metric": "needBurden", "direction": "baseline-minus-candidate", "scope": "all", "minimum": -0.02, "label": "身体要求の累積負担を増やさない", "unit": "mean of max(hunger, fatigue, cold)" },
+    { "id": "relief-skill", "role": "side-effect", "metric": "reliefFraction", "direction": "candidate-minus-baseline", "scope": "all", "minimum": -0.03, "label": "摂食・保温・休息の生活技能の割合を減らさない", "unit": "fraction of decisions" },
+    { "id": "avoidance", "role": "side-effect", "metric": "withdrawFraction", "direction": "baseline-minus-candidate", "scope": "all", "minimum": -0.05, "label": "相手を見ているときの離隔を過剰に増やさない", "unit": "fraction of peer-visible decisions" },
+    { "id": "prediction-error", "role": "side-effect", "metric": "predictionMAE", "direction": "baseline-minus-candidate", "scope": "all", "minimum": -0.02, "label": "距離予測の誤差を悪化させない", "unit": "mean absolute prediction error" }
+  ],
+  "reported": ["closeFraction", "visibleFraction", "meanDistance", "approachFraction", "vocalizations", "foodIntake", "bonusActiveFraction", "bonusMagnitude", "actions"],
+  "ablation": "寄与無効版は全条件・全シードで旧版と同じ最終world・身体・行動系列・指標でなければならない",
+  "coreRegression": "core-v1の既存10項目で基準未達・許容幅を超える悪化がないことを副作用の条件に含める",
+  "notAClaim": "近接や発声の増減そのものを良し悪しとしない。人間データとの校正はなく、二人とも同じモデルで判断する条件だけを扱う"
+}
