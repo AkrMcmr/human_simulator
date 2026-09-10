@@ -8,10 +8,12 @@
 
 [参加ガイド](CONTRIBUTING.md) → [現在地](docs/STATUS.md) → [設計](docs/development/ARCHITECTURE.md) → [検証手順](docs/development/VALIDATION.md)。版と採用のルールは[こちら](docs/development/VERSIONING.md)、作業の引き継ぎは[テンプレート](docs/development/HANDOFF.md)を使います。
 
-距離予測を行動選択へつなぐ実験候補`0.2.0-experimental.1`を追加しました。制御課題の開発・確認評価は合格していますが、通常worldでの検証前なので既定版は0.1.0です。
+距離予測を行動選択へつなぐ実験候補`0.2.0-experimental.1`があります。制御課題と、通常worldの8条件比較（[判断0004](research/decisions/0004-normal-world-m1.md)）の両方で事前登録した基準を達成しましたが、既定化はレビュー後の版更新として行うため、既定版は0.1.0のままです。候補は`--model`で名指しして動かせます。
 
 ```bash
 npm run study:policy -- --split development --out outputs/policy-development.json
+npm run study:world -- --split development --out outputs/world-development.json
+npm run experiment -- --seed 42 --steps 600 --model predictive-0.2.0-experimental.1 --out outputs/candidate.json
 npm run test:policy
 ```
 
@@ -45,7 +47,7 @@ npm run compare -- --seed 42 --steps 400 --out outputs/comparison.json
 npm run experiment -- --resume outputs/encounter.json --out outputs/resumed.json
 ```
 
-`--distance 12`、`--curiosity-a 0.6`、`--curiosity-b 0.6`、`--layout shared|separate`、`--mute` で条件を変更できます。`--mute` は音の伝達だけを無効にし、発声そのものは残します。
+`--distance 12`、`--curiosity-a 0.6`、`--curiosity-b 0.6`、`--layout shared|separate`、`--mute`、`--model <登録済みID>` で条件を変更できます。`--mute` は音の伝達だけを無効にし、発声そのものは残します。`--model`の既定は`human-0.1.0`で、登録簿は`packages/simulation/src/models.ts`です。記録にはモデルIDと版が残り、別のモデルの記録として再生することはできません。
 
 UIの開発・ビルド:
 
@@ -56,7 +58,7 @@ npm run build
 node --test tests/rendered-html.test.mjs
 ```
 
-UIは最初は停止しています。「再生」で実行し、個体の知覚、効用値、身体状態、音の分類を観察します。スライダーで過去の記録を表示できます。条件変更は「この条件で新しい実験」を押すまで適用しません。画面内の履歴はページを閉じると失われるので、残したい実験はJSONを書き出してください。
+UIは最初は停止しています。「再生」で実行し、個体の知覚、効用値、身体状態、音の分類を観察します。「人間モデル」で既定・候補・寄与無効を切り替えられ、見出しの版表示は実行中のモデルに従います。スライダーで過去の記録を表示できます。条件変更は「この条件で新しい実験」を押すまで適用しません。画面内の履歴はページを閉じると失われるので、残したい実験はJSONを書き出してください。
 
 「条件比較」は二人の好奇心を0.15/0.55/0.90に変え、同じ8シードを各条件で実行します。表示は平均と標本標準偏差です。統計的有意性の主張は行いません。
 
@@ -69,6 +71,12 @@ npm run test:evaluation
 ```
 
 警戒・予測・身体対処の10項目を、開発8シードと確認8シードで評価し、JSONとMarkdownを出力します。`--check`で基準未達・旧版からの悪化を終了コードに反映できます。判定は工学的仮説の達成状況で、人間らしさの総合点ではありません。
+
+```bash
+npm run study:world -- --split validation --out outputs/world-validation.json --check
+```
+
+通常worldの8条件（資源配置×初期距離×身体要求）で旧版・候補・寄与無効を同じシードから比較し、接触痛・危険度・健康・身体要求・生活技能・離隔・予測誤差の差と条件別の表を出力します。
 
 仮説登録から採否の記録までの手順、対照条件と限界は [研究ループ](research/LOOP.md) を参照してください。
 
@@ -100,4 +108,4 @@ Sites用の設定を同梱しています。GitHubでソースを管理し、Sit
 
 ## 人間モデルのロジックを育てる
 
-個体内の学習に加え、開発者・LLMがモデル自体を改訂する[外側のループ](research/evolution/README.md)を備えています。`npm run evolve -- status`で候補の状態、`npm run evolve -- next`で次の課題を確認できます。
+個体内の学習に加え、開発者・LLMがモデル自体を改訂する[外側のループ](research/evolution/README.md)を備えています。`npm run evolve -- status`で候補の状態、`npm run evolve -- next`で次の課題を確認できます。評価器はcore-v1（基礎能力）とworld-v1（通常world）から選べます。

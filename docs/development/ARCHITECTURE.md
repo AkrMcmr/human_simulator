@@ -32,7 +32,9 @@ human/worldは入力を変更しない純粋な遷移として扱います。実
 
 既定の`decideHuman(human, observation, random)`はv0.1.0です。第4引数の`OutcomeBonus`は実験用の効用加算で、未指定なら従来の結果を維持します。本人の状態と知覚した相手の距離/追跡IDを使い、追加分を`terms.predictedSafety`に残します。
 
-`packages/human/src/predictive-policy.ts`の`decidePredictive`がこの拡張を使う実験候補です。これは通常のsimulation/UIへ自動接続されません。`research/studies/policy-v1.ts`は基準版・候補・寄与無効版を`ModelAdapter`で同じ課題へ接続します。
+`packages/human/src/predictive-policy.ts`の`decidePredictive`がこの拡張を使う実験候補です。`research/studies/policy-v1.ts`は基準版・候補・寄与無効版を`ModelAdapter`で同じ制御課題へ接続し、`research/studies/world-v1.ts`は同じ三版を通常worldの8条件へ接続します。
+
+通常のsimulation/UIで候補を動かすには、`packages/simulation/src/models.ts`の登録簿にある`id`を`ExperimentConfig.model`で名指しします。省略時は既定`human-0.1.0`です。`createSimulation`が`create`、`stepSimulation`が`decide`と`apply`を登録簿から取り、`SimulatorState.model`と記録の`manifest.model`・`manifest.versions.human`に選択を残します。`restoreRun`は設定・チェックポイント・manifestのモデルと版が一致しないと拒否し、候補の記録を既定版として再生しません。登録簿の既存エントリの挙動を黙って変えず、挙動が変わる実装には新しいidと版を与えます。`research/evolution/models.ts`は同じ実装を指す必要があり、`tests/model/selection.test.ts`で照合します。
 
 現在の`ModelAdapter`はv0.1の`HumanState`に型として依存しています。将来まったく違う状態表現へ移る場合はアダプターの契約も設計し直します。あらゆる認知理論へそのまま差し替えられる汎用規格だとは扱いません。
 

@@ -51,6 +51,7 @@ CLIの引数は`--`の後に渡します。既定の実験・評価・テスト�
 | 更新順、記録と再開 | `packages/simulation/src` |
 | 二人の初期条件や介入 | `packages/experiments/src` |
 | 共通の回帰評価 | `packages/evaluation/src` |
+| 登録済みモデルの一覧と既定の選択 | `packages/simulation/src/models.ts`（`research/evolution/models.ts`と一致させる） |
 | 個別の新しい研究課題 | `research/protocols` と `research/studies` |
 | 観察用の変換、画面 | `packages/observer/src` と `app` |
 
