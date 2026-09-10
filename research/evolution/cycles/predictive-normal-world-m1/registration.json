@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "spec": {
+    "id": "predictive-normal-world-m1",
+    "parentCycle": "predictive-retrospective",
+    "registration": "retrospective",
+    "study": "world-v1",
+    "hypothesis": "二人が内生的に判断する通常worldでも、距離予測を効用へ接続する候補は資源共有の配置で接触痛の起きるステップを旧版より減らし、健康・身体要求・生活技能・離隔・予測誤差を許容幅を超えて悪化させない",
+    "mechanism": "行動別の距離変化予測から危険度の低下を見積もり、経験数・分散・身体余裕で重み付けした効用を全候補行動へ加算する既存候補。モデルの計算は変更せず、通常worldの評価器world-v1を追加して判定する",
+    "falsifier": "共有配置で接触ステップ割合の減少が0.01未満、または副作用7項目・寄与無効の一致・core-v1の回帰のいずれかが未達",
+    "assumptions": [
+      "二人とも同じモデルで判断する条件だけを扱う",
+      "資源が分かれた配置は視認が少なく副作用の対照として扱う",
+      "閾値は旧版だけの開発シード測定から決め、候補の結果は閾値固定前に見ていない",
+      "この登録はstudy:world CLIで結果を確認した後の再評価なのでretrospective"
+    ],
+    "baseline": "human-0.1.0",
+    "candidate": "predictive-0.2.0-experimental.1",
+    "ablated": "predictive-ablated-0.2.0-experimental.1",
+    "primary": [
+      {
+        "check": "contact-harm",
+        "minimumGain": 0.01
+      }
+    ],
+    "nextStudy": "既定化のレビュー判断: 採用ならhuman 0.2.0として版を上げ、core-v1基準とUI/CLI既定を更新する。並行してM2の履歴介入protocolと、片方だけ候補の混在条件・生活技能低下の機構分析を登録する"
+  },
+  "specHash": "d14a2a6a02609e89644bcb56f9f7f6a285862f1311faa6b93a6643ff1f758cfe",
+  "registered": {
+    "commit": "03e19d6943667b394dbc19fca6a8aa8ea347ae32",
+    "tree": "28b8821ddd923ed53f3e9c33cac009f1679d674d",
+    "dirty": false,
+    "hash": "9984e872dc25dc6315fe03a5cf57487b2ff67ec9501b5161f4da2e0b9dd86d2f"
+  },
+  "evaluationHash": "212faa60347014d6c8a30c18359e958e360de5baf1a043a6c4f5c2dd89a674d6"
+}
