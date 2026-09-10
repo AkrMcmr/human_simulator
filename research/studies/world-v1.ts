@@ -63,10 +63,11 @@ export function runCondition(modelId: string, condition: Condition, seed: number
   const { state, frames } = runExperiment(config);
   return { metrics: measureWorld(frames), final: { world: state.world, bodies: state.humans.map(h => ({ id: h.id, body: h.body, lastAction: h.lastAction })), actions: frames.filter(f => f.tick > 0).map(f => f.agents.map(a => a.action).join(",")) } };
 }
-export function runPair(condition: Condition, seed: number): Run {
-  const baseline = runCondition(protocol.models.baseline, condition, seed);
-  const candidate = runCondition(protocol.models.candidate, condition, seed);
-  const ablated = runCondition(protocol.models.ablated, condition, seed);
+export type ModelIds = { baseline: string; candidate: string; ablated: string };
+export function runPair(condition: Condition, seed: number, models: ModelIds = protocol.models): Run {
+  const baseline = runCondition(models.baseline, condition, seed);
+  const candidate = runCondition(models.candidate, condition, seed);
+  const ablated = runCondition(models.ablated, condition, seed);
   const ablationExact = JSON.stringify(baseline) === JSON.stringify(ablated);
   return { condition: condition.id, seed, baseline: baseline.metrics, candidate: candidate.metrics, ablated: ablated.metrics, ablationExact };
 }
@@ -92,9 +93,10 @@ export function assessRuns(name: string, runs: Run[]) {
   });
   return { checks, ablationExact: runs.every(r => r.ablationExact), perCondition };
 }
-export function runWorldPartition(name: "development" | "validation") {
+export type WorldPartition = ReturnType<typeof runWorldPartition>;
+export function runWorldPartition(name: "development" | "validation", models: ModelIds = protocol.models) {
   const seeds = name === "development" ? protocol.developmentSeeds : protocol.validationSeeds;
   const runs: Run[] = [];
-  for (const condition of conditions()) for (const seed of seeds) runs.push(runPair(condition, seed));
-  return { name, seeds, conditions: conditions().map(c => c.id), runs, ...assessRuns(name, runs) };
+  for (const condition of conditions()) for (const seed of seeds) runs.push(runPair(condition, seed, models));
+  return { name, seeds, models: { ...models }, conditions: conditions().map(c => c.id), runs, ...assessRuns(name, runs) };
 }
