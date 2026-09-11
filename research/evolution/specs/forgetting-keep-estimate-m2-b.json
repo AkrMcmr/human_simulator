@@ -1,0 +1,28 @@
+{
+  "id": "forgetting-keep-estimate-m2-b",
+  "parentCycle": "forgetting-keep-estimate-m2",
+  "registration": "retrospective",
+  "study": "reversal-v1",
+  "regressionStudies": [
+    "world-v1"
+  ],
+  "hypothesis": "危害証拠の忘却を「推定は保ち、証拠の総量（確信）だけ事前分布の量へ戻す」則に変えると、接触のない期間に無害の記憶が事前分布へ戻って危険度が上がる性質（reversal-v1 gap-fading、旧版0.070）がほぼ消え、更新の遅れ・回復の能力、基礎能力、通常worldの副作用は許容幅内に保たれる",
+  "mechanism": "毎ステップの忘却で alpha/(alpha+beta) を固定したまま alpha+beta を 2+(alpha+beta-2)(1-memoryDecay) へ縮める。旧版は alpha-1, beta-1 を同じ率で縮めるため推定が0.5へ流れる。証拠総量の減り方は両則で同じ",
+  "falsifier": "gap-fadingの旧版−候補の差が両群で0.05未満、または更新の遅れ・回復のcapabilityが許容幅0.02を超えて低下、または寄与無効が旧版と一致しない、またはcore-v1/world-v1の副作用に未達か許容幅超えの悪化",
+  "assumptions": [
+    "忘却は確信の低下であり信念の反転ではないという工学的仮定。人間の記憶の実測に基づかない",
+    "予測効用の項と他の計算は0.2.0のまま",
+    "推定を保つと、接触のない相手への警戒も無害の記憶も両方とも薄れなくなる。危害履歴の固定化が強まる可能性は副作用として観察する（reversal-v1のproperty項目と通常worldの離隔・危険度で確認）",
+    "親サイクルforgetting-keep-estimate-m2は評価器の不備（寄与無効比較にモデルIDを含めた）でreviseとなった。仮説・閾値・モデルは同一で、候補の結果は親で観察済みのためretrospective"
+  ],
+  "baseline": "human-0.2.0",
+  "candidate": "forgetting-keep-estimate-0.3.0-experimental.1",
+  "ablated": "forgetting-keep-estimate-ablated-0.3.0-experimental.1",
+  "primary": [
+    {
+      "check": "gap-fading",
+      "minimumGain": 0.05
+    }
+  ],
+  "nextStudy": "採否のレビュー。採用なら忘却則の版更新（human 0.3.0）とcore-v1基準の再記録。未達なら忘却の量と向きを分けた別の則を検討。並行してM3の最小合図protocolを設計する"
+}

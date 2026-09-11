@@ -104,7 +104,8 @@ test("a reversal-v1 study gates capabilities, ablation equality, optional world-
   assert.throws(() => validateSpec({ ...spec, study: "world-v1", regressionStudies: ["world-v1"] }), /regressionStudies/);
   assert.throws(() => assess(revSpec, baseline, baseline, baseline), /requires matching evidence/);
   const part = (name: "development" | "validation", model: string) => { const results = [runReversalSeed(model, reversalProtocol.pilotSeeds[0])]; return { name, seeds: [reversalProtocol.pilotSeeds[0]], model, results, ...assessReversal(name + "/" + model, results) }; };
-  const triple = (name: "development" | "validation") => ({ baseline: part(name, "human-0.2.0"), candidate: part(name, "human-0.2.0"), ablated: part(name, "human-0.2.0") });
+  // The ablated control carries its own registry id but must still count as an exact reproduction of the parent.
+  const triple = (name: "development" | "validation") => ({ baseline: part(name, "human-0.2.0"), candidate: part(name, "human-0.2.0"), ablated: part(name, "forgetting-keep-estimate-ablated-0.3.0-experimental.1") });
   const reversal = { development: triple("development"), validation: triple("validation") };
   const condition = conditions().find(c => c.id === "shared/d6/low")!;
   const same = { baseline: "human-0.2.0", candidate: "human-0.2.0", ablated: "human-0.2.0" };
