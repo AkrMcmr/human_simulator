@@ -84,6 +84,13 @@ npm run study:history -- --split development --out outputs/history-development.j
 
 危害あり/なしの経験履歴と記憶の保持・消去・入れ替え、危害後の強制近接と自由行動（食料共有/分離）を実験者が操作し、既定モデルの危険度と行動評価の変化を測ります（[判断0005](research/decisions/0005-experience-history-m2.md)）。
 
+```bash
+npm run study:reversal -- --split development --out outputs/reversal-development.json
+npm run study:reversal -- --split development --model forgetting-keep-estimate-0.3.0-experimental.1 --baseline-model human-0.2.0
+```
+
+相手の反応が途中で変わる（無害→危害、危害→無害）ときの更新の遅れと、接触のない期間の忘却を測ります。`--model`と`--baseline-model`で候補と旧版の対比較ができます（[判断0006](research/decisions/0006-reaction-reversal.md)、[判断0007](research/decisions/0007-keep-estimate-forgetting.md)）。
+
 仮説登録から採否の記録までの手順、対照条件と限界は [研究ループ](research/LOOP.md) を参照してください。
 
 ## 進化させる手順
@@ -114,6 +121,6 @@ Sites用の設定を同梱しています。GitHubでソースを管理し、Sit
 
 ## 人間モデルのロジックを育てる
 
-個体内の学習に加え、開発者・LLMがモデル自体を改訂する[外側のループ](research/evolution/README.md)を備えています。`npm run evolve -- status`で候補の状態、`npm run evolve -- next`で次の課題を確認できます。評価器はcore-v1（基礎能力）とworld-v1（通常world）から選べます。
+個体内の学習に加え、開発者・LLMがモデル自体を改訂する[外側のループ](research/evolution/README.md)を備えています。`npm run evolve -- status`で候補の状態、`npm run evolve -- next`で次の課題を確認できます。評価器はcore-v1（基礎能力）、world-v1（通常world）、reversal-v1（反応の途中変化と忘却）から選べます。
 
 観察タブの「経験から判断へ」で、個体と相手を選び、危害推定・行動別予測・効用・結果の履歴を確認できます。詳細は[観察の情報境界](docs/development/ARCHITECTURE.md)を参照。

@@ -1,4 +1,4 @@
-# 現在地（2026-09-10）
+# 現在地（2026-09-11）
 
 ## 動いているもの
 
@@ -38,11 +38,19 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 
 これらは工学的な機構の確認で、人間の信頼・恐怖・愛着の再現ではありません。パイロットシード6101–6104と開発・確認シードは観察済みです。
 
+観察画面の「経験から判断へ」（Codexが追加）で、個体と相手を選び、危害推定、行動別の距離予測・分散・経験数、効用内訳、次の知覚、接触痛・摂食量を時系列で追えます。observer専用のスナップショットで、人間の判断には戻しません。
+
+## M2続き: 反応の途中変化と忘却則の候補
+
+`npm run study:reversal`（protocol `reversal-v1`、[判断0006](../research/decisions/0006-reaction-reversal.md)）で、無害→危害・危害→無害の切り替えと、接触のない期間の忘却を既定0.2.0で測りました。開発8001–8008・確認9001–9008で5項目達成。無害履歴60の後は履歴なしより危害への更新が約0.18〜0.28遅れ、履歴240ではさらに約0.09遅れる。危害履歴の後の回復は履歴が長いと遅い。接触のない480ステップで無害の記憶の危険度は0.015→0.085に上がる（事前分布へ戻る忘却）。
+
+この最後の性質を改善目標に、忘却則の候補**0.3.0-experimental.1**「推定を保ち、確信（証拠の総量）だけ薄れる」を`decideWithOptions`の`forgetting: "keep-estimate"`として実装し、改訂サイクル`forgetting-keep-estimate-m2`（prospective）→`forgetting-keep-estimate-m2-b`（評価器修正後の再評価、retrospective）で旧版と比較しました（[判断0007](../research/decisions/0007-keep-estimate-forgetting.md)）。gap-fadingは0.070→0.000、更新の遅れ・回復は差0.003以内、core-v1とworld-v1に悪化なし、寄与無効は一致。`retain-candidate`で保持し、**既定化はレビュー待ち**です。推定を保つ忘却では、危害の記憶も新しい無害の接触なしには薄れません。
+
 ## 次の作業
 
-1. M2の観察表示を実装済み。「経験から判断へ」で個体と相手を選び、危害推定、行動別の距離予測・分散・経験数、効用内訳、次の知覚、接触痛・摂食量を追跡できる。時点のボタンと既存スライダーで過去を確認する。
-2. 相手の反応が途中で変わる条件（危害→無害、無害→危害）のprotocolと、忘却が事前分布へ戻る仮定の見直し。見直す場合は候補として`prospective`登録し、core-v1・world-v1・history-v1で回帰を確認する。
-3. M3の最小合図protocolの設計。M1の通常world評価とM2の履歴操作を土台にする。機構分析（共有配置で摂食・保温が減る経路、混在条件）は並行課題。
+1. 忘却則候補0.3.0-experimental.1の既定化レビュー。採用なら`decideHuman`の既定を`keep-estimate`にしてhuman 0.3.0へ版を上げ、旧0.2.0を登録簿に残し、core-v1基準を再記録し、history-v1・reversal-v1を新既定で再測定する。
+2. M3の最小合図protocolの設計。「声を手掛かりに相手との距離を調整する」課題を、音あり/伝達なし/対応シャッフル/関連学習なしの対照で事前登録する。M1の通常world評価、M2の履歴操作と観察表示を土台にする。
+3. 並行課題: 自由行動で相手が実際に反応を変える条件、機構分析（共有配置で摂食・保温が減る経路、片方だけ別モデルの混在条件）。
 
 性欲・生殖、発音能力と音素の発達、他者認知の精緻化は別の未決課題です。暗黙に初期設定へ追加しません。
 
@@ -55,6 +63,8 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 [モデル改訂CLI](../research/evolution/README.md)で、登録→実装固定→旧版/候補/寄与無効の比較→採否→次課題を記録します。`npm run evolve -- next`で続きの課題を確認できます。評価器は`study`で選べ、core-v1（基礎能力）に加えてworld-v1（通常world）に接続しました。world-v1のサイクルでもcore-v1の回帰は常に確認します。
 
 初回サイクル`predictive-retrospective`（core-v1、回帰確認のみ）に続き、子サイクル`predictive-normal-world-m1`（world-v1、主要基準contact-harm ≥ 0.01）を登録・固定・比較・判断しました。両群で改善ゲートを達成し`retain-candidate`。結果を先にstudy:world CLIで見た後の再評価なので登録種別はretrospectiveです。[結果](../research/evolution/cycles/predictive-normal-world-m1/result.json)と[判断](../research/evolution/cycles/predictive-normal-world-m1/decision.json)を保存しています。
+
+評価器にreversal-v1を追加し、specの`regressionStudies`でworld-v1を副作用専用の回帰評価として併走できるようにしました。`forgetting-keep-estimate-m2`は初の`prospective`サイクルで、評価器の不備（寄与無効比較にモデルIDを含めた）により`revise`、修正後の子`forgetting-keep-estimate-m2-b`で`retain-candidate`です。失敗も系譜に残しています。評価器を変えるたびに旧サイクルの`replay`は拒否されますが、結果と判断は残ります。
 
 ## 今回の引き継ぎと反映先
 

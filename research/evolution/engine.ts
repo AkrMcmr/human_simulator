@@ -106,7 +106,7 @@ export function assess(spec: Spec, baseline: Report, candidate: Report, ablated:
   const reversalComparison = reversalTriples.map(t => ({ partition: t.candidate.name, rows: compareReversal(t.baseline, t.candidate) }));
   const reversalRegressions = reversalComparison.flatMap(x => x.rows.filter(r => r.status === "regressed").map(r => ({ partition: x.partition, id: r.id })));
   // Compare measurements only: the registry id of the control necessarily differs from the parent's id.
-  const measurements = (part: ReversalPartition) => JSON.stringify(part.results.map(({ model: _model, ...rest }) => rest));
+  const measurements = (part: ReversalPartition) => JSON.stringify(part.results.map(r => ({ seed: r.seed, trajectories: r.trajectories, gaps: r.gaps })));
   const reversalAblationExact = reversalTriples.every(t => measurements(t.ablated) === measurements(t.baseline));
   const failures = [...coreFailures, ...worldFailures, ...reversalFailures];
   const ablationExact = coreAblationExact && worldAblationExact && reversalAblationExact;

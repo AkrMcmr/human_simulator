@@ -35,11 +35,11 @@
 
 ## 今回動く範囲と、今後拡張する部分
 
-評価器はspecの`study`で選びます。省略か`core-v1`は**基礎能力10項目**、`world-v1`は**通常worldの8条件比較**（[protocol](../protocols/world-v1.json)、[研究コード](../studies/world-v1.ts)）です。`primary`にその評価器のチェックIDと正の`minimumGain`を指定すると、開発・確認の両群で改善幅も判定します。空配列なら副作用確認だけで、`improvementGate`は必ずfalseです。world-v1のサイクルでもcore-v1の回帰と寄与無効の一致を常に確認します。core-v1のシードは既知なので、名前がvalidationでも新しい未使用確認には数えません。world-v1のシードも`predictive-normal-world-m1`で観察済みです。
+評価器はspecの`study`で選びます。省略か`core-v1`は**基礎能力10項目**、`world-v1`は**通常worldの8条件比較**（[protocol](../protocols/world-v1.json)、[研究コード](../studies/world-v1.ts)）、`reversal-v1`は**反応の途中変化と忘却の対比較**（[protocol](../protocols/reversal-v1.json)、[研究コード](../studies/reversal-v1.ts)。`capability`項目の許容幅超えの低下を悪化、`preferred`の向きの差を改善幅とする）です。`regressionStudies: ["world-v1"]`を付けると、通常worldの副作用7項目と寄与無効の一致を回帰として併走させます（主要効果の項目はゲートにしません）。`primary`にその評価器のチェックIDと正の`minimumGain`を指定すると、開発・確認の両群で改善幅も判定します。空配列なら副作用確認だけで、`improvementGate`は必ずfalseです。どのサイクルでもcore-v1の回帰と寄与無効の一致を常に確認します。core-v1・world-v1・reversal-v1のシードは既知なので、名前がvalidationでも新しい未使用確認には数えません。
 
 評価器ハッシュには評価コード、契約、world、experiments、simulationの実行器と乱数、両protocol、engine、CLI、依存ロックを含めます。モデルハッシュにはhumanのソースと二つの登録簿（`packages/simulation/src/models.ts`、`research/evolution/models.ts`）を含めます。
 
-最初のサイクル`predictive-retrospective`は既存予測政策の**事後的な移行・動作確認**です。過去のpolicy-v1研究を事前登録し直したものではありません。主要改善基準を空にして、基礎能力を維持することだけを確認します。二つ目の`predictive-normal-world-m1`はworld-v1を主要基準にした子サイクルで、`study:world` CLIで結果を確認した後に登録したためretrospectiveです。この結果をもとに候補は既定human 0.2.0になりました（既定化はこのCLIの外で、[判断0004](../decisions/0004-normal-world-m1.md)に記録）。以後の新しい仮説は`human-0.2.0`を旧版としてprospectiveで登録し、結果を見る前にコミットしてください。
+最初のサイクル`predictive-retrospective`は既存予測政策の**事後的な移行・動作確認**です。過去のpolicy-v1研究を事前登録し直したものではありません。主要改善基準を空にして、基礎能力を維持することだけを確認します。二つ目の`predictive-normal-world-m1`はworld-v1を主要基準にした子サイクルで、`study:world` CLIで結果を確認した後に登録したためretrospectiveです。この結果をもとに候補は既定human 0.2.0になりました（既定化はこのCLIの外で、[判断0004](../decisions/0004-normal-world-m1.md)に記録）。三つ目の`forgetting-keep-estimate-m2`は初の**prospective**サイクル（忘却則の候補、主要基準reversal-v1のgap-fading、回帰にworld-v1）です。主要基準は達成しましたが、評価器が寄与無効の比較にモデルIDの文字列を含めていたため回帰ゲートが落ち、`revise`で閉じました。評価器を修正し、仮説・閾値・モデルを変えずに子`forgetting-keep-estimate-m2-b`（retrospective）で再評価して`retain-candidate`です（[判断0007](../decisions/0007-keep-estimate-forgetting.md)）。評価器の不備も系譜に残す例です。以後の新しい仮説は`human-0.2.0`（既定化後はその新版）を旧版としてprospectiveで登録し、結果を見る前にコミットしてください。
 
 新しい能力の実験を自動発明したり、論文を自動収集したり、コードを無人で書き換えるエージェント/定期ジョブはこのCLIに含めません。開発者や任意のLLMが外側の作業者です。状態形式は現行`ModelAdapter`に依存しており、別形式の記憶へ移る際はアダプターの更新が必要です。
 

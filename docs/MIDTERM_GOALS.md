@@ -35,7 +35,9 @@
 
 成果物: 履歴介入実験と、観察画面で経験→予測→判断→結果をたどれる表示。M1の比較・記録基盤を利用する。
 
-進捗（2026-09-10）: [`history-v1`](../research/protocols/history-v1.json)、`npm run study:history`、[結果](../research/results/history-v1-validation.md)、[判断0005](../research/decisions/0005-experience-history-m2.md)で、履歴（危害/無害）×記憶介入（保持/消去/入れ替え）と、危害後の更新（強制近接/自由行動の食料共有・分離）の二つの現象を事前登録し、開発・確認シードで確認した。反例（身体要求は予測効用の項だけを弱める、忘却は事前分布へ戻る）も記録。観察画面の時系列表示も追加済み（危害推定、行動別予測、効用、接触痛・摂食、次の知覚）。相手の反応の途中変化は未実施。
+進捗（2026-09-10）: [`history-v1`](../research/protocols/history-v1.json)、`npm run study:history`、[結果](../research/results/history-v1-validation.md)、[判断0005](../research/decisions/0005-experience-history-m2.md)で、履歴（危害/無害）×記憶介入（保持/消去/入れ替え）と、危害後の更新（強制近接/自由行動の食料共有・分離）の二つの現象を事前登録し、開発・確認シードで確認した。反例（身体要求は予測効用の項だけを弱める、忘却は事前分布へ戻る）も記録。
+
+進捗（2026-09-11）: 観察画面の「経験から判断へ」で経験→予測→判断→結果を追跡可能に。相手の反応の途中変化は[`reversal-v1`](../research/protocols/reversal-v1.json)（[判断0006](../research/decisions/0006-reaction-reversal.md)）で更新の遅れ・回復・忘却を確認。忘却則の候補（[判断0007](../research/decisions/0007-keep-estimate-forgetting.md)）が改善ゲートを達成し候補保持。M2の成果物は揃い、既定化レビューを残してM3へ進める。観察画面の時系列表示も追加済み（危害推定、行動別予測、効用、接触痛・摂食、次の知覚）。相手の反応の途中変化は未実施。
 
 ## M3: 最小限の合図の成立条件を検証する
 

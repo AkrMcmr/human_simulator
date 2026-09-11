@@ -30,7 +30,7 @@ human/worldは入力を変更しない純粋な遷移として扱います。実
 
 ## 候補モデルの入口
 
-既定の`decideHuman(human, observation, random)`はv0.2.0で、第4引数`OutcomeBonus`の既定値が`predictedSafety`です。本人の状態と知覚した相手の距離/追跡IDだけを使い、追加分を`terms.predictedSafety`に残します。`() => 0`を渡すと寄与無効の対照、`decideLegacyHuman`が項のない旧0.1.0です。
+既定の`decideHuman(human, observation, random)`はv0.2.0で、第4引数`OutcomeBonus`の既定値が`predictedSafety`です。本人の状態と知覚した相手の距離/追跡IDだけを使い、追加分を`terms.predictedSafety`に残します。`() => 0`を渡すと寄与無効の対照、`decideLegacyHuman`が項のない旧0.1.0です。実験用の`decideWithOptions(human, observation, random, { outcomeBonus, forgetting })`で忘却則（`toward-prior`が既定、`keep-estimate`が候補）も選べます。候補の入口は`packages/human/src/forgetting-policy.ts`です。
 
 `packages/human/src/predictive-policy.ts`の`decidePredictive`は候補時代の入口で、0.2.0と同じ計算です。`research/studies/policy-v1.ts`は基準版・候補・寄与無効版を`ModelAdapter`で同じ制御課題へ接続し、`research/studies/world-v1.ts`は同じ三版を通常worldの8条件へ接続します。
 
