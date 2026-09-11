@@ -53,7 +53,7 @@ CLIの引数は`--`の後に渡します。既定の実験・評価・テスト�
 | 共通の回帰評価 | `packages/evaluation/src` |
 | 登録済みモデルの一覧と既定の選択 | `packages/simulation/src/models.ts`（`research/evolution/models.ts`と一致させる） |
 | 個別の新しい研究課題 | `research/protocols` と `research/studies` |
-| 観察用の変換、画面 | `packages/observer/src` と `app` |
+| 観察用の変換、見どころ・要約文、画面 | `packages/observer/src`（`story.ts`）と `app` |
 
 ## 共同作業と引き継ぎ
 

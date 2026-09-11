@@ -4,6 +4,18 @@
 
 **既定モデルhuman 0.2.0は未校正の探索モデルです。高精度な人間の再現や、言語の創発を達成したものではありません。** 実行時のLLM・外部API・ネットワークは、人間モデルに含まれません。
 
+## まず結果を楽しむ
+
+[ここまでにわかったこと](docs/FINDINGS.md)に、実験で確かめた5つの発見を平易にまとめています。一回の出会いを物語風に読むには次を実行します。
+
+```bash
+npm run narrate -- --seed 42 --steps 400
+npm run narrate -- --seed 7 --layout separate --mute
+npm run narrate -- --in outputs/encounter.json
+```
+
+観察画面（`npm run dev`）の「この記録を読む」でも、再生中の記録から同じ要約と見どころ（初めて相手を見た、痛みを受けた、警戒が形になった、ほどけた、声が届いた、予測を使い始めた、など）を表示し、時点を押してその場面へ戻れます。近さや発声の多さを良し悪しとは扱わず、合図や信頼の成立とは判定しません。
+
 ## 開発者・LLMの入口
 
 [参加ガイド](CONTRIBUTING.md) → [現在地](docs/STATUS.md) → [設計](docs/development/ARCHITECTURE.md) → [検証手順](docs/development/VALIDATION.md)。版と採用のルールは[こちら](docs/development/VERSIONING.md)、作業の引き継ぎは[テンプレート](docs/development/HANDOFF.md)を使います。

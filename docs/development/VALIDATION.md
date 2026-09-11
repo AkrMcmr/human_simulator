@@ -61,4 +61,4 @@ specの`study`で評価器を選びます。省略か`core-v1`なら基礎能力
 
 初回の検証: `npm run test:evolution` 3/3、型チェック成功。実際の予測候補でregister→seal→run→decideを完走し、`replay`で再現を確認。2026-09-10: `predictive-normal-world-m1`（world-v1）を固定ソースからrun・decide・replayし一致を確認、`npm run test:evolution` 4/4。
 
-観察用の変換を変更したときは`node --experimental-strip-types --test tests/observer/*.test.ts`で、入力の不変性と時点の整合を確認します。UI変更時の型チェックとビルドも実施します。
+観察用の変換を変更したときは`npm run test:observer`（履歴3件、物語要約4件）で、入力の不変性と時点の整合、見どころの検出条件を確認します。`npm run narrate`の文面を変えた場合もこのテストを実行します。UI変更時の型チェックとビルドも実施します。
