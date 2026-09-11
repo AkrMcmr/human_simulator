@@ -1,0 +1,13 @@
+{
+  "outcome": "retain-candidate",
+  "reason": "reversal-v1のgap-fadingで旧版0.070→候補0.000（差0.070 ≥ 0.05）を開発・確認とも達成。更新の遅れ・回復のcapabilityは差0.003以内、core-v1は全項目許容幅内（最大+0.002）、world-v1の副作用7項目は達成、寄与無効は旧版と一致。親サイクルは評価器の不備でreviseとなり、本サイクルは仮説・閾値を変えずに再評価したretrospective。既定化はレビュー後の版更新（human 0.3.0）として別に判断するため候補として保持する。",
+  "resultHash": "a2f00a78f7a778ef5cc9343a7a14d889019b9529dca95554afb2770f5a5c9d5e",
+  "specHash": "a02f21ee1ee6bd02b1590bf79b9fa7708b5c711d2668c633b64a4da7c9973787",
+  "source": {
+    "commit": "cf7b36d2e453ef0168e24b18a318cebcb0bb84b9",
+    "tree": "da6af830cf5f4b54d36d0f12a2a9afff983979f3",
+    "dirty": false,
+    "hash": "9352e8d4b101fd6fe9c29df0f19734ef3790b76824a0f935c90da324ab954b9a"
+  },
+  "defaultChanged": false
+}
