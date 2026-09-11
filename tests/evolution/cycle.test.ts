@@ -7,6 +7,7 @@ import { execFileSync } from "node:child_process";
 import { register, seal, run, decide, status, assess, validateSpec, type Spec } from "../../research/evolution/engine.ts";
 import type { Report } from "../../packages/evaluation/src/index.ts";
 import { conditions, runPair, assessRuns, protocol as worldProtocol } from "../../research/studies/world-v1.ts";
+import { runSeed as runReversalSeed, assessSeeds as assessReversal, protocol as reversalProtocol } from "../../research/studies/reversal-v1.ts";
 const spec: Spec = JSON.parse(readFileSync("research/evolution/specs/predictive-retrospective.json", "utf8"));
 function fixture() {
   const root = mkdtempSync(resolve(tmpdir(), "evolution-"));
@@ -92,4 +93,34 @@ test("a world-v1 study validates its own check ids, requires world evidence, and
   assert.ok(failed.failures.includes("world/validation/contact-harm"));
   assert.ok(failed.next.some(x => x.includes("normal world")));
   assert.throws(() => assess(spec, baseline, baseline, baseline, world), /requires matching evidence/);
+});
+
+test("a reversal-v1 study gates capabilities, ablation equality, optional world-v1 side effects, and primary gains from paired comparison", () => {
+  const baseline: Report = JSON.parse(readFileSync("research/baselines/v0.2.0-core-v1.json", "utf8"));
+  const revSpec: Spec = { ...spec, id: "reversal-cycle", study: "reversal-v1", regressionStudies: ["world-v1"], baseline: "human-0.2.0", candidate: "forgetting-keep-estimate-0.3.0-experimental.1", ablated: "forgetting-keep-estimate-ablated-0.3.0-experimental.1", primary: [{ check: "gap-fading", minimumGain: .05 }] };
+  validateSpec(revSpec);
+  assert.throws(() => validateSpec({ ...revSpec, primary: [{ check: "contact-harm", minimumGain: .01 }] }), /reversal-v1/);
+  assert.throws(() => validateSpec({ ...revSpec, regressionStudies: ["world-v1", "world-v1"] }), /regressionStudies/);
+  assert.throws(() => validateSpec({ ...spec, study: "world-v1", regressionStudies: ["world-v1"] }), /regressionStudies/);
+  assert.throws(() => assess(revSpec, baseline, baseline, baseline), /requires matching evidence/);
+  const part = (name: "development" | "validation", model: string) => { const results = [runReversalSeed(model, reversalProtocol.pilotSeeds[0])]; return { name, seeds: [reversalProtocol.pilotSeeds[0]], model, results, ...assessReversal(name + "/" + model, results) }; };
+  const triple = (name: "development" | "validation") => ({ baseline: part(name, "human-0.2.0"), candidate: part(name, "human-0.2.0"), ablated: part(name, "human-0.2.0") });
+  const reversal = { development: triple("development"), validation: triple("validation") };
+  const condition = conditions().find(c => c.id === "shared/d6/low")!;
+  const same = { baseline: "human-0.2.0", candidate: "human-0.2.0", ablated: "human-0.2.0" };
+  const wpart = (name: "development" | "validation", seed: number) => { const runs = [runPair(condition, seed, same)]; return { name, seeds: [seed], models: same, conditions: [condition.id], runs, ...assessRuns(name, runs) }; };
+  const world = { development: wpart("development", worldProtocol.developmentSeeds[0]), validation: wpart("validation", worldProtocol.validationSeeds[0]) };
+  assert.ok(world.development.checks.some(c => c.role === "primary" && c.status === "fail"), "identical models cannot improve the world primary check");
+  const result = assess(revSpec, baseline, baseline, baseline, world, reversal);
+  assert.equal(result.study, "reversal-v1");
+  assert.equal(result.reversalAblationExact, true);
+  assert.equal(result.regressionGate, true, "identical models cannot fail regression gates");
+  assert.equal(result.improvementGate, false, "identical models cannot show a gain");
+  assert.ok(result.primary.every(p => p.gain === 0 && !p.passed));
+  const sideFail = structuredClone(world); sideFail.development.checks.find(c => c.role === "side-effect")!.status = "fail";
+  assert.equal(assess(revSpec, baseline, baseline, baseline, sideFail, reversal).regressionGate, false);
+  const broken = structuredClone(reversal); broken.validation.ablated.results[0].gaps[0].probe.risk += 1;
+  assert.equal(assess(revSpec, baseline, baseline, baseline, world, broken).reversalAblationExact, false);
+  const worse = structuredClone(reversal); const idx = reversalProtocol.checks.findIndex(c => c.role === "capability"); worse.development.candidate.checks[idx].values = worse.development.candidate.checks[idx].values.map(v => v - 1); worse.development.candidate.checks[idx].summary.mean -= 1;
+  assert.ok(assess(revSpec, baseline, baseline, baseline, world, worse).reversalRegressions.length > 0);
 });
