@@ -1,0 +1,28 @@
+{
+  "id": "reaction-reversal-v1",
+  "version": "1.0.0",
+  "evidence": "engineering-phenomena-in-controlled-exposure-not-human-validation",
+  "purpose": "M2続き: 相手の反応が途中で変わる（無害→危害、危害→無害）ときの危険度更新の遅れと、接触のない期間に記憶が事前分布へ戻る忘却の性質を、既定モデルで測る。候補の忘却則を比較する評価器としても使う",
+  "model": "human-0.2.0",
+  "pilotSeeds": [8101, 8102, 8103, 8104],
+  "pilotUse": "尺度確認のみ。閾値固定後にゲート判定へ使わない",
+  "developmentSeeds": [8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008],
+  "validationSeeds": [9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008],
+  "exposure": { "distance": 2, "painProbability": 0.5, "painMagnitude": 0.03, "body": { "hunger": 0.1, "fatigue": 0.1, "cold": 0.1 } },
+  "historyLengths": [0, 60, 240],
+  "reversedSteps": 30,
+  "probeAt": [0, 10, 20, 30],
+  "gap": { "afterSafeSteps": 60, "farDistance": 8, "lengths": [0, 120, 480] },
+  "probe": { "distance": 2, "body": { "hunger": 0.1, "fatigue": 0.1, "cold": 0.1, "health": 1 } },
+  "unit": "シードごとの値または差。roleがcapabilityの項目はどのモデルにも要求し、旧版比較で許容幅を超える低下を悪化とする。propertyは現行モデルの性質の記述で、候補比較ではpreferredの向きに変わることを仮説として扱う",
+  "checks": [
+    { "id": "lag-safe-to-harm", "role": "capability", "preferred": "none", "label": "無害履歴（60）の後は、履歴なしより危害への危険度更新が遅れる", "minimum": 0.05, "regressionTolerance": 0.02, "unit": "risk after 30 harm steps, no history minus 60-step safe history" },
+    { "id": "lag-grows-with-history", "role": "property", "preferred": "none", "label": "無害履歴が長い（240）とさらに遅れる", "minimum": 0.02, "regressionTolerance": 0.02, "unit": "risk after 30 harm steps, 60-step minus 240-step safe history" },
+    { "id": "recovery-after-harm", "role": "capability", "preferred": "none", "label": "危害履歴（60）の後に無害が続くと危険度が下がる", "minimum": 0.10, "regressionTolerance": 0.02, "unit": "risk at switch minus after 30 safe steps" },
+    { "id": "recovery-slows-with-history", "role": "property", "preferred": "none", "label": "危害履歴が長い（240）と回復が遅れる", "minimum": 0.02, "regressionTolerance": 0.02, "unit": "risk after 30 safe steps, 240-step minus 60-step harm history" },
+    { "id": "gap-fading", "role": "property", "preferred": "lower", "label": "接触のない期間（相手は8uで可視）に無害の記憶が事前分布へ戻り危険度が上がる", "minimum": 0.02, "regressionTolerance": 0.02, "unit": "probe risk after a 480-step far gap minus no gap, following 60 safe steps" }
+  ],
+  "reported": ["risk trajectories at probeAt for every history length and direction", "harm estimate and evidence count", "gap trajectory for every gap length"],
+  "notAClaim": "更新の遅れや忘却は工学的な計算規則の性質で、人間の信頼や許しの再現ではない。相手が動かないため予測効用は0で、0.1.0と0.2.0は同じ値になる",
+  "thresholdBasis": "パイロットシード8101-8104でhuman-0.2.0の尺度を確認してから固定する"
+}

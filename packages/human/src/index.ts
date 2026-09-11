@@ -68,18 +68,29 @@ export const predictedSafety: OutcomeBonus = (action, human, peerDistance, peerI
   return clamp(PREDICTIVE_POLICY.gain * human.parameters.caution * confidence * bodilyBudget * (risk(peerDistance) - risk(future)), -PREDICTIVE_POLICY.cap, PREDICTIVE_POLICY.cap);
 };
 
+/**
+ * Forgetting of harm evidence per step (rate = memoryDecay).
+ * - toward-prior (0.1.0/0.2.0): alpha-1 and beta-1 shrink, so the estimate drifts toward the Beta(1,1) prior of 0.5.
+ * - keep-estimate (candidate): the evidence total shrinks by the same factor but the estimate alpha/(alpha+beta) is kept,
+ *   so confidence fades without the belief drifting. Uncalibrated engineering assumption.
+ */
+export type Forgetting = "toward-prior" | "keep-estimate";
+export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting };
+
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
-  return decideWithBonus(previous, observation, random, outcomeBonus);
+  return decideWithOptions(previous, observation, random, { outcomeBonus });
 }
 /** Previous default (human 0.1.0): no outcome term at all. Kept so recorded 0.1.0 runs and baselines stay reproducible. */
 export function decideLegacyHuman(previous: HumanState, observation: Observation, random: RandomSource) {
-  return decideWithBonus(previous, observation, random);
+  return decideWithOptions(previous, observation, random, {});
 }
 
-function decideWithBonus(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus?: OutcomeBonus): {
+export function decideWithOptions(previous: HumanState, observation: Observation, random: RandomSource, options: DecideOptions): {
   human: HumanState; action: ActionIntent; trace: DecisionTrace;
 } {
+  const outcomeBonus = options.outcomeBonus;
+  const forgetting: Forgetting = options.forgetting ?? "toward-prior";
   const human: HumanState = structuredClone(previous);
   const p = human.parameters;
   const animals = [...observation.animals]
@@ -91,8 +102,16 @@ function decideWithBonus(previous: HumanState, observation: Observation, random:
   let predictionError: number | null = null;
 
   for (const m of Object.values(human.peers)) {
-    m.harmAlpha = 1 + (m.harmAlpha - 1) * (1 - p.memoryDecay);
-    m.harmBeta = 1 + (m.harmBeta - 1) * (1 - p.memoryDecay);
+    if (forgetting === "toward-prior") {
+      m.harmAlpha = 1 + (m.harmAlpha - 1) * (1 - p.memoryDecay);
+      m.harmBeta = 1 + (m.harmBeta - 1) * (1 - p.memoryDecay);
+    } else {
+      const total = m.harmAlpha + m.harmBeta;
+      const estimate = m.harmAlpha / total;
+      const shrunk = 2 + (total - 2) * (1 - p.memoryDecay);
+      m.harmAlpha = estimate * shrunk;
+      m.harmBeta = (1 - estimate) * shrunk;
+    }
   }
   for (const visible of animals) {
     const m = human.peers[visible.trackId] ?? {

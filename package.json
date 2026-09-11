@@ -22,9 +22,11 @@
     "study:policy": "node --experimental-strip-types cli/study-policy.ts",
     "study:world": "node --experimental-strip-types cli/study-world.ts",
     "study:history": "node --experimental-strip-types cli/study-history.ts",
+    "study:reversal": "node --experimental-strip-types cli/study-reversal.ts",
     "test:policy": "node --experimental-strip-types --test tests/model/policy.test.ts",
     "evolve": "node --experimental-strip-types cli/evolve.ts",
-    "test:evolution": "node --experimental-strip-types --test tests/evolution/*.test.ts"
+    "test:evolution": "node --experimental-strip-types --test tests/evolution/*.test.ts",
+    "test:observer": "node --experimental-strip-types --test tests/observer/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
