@@ -1,0 +1,8 @@
+{
+  "cycle": "forgetting-keep-estimate-m2",
+  "resultHash": "643947ede0d584241ba8aa34fd9fbe01c87d18088f9c4005a4c1ba144dc46e55",
+  "tasks": [
+    "Explain why disabling the new mechanism does not recover the parent model in the reversal study",
+    "採否のレビュー。採用なら忘却則の版更新（human 0.3.0）とcore-v1基準の再記録。未達なら忘却の量と向きを分けた別の則を検討。並行してM3の最小合図protocolを設計する"
+  ]
+}
