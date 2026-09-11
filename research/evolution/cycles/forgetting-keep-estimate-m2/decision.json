@@ -1,0 +1,13 @@
+{
+  "outcome": "revise",
+  "reason": "主要基準gap-fadingは両群で達成（差0.070 ≥ 0.05）、capability・core-v1・world-v1に悪化なし。ただし評価器がreversal-v1の寄与無効比較にモデルIDの文字列を含めていたため、同じ計算結果でも不一致と判定された。モデルの問題ではなく評価器の不備なので、IDを除いて比較する修正を入れた子サイクルで再評価する。候補の結果は観察済みのため子サイクルはretrospectiveとして登録する。",
+  "resultHash": "643947ede0d584241ba8aa34fd9fbe01c87d18088f9c4005a4c1ba144dc46e55",
+  "specHash": "8f64e8be21a63c40ecbec2cb98e9563bc22327ac42c87088f4fcb8e1a1aeb274",
+  "source": {
+    "commit": "f1780aec4fafb541aa0a08d69489dd62859bec10",
+    "tree": "43512916bf90e362c5844450d25e17a994e37add",
+    "dirty": false,
+    "hash": "9352e8d4b101fd6fe9c29df0f19734ef3790b76824a0f935c90da324ab954b9a"
+  },
+  "defaultChanged": false
+}
