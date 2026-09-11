@@ -1,0 +1,7 @@
+{
+  "cycle": "forgetting-keep-estimate-m2-b",
+  "resultHash": "a2f00a78f7a778ef5cc9343a7a14d889019b9529dca95554afb2770f5a5c9d5e",
+  "tasks": [
+    "採否のレビュー。採用なら忘却則の版更新（human 0.3.0）とcore-v1基準の再記録。未達なら忘却の量と向きを分けた別の則を検討。並行してM3の最小合図protocolを設計する"
+  ]
+}
