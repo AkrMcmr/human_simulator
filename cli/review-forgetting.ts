@@ -1,0 +1,24 @@
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { runHistoryPartition, protocol } from "../research/studies/history-v1.ts";
+const root=resolve(import.meta.dirname,"..");
+const args=process.argv.slice(2);
+if(args.length!==2||args[0]!=="--out"||!args[1].endsWith(".json"))throw Error("Usage: review-forgetting --out NEW.json");
+const target=resolve(args[1]);if(existsSync(target))throw Error("Refusing to overwrite evidence");
+const git=(...argv:string[])=>execFileSync("git",argv,{cwd:root,encoding:"utf8"}).trim();
+const sourceFiles=git("ls-files","packages","research/studies/history-v1.ts","research/protocols/history-v1.json","research/protocols/core-v1.json","cli/review-forgetting.ts","package-lock.json").split("\n").sort();
+const hash=createHash("sha256");for(const path of sourceFiles)hash.update(path+"\0"+readFileSync(resolve(root,path),"utf8")+"\0");
+const provenance={commit:git("rev-parse","HEAD"),dirty:git("status","--porcelain")!=="",sourceHash:hash.digest("hex"),sourceFiles,runtime:process.version};
+const models={baseline:"human-0.2.0",candidate:"forgetting-keep-estimate-0.3.0-experimental.1"};
+const partitions=(["development","validation"] as const).map(split=>{
+ const baseline=runHistoryPartition(split,models.baseline),candidate=runHistoryPartition(split,models.candidate);
+ const comparison=candidate.checks.map((c,i)=>({id:c.id,baseline:baseline.checks[i].summary.mean,candidate:c.summary.mean,delta:c.summary.mean-baseline.checks[i].summary.mean,status:c.status}));
+ return {split,baseline,candidate,comparison};
+});
+const failures=partitions.flatMap(p=>p.comparison.filter(c=>c.status==="fail").map(c=>p.split+"/"+c.id));
+const report={format:"human-world-lab/forgetting-history-review",schemaVersion:1,protocol,provenance,models,seedUse:"known history-v1 seeds; regression recheck, not fresh validation",partitions,failures,decision:"evidence-for-review-not-default-promotion"};
+mkdirSync(dirname(target),{recursive:true});writeFileSync(target,JSON.stringify(report,null,2)+"\n",{flag:"wx"});
+console.log(JSON.stringify({output:target,failures,comparison:partitions.map(p=>({split:p.split,checks:p.comparison}))},null,2));
+if(failures.length)process.exitCode=1;

@@ -1,0 +1,177 @@
+{
+  "format": "human-world-lab/signal-readiness-summary",
+  "schemaVersion": 1,
+  "protocol": {
+    "id": "signal-readiness-v1",
+    "version": "1.0.0",
+    "model": "human-0.2.0",
+    "developmentSeeds": [
+      10001,
+      10002,
+      10003,
+      10004,
+      10005,
+      10006,
+      10007,
+      10008
+    ],
+    "validationSeeds": [
+      11001,
+      11002,
+      11003,
+      11004,
+      11005,
+      11006,
+      11007,
+      11008
+    ],
+    "trials": 64,
+    "distance": 6,
+    "delta": 1,
+    "loudness": 0.8,
+    "shapeA": {
+      "openness": 0.2,
+      "resonance": 0.2
+    },
+    "shapeB": {
+      "openness": 0.8,
+      "resonance": 0.8
+    },
+    "novelShape": {
+      "openness": 0.2,
+      "resonance": 0.8
+    },
+    "shapeJitter": 0.02,
+    "body": {
+      "hunger": 0.1,
+      "fatigue": 0.1,
+      "cold": 0.1,
+      "health": 1
+    },
+    "conditions": [
+      "paired",
+      "muted",
+      "shuffled",
+      "sound-memory-off"
+    ],
+    "diagnostics": [
+      {
+        "id": "categories",
+        "minimum": 2,
+        "meaning": "pairedで二つの音を分類できる"
+      },
+      {
+        "id": "attention",
+        "minimum": 0.1,
+        "meaning": "新奇音は既知音より観察効用を高める"
+      },
+      {
+        "id": "association",
+        "minimum": 0.05,
+        "meaning": "pairedの音による離隔対接近の評価差がshuffledを上回る"
+      }
+    ],
+    "evidence": "engineering-readiness-only-not-emergent-communication",
+    "notes": "音は実験者が提示。語義・正解・報酬を渡さない。sound-memory-offは音分類の記憶だけを消す対照で、未実装の関連学習を無効化したものではない。診断associationは現行モデルで未達を予想。送信者による合図の獲得は別の段階。"
+  },
+  "provenance": {
+    "commit": "1ee07688c1eef11d0cbcf15cd22591ab078a9a8d",
+    "tree": "074666eff1ddfd774f66960b77af21fe697eddd0",
+    "dirty": false,
+    "sourceHash": "06f98acc6eff4026c80ebb4264a7dedf97a1c26477edf9524449e05eb1a824de",
+    "sourceFiles": [
+      "cli/study-signal.ts",
+      "package-lock.json",
+      "packages/contracts/package.json",
+      "packages/contracts/src/index.ts",
+      "packages/evaluation/package.json",
+      "packages/evaluation/src/index.ts",
+      "packages/experiments/package.json",
+      "packages/experiments/src/index.ts",
+      "packages/human/package.json",
+      "packages/human/src/forgetting-policy.ts",
+      "packages/human/src/index.ts",
+      "packages/human/src/predictive-policy.ts",
+      "packages/observer/package.json",
+      "packages/observer/src/index.ts",
+      "packages/observer/src/story.ts",
+      "packages/simulation/package.json",
+      "packages/simulation/src/index.ts",
+      "packages/simulation/src/models.ts",
+      "packages/simulation/src/random.ts",
+      "packages/world/package.json",
+      "packages/world/src/index.ts",
+      "research/protocols/core-v1.json",
+      "research/protocols/signal-readiness-v1.json",
+      "research/studies/signal-readiness-v1.ts"
+    ],
+    "runtime": "v24.19.0"
+  },
+  "result": {
+    "split": "validation",
+    "seeds": [
+      11001,
+      11002,
+      11003,
+      11004,
+      11005,
+      11006,
+      11007,
+      11008
+    ],
+    "checks": [
+      {
+        "id": "categories",
+        "minimum": 2,
+        "meaning": "pairedで二つの音を分類できる",
+        "summary": {
+          "n": 8,
+          "mean": 2,
+          "sd": 0,
+          "interval95": [
+            2,
+            2
+          ]
+        },
+        "status": "pass"
+      },
+      {
+        "id": "attention",
+        "minimum": 0.1,
+        "meaning": "新奇音は既知音より観察効用を高める",
+        "summary": {
+          "n": 8,
+          "mean": 0.2312582563324046,
+          "sd": 0,
+          "interval95": [
+            0.2312582563324046,
+            0.2312582563324046
+          ]
+        },
+        "status": "pass"
+      },
+      {
+        "id": "association",
+        "minimum": 0.05,
+        "meaning": "pairedの音による離隔対接近の評価差がshuffledを上回る",
+        "summary": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        },
+        "status": "fail"
+      }
+    ],
+    "receiverAssociationReady": false,
+    "communicationEstablished": false
+  },
+  "archive": {
+    "kind": "curated-aggregate-only",
+    "fullOutputSha256": "8fd610f73c5ce57078b57ee7c5eefbffcd7ac6a6fdefdabc9c857b9672b50708",
+    "omitted": "Per-subject histories, phase checkpoints, probe score vectors, and individual samples. Regenerate full output using the documented CLI; full output stays outside Git."
+  }
+}

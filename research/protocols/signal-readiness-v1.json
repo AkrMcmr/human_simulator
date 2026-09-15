@@ -1,0 +1,24 @@
+{
+  "id": "signal-readiness-v1",
+  "version": "1.0.0",
+  "model": "human-0.2.0",
+  "developmentSeeds": [10001,10002,10003,10004,10005,10006,10007,10008],
+  "validationSeeds": [11001,11002,11003,11004,11005,11006,11007,11008],
+  "trials": 64,
+  "distance": 6,
+  "delta": 1,
+  "loudness": 0.8,
+  "shapeA": {"openness":0.2,"resonance":0.2},
+  "shapeB": {"openness":0.8,"resonance":0.8},
+  "novelShape": {"openness":0.2,"resonance":0.8},
+  "shapeJitter": 0.02,
+  "body": {"hunger":0.1,"fatigue":0.1,"cold":0.1,"health":1},
+  "conditions": ["paired","muted","shuffled","sound-memory-off"],
+  "diagnostics": [
+    {"id":"categories","minimum":2,"meaning":"pairedで二つの音を分類できる"},
+    {"id":"attention","minimum":0.1,"meaning":"新奇音は既知音より観察効用を高める"},
+    {"id":"association","minimum":0.05,"meaning":"pairedの音による離隔対接近の評価差がshuffledを上回る"}
+  ],
+  "evidence": "engineering-readiness-only-not-emergent-communication",
+  "notes": "音は実験者が提示。語義・正解・報酬を渡さない。sound-memory-offは音分類の記憶だけを消す対照で、未実装の関連学習を無効化したものではない。診断associationは現行モデルで未達を予想。送信者による合図の獲得は別の段階。"
+}

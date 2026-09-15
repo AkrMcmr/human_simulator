@@ -27,7 +27,8 @@
     "test:policy": "node --experimental-strip-types --test tests/model/policy.test.ts",
     "evolve": "node --experimental-strip-types cli/evolve.ts",
     "test:evolution": "node --experimental-strip-types --test tests/evolution/*.test.ts",
-    "test:observer": "node --experimental-strip-types --test tests/observer/*.test.ts"
+    "test:observer": "node --experimental-strip-types --test tests/observer/*.test.ts",
+    "study:signal": "node --experimental-strip-types cli/study-signal.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
