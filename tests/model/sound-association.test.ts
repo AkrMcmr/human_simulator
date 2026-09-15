@@ -1,0 +1,47 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createHuman, decideHuman } from '../../packages/human/src/index.ts';
+import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from '../../packages/human/src/sound-association.ts';
+import { associationInput } from '../../research/studies/sound-association-v1.ts';
+import { keyedRandom } from '../../packages/simulation/src/random.ts';
+import { runExperiment, archiveRun, restoreRun } from '../../packages/simulation/src/index.ts';
+import { pairExperiment, DEFAULT_SETTINGS } from '../../packages/experiments/src/index.ts';
+const shape={openness:.2,resonance:.8};
+const random=keyedRandom(42,'test/sound',0);
+test('feedback uses only next-tick visibility; no update at cue, gap, lost peer, or learningRate zero',()=>{
+ const original=createHuman('A');const before=structuredClone(original);
+ const cue=decideSoundAssociation(original,associationInput(0,6,shape),random);
+ assert.deepEqual(original,before); assert.equal(cue.human.soundAssociations,undefined);
+ const feedback=decideSoundAssociation(cue.human,associationInput(1,5,null),random).human;
+ assert.equal(feedback.soundAssociations!.B[1].samples,1);assert.ok(feedback.soundAssociations!.B[1].mean<0);
+ assert.equal(decideSoundAssociation(cue.human,associationInput(2,5,null),random).human.soundAssociations,undefined);
+ const unseen=associationInput(1,5,null);unseen.animals=[];
+ assert.equal(decideSoundAssociation(cue.human,unseen,random).human.soundAssociations,undefined);
+ const frozen=structuredClone(cue.human);frozen.parameters.learningRate=0;
+ assert.equal(decideSoundAssociation(frozen,associationInput(1,5,null),random).human.soundAssociations,undefined);
+ const unknown=associationInput(0,6,shape);unknown.sounds[0].visibleSourceId=null;
+ assert.equal(decideSoundAssociation(original,unknown,random).human.soundPending,null);
+});
+test('classification, attention, policy, and association controls separate mechanisms',()=>{
+ let h=createHuman('A');h.heardSounds=[{id:1,shape,samples:32}];
+ h.soundAssociations={B:{1:{mean:-1,variance:0,samples:32}}};
+ const o=associationInput(0,6,shape);
+ const full=decideSoundAssociation(h,o,random);
+ const term=(d:typeof full,a:string,k:string)=>d.trace.scores.find(s=>s.action===a)!.terms[k];
+ assert.ok(term(full,'withdraw','signalPrediction')>0);
+ assert.ok(term(full,'approach','signalPrediction')<0);
+ assert.equal(term(decideSoundPolicyOff(h,o,random),'withdraw','signalPrediction'),0);
+ assert.equal(term(decideClassificationOff(h,o,random),'withdraw','signalPrediction'),0);
+ assert.equal(term(decideAttentionOff(h,o,random),'observe','auditoryOrienting'),0);
+ assert.equal(term(decideAttentionOff(h,o,random),'withdraw','signalPrediction'),term(full,'withdraw','signalPrediction'));
+ assert.deepEqual(decideAssociationOff(h,o,random),decideHuman(h,o,random));
+ assert.deepEqual(full,decideSoundAssociation(h,o,random));
+ const novel=associationInput(0,6,{openness:.8,resonance:.2});
+ assert.equal(term(decideSoundAssociation(h,novel,random),'withdraw','signalPrediction'),0);
+});
+test('candidate checkpoints preserve association memory and deterministic replay',()=>{
+ const config=pairExperiment({...structuredClone(DEFAULT_SETTINGS),horizon:80});config.model='sound-association-0.4.0-experimental.1';
+ const run=runExperiment(config);
+ const archive=archiveRun(config,run.state,run.frames,{sourceCommit:'test',sourceHash:'test',dependencyLockHash:'test',runtime:process.version,dirty:false});
+ assert.deepEqual(restoreRun(JSON.parse(JSON.stringify(archive))).state,run.state);
+});

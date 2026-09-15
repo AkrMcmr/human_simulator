@@ -1,0 +1,14 @@
+{
+  "id": "sound-association-v1", "version": "1.0.0",
+  "baseline": "human-0.2.0", "candidate": "sound-association-0.4.0-experimental.1",
+  "developmentSeeds": [12001,12002,12003,12004,12005,12006,12007,12008],
+  "validationSeeds": [13001,13002,13003,13004,13005,13006,13007,13008],
+  "trials": 64, "distance": 6, "delta": 1, "loudness": 0.8,
+  "developmentShapes": [{"openness":0.15,"resonance":0.7},{"openness":0.85,"resonance":0.3}],
+  "validationShapes": [{"openness":0.3,"resonance":0.15},{"openness":0.7,"resonance":0.85}],
+  "jitter": 0.02,
+  "body": {"hunger":0.1,"fatigue":0.1,"cold":0.1,"health":1},
+  "minimumAssociation": 0.05, "minimumReversedAssociation": 0.05,
+  "controlTolerance": 1e-12,
+  "evidence": "controlled-receiver-association-not-language-or-human-validation"
+}
