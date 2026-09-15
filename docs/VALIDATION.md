@@ -72,3 +72,7 @@ history-v1（履歴60ステップ、記憶介入3種、強制近接96ステッ�
 ## 2026-09-11: 反応の途中変化、忘却則の候補、観察表示
 
 Codexの`codex/m2-observation-history`（観察専用スナップショットと「経験から判断へ」表示、observerテスト3件）を取り込みました。reversal-v1で既定0.2.0の更新の遅れ・回復・忘却を開発8001–8008・確認9001–9008で確認（5項目達成、[判断0006](../research/decisions/0006-reaction-reversal.md)）。忘却則の候補0.3.0-experimental.1を改訂サイクルで旧版と比較し、gap-fading 0.070→0.000、capability・core-v1・world-v1に悪化なし、寄与無効一致（[判断0007](../research/decisions/0007-keep-estimate-forgetting.md)）。親サイクルは評価器の不備でrevise、修正後の子サイクルでretain-candidate。今回の検証: `npm run test:model` 38/38、`npm run test:evaluation` 6/6、`npm run test:evolution` 5/5、`npm run test:observer` 3/3、型検査・lint・ビルド・画面テスト成功。人間モデルの既定の計算は変更していません。
+
+## 2026-09-15: M3準備診断と忘却レビュー
+
+新規診断のテスト2/2、型チェック成功。development/validationの双方でstudy:signal --checkは関連利用の未達を正しく終了1と測定値で報告。忘却候補は既知history-v1の両群7項目達成、同時に測った旧版のチェックは保存済み結果と完全一致。今回は人間モデルとUIの変更を含まないため、UIビルドは実施していない。

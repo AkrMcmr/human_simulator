@@ -136,3 +136,7 @@ Sites用の設定を同梱しています。GitHubでソースを管理し、Sit
 個体内の学習に加え、開発者・LLMがモデル自体を改訂する[外側のループ](research/evolution/README.md)を備えています。`npm run evolve -- status`で候補の状態、`npm run evolve -- next`で次の課題を確認できます。評価器はcore-v1（基礎能力）、world-v1（通常world）、reversal-v1（反応の途中変化と忘却）から選べます。
 
 観察タブの「経験から判断へ」で、個体と相手を選び、危害推定・行動別予測・効用・結果の履歴を確認できます。詳細は[観察の情報境界](docs/development/ARCHITECTURE.md)を参照。
+
+## M3の準備診断
+
+`npm run study:signal -- --split development --out outputs/signal-new.json --check`で、音分類・注意・音と距離変化の関連利用を分けて評価します。現在のモデルは関連利用が未達なので、`--check`は結果を保存して終了1を返します。既存出力は上書きしません。[実験と結果](research/decisions/0008-signal-readiness-m3.md)。忘却候補の追加レビューは[こちら](research/decisions/0009-forgetting-adoption-review.md)。

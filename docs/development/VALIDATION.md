@@ -62,3 +62,7 @@ specの`study`で評価器を選びます。省略か`core-v1`なら基礎能力
 初回の検証: `npm run test:evolution` 3/3、型チェック成功。実際の予測候補でregister→seal→run→decideを完走し、`replay`で再現を確認。2026-09-10: `predictive-normal-world-m1`（world-v1）を固定ソースからrun・decide・replayし一致を確認、`npm run test:evolution` 4/4。
 
 観察用の変換を変更したときは`npm run test:observer`（履歴3件、物語要約4件）で、入力の不変性と時点の整合、見どころの検出条件を確認します。`npm run narrate`の文面を変えた場合もこのテストを実行します。UI変更時の型チェックとビルドも実施します。
+
+### Signal readiness / forgetting review archive
+
+`research/results/signal-readiness-v1-*.json`と`forgetting-history-review.json`は、CLIの詳細出力から作った集計専用の`*-summary`形式です。protocol・実行時のprovenance・各群の集計・判定を保持し、個体別履歴、途中チェックポイント、probeのスコア列、個別測定値は含めません。`archive.fullOutputSha256`は集計前の出力のSHA-256です。CLIは引き続き詳細出力を`outputs/`へ生成します。詳細出力をそのままGitに追加しないでください。
