@@ -54,8 +54,8 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 
 ## 次の作業
 
-1. M3: 音を条件にした局所遷移の記憶と、その予測を行動選択に使う候補を事前登録する。音の分類・注意・関連学習を別に無効化できるようにする。
-2. 未使用シードと音特徴、対応の逆転条件で受信側を検証し、その後に発し手の音選択と自由な二者相互作用を実装する。今回の診断シードは観察済み。
+1. M3: 音条件付き予測を自由worldで検証する新protocolを登録する。自己運動との交絡・身体要求への副作用・途切れる音の影響を比較する。
+2. 受信側の検証を踏まえ、発し手の音選択の学習と自由な二者相互作用を実装する。sound-association-v1の開発12001–12008・確認13001–13008は観察済み。
 3. 忘却則は代替候補として維持。用途上の要件または実測に基づく比較で既定化を判断する。自由行動中の反応変化・混在モデルは継続課題。
 
 性欲・生殖、発音能力と音素の発達、他者認知の精緻化は別の未決課題です。暗黙に初期設定へ追加しません。
@@ -81,3 +81,9 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 Claudeの作業ブランチ`claude/repository-model-evolution-m5s86u`の`c2fc1af`まで（M1、0.2.0採用、M2実験）を確認し、その履歴を親に`codex/m2-observation-history`で観察表示を追加しました。mainへの統合と公開画面の更新は別です。今回の作業では公開していません。UIは通常の実験/再生記録を扱い、history-v1の集計JSONをシミュレーション記録として読み込む機能は含みません。
 
 2026-09-15: Claudeのccabe254まで（忘却候補、反転学習、物語要約、研究ダイジェスト）を取り込み、`codex/m3-signal-readiness`で続きを実装。今回は研究CLIと資料のみ。UI・公開画面・既定モデルの変更はありません。新しいsignal-readiness評価は独立CLIで、evolveのstudy選択への接続はまだありません。
+
+## M3追加: 音条件付き予測の候補を実装
+
+`sound-association-0.4.0-experimental.1`が、音分類ごとの次の距離変化を記憶し、接近/離隔の評価へ利用します。関連学習・分類・注意・予測利用の4対照も登録。既定は0.2.0。制御課題の開発・確認各8検査を達成し、対応逆転に追従。core-v1各10項目も達成し許容幅超の悪化なし。[結果](../research/results/sound-association-v1-review.md) / [判断0010](../research/decisions/0010-sound-association.md)。
+
+基点はPR #2統合後のClaudeブランチa898d6e、作業ブランチ`codex/m3-sound-association`。型チェック、modelテスト43件、関連課題とcore回帰を実行。`npm run study:association`で単一モデル、`node --experimental-strip-types cli/review-association.ts --out outputs/NEW.json`で比較を再現。studyのevolve専用評価器への接続、自由worldの効果検証、送信者学習は未実装。登録モデルは通常の実験CLIからも選択可能。公開Siteは更新していません。

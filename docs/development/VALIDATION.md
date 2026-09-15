@@ -66,3 +66,12 @@ specの`study`で評価器を選びます。省略か`core-v1`なら基礎能力
 ### Signal readiness / forgetting review archive
 
 `research/results/signal-readiness-v1-*.json`と`forgetting-history-review.json`は、CLIの詳細出力から作った集計専用の`*-summary`形式です。protocol・実行時のprovenance・各群の集計・判定を保持し、個体別履歴、途中チェックポイント、probeのスコア列、個別測定値は含めません。`archive.fullOutputSha256`は集計前の出力のSHA-256です。CLIは引き続き詳細出力を`outputs/`へ生成します。詳細出力をそのままGitに追加しないでください。
+
+### 音と距離変化の関連候補
+
+```bash
+npm run study:association -- --model sound-association-0.4.0-experimental.1 --split development --out outputs/association-new.json --check
+node --experimental-strip-types cli/review-association.ts --out outputs/association-review-new.json
+```
+
+単一モデルCLIは対応利用・逆転・無音の3基準を`--check`で判定。既定モデルは対応未達のため終了1。比較CLIは6モデル×2群の制御課題とcore-v1の既定/候補比較を実行し、失敗時は終了1。両CLIとも集計専用JSON（個体履歴なし）を新規パスへ保存し、既存結果の上書きを拒否します。比較CLIの結果は`research/results/sound-association-v1-review.json`。確認群は観察済み、再実行は新規確認ではありません。

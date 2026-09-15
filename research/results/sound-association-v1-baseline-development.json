@@ -1,0 +1,162 @@
+{
+  "format": "human-world-lab/sound-association-summary",
+  "schemaVersion": 1,
+  "protocol": {
+    "id": "sound-association-v1",
+    "version": "1.0.0",
+    "baseline": "human-0.2.0",
+    "candidate": "sound-association-0.4.0-experimental.1",
+    "developmentSeeds": [
+      12001,
+      12002,
+      12003,
+      12004,
+      12005,
+      12006,
+      12007,
+      12008
+    ],
+    "validationSeeds": [
+      13001,
+      13002,
+      13003,
+      13004,
+      13005,
+      13006,
+      13007,
+      13008
+    ],
+    "trials": 64,
+    "distance": 6,
+    "delta": 1,
+    "loudness": 0.8,
+    "developmentShapes": [
+      {
+        "openness": 0.15,
+        "resonance": 0.7
+      },
+      {
+        "openness": 0.85,
+        "resonance": 0.3
+      }
+    ],
+    "validationShapes": [
+      {
+        "openness": 0.3,
+        "resonance": 0.15
+      },
+      {
+        "openness": 0.7,
+        "resonance": 0.85
+      }
+    ],
+    "jitter": 0.02,
+    "body": {
+      "hunger": 0.1,
+      "fatigue": 0.1,
+      "cold": 0.1,
+      "health": 1
+    },
+    "minimumAssociation": 0.05,
+    "minimumReversedAssociation": 0.05,
+    "controlTolerance": 1e-12,
+    "evidence": "controlled-receiver-association-not-language-or-human-validation"
+  },
+  "provenance": {
+    "commit": "13dea26cbc84da52e7a7b286ce76e7e796dcd42c",
+    "tree": "723a2ea5c902c12c5ca0bd9e59d31f55656ad177",
+    "dirty": false,
+    "sourceHash": "f28cd1385a308cac7812d3509adef9bc92118535074d3b0d7c6e65fab60f3a54",
+    "sourceFiles": [
+      "cli/study-association.ts",
+      "package-lock.json",
+      "packages/contracts/package.json",
+      "packages/contracts/src/index.ts",
+      "packages/evaluation/package.json",
+      "packages/evaluation/src/index.ts",
+      "packages/experiments/package.json",
+      "packages/experiments/src/index.ts",
+      "packages/human/package.json",
+      "packages/human/src/forgetting-policy.ts",
+      "packages/human/src/index.ts",
+      "packages/human/src/predictive-policy.ts",
+      "packages/observer/package.json",
+      "packages/observer/src/index.ts",
+      "packages/observer/src/story.ts",
+      "packages/simulation/package.json",
+      "packages/simulation/src/index.ts",
+      "packages/simulation/src/models.ts",
+      "packages/simulation/src/random.ts",
+      "packages/world/package.json",
+      "packages/world/src/index.ts",
+      "research/protocols/core-v1.json",
+      "research/protocols/sound-association-v1.json",
+      "research/studies/sound-association-v1.ts"
+    ],
+    "runtime": "v24.19.0"
+  },
+  "result": {
+    "split": "development",
+    "model": "human-0.2.0",
+    "seeds": [
+      12001,
+      12002,
+      12003,
+      12004,
+      12005,
+      12006,
+      12007,
+      12008
+    ],
+    "checks": [
+      {
+        "id": "association",
+        "summary": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "id": "reversal",
+        "summary": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "id": "muted",
+        "summary": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "id": "paired",
+        "summary": {
+          "n": 8,
+          "mean": 0,
+          "sd": 0,
+          "interval95": [
+            0,
+            0
+          ]
+        }
+      }
+    ]
+  }
+}

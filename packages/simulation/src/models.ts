@@ -1,3 +1,4 @@
+import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff, SOUND_ASSOCIATION_VERSION } from "../../human/src/sound-association.ts";
 import type { Observation, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect, createHuman, decideHuman, decideLegacyHuman, HUMAN_VERSION, LEGACY_HUMAN_VERSION } from "../../human/src/index.ts";
 import { decidePredictive, PREDICTIVE_POLICY_VERSION } from "../../human/src/predictive-policy.ts";
@@ -23,6 +24,11 @@ export const HUMAN_MODELS: Readonly<Record<string, HumanModel>> = Object.freeze(
   "predictive-ablated-0.2.0-experimental.1": { id: "predictive-ablated-0.2.0-experimental.1", version: PREDICTIVE_POLICY_VERSION + "+ablated", role: "control", label: "対照 予測効用の寄与無効", create: createHuman, decide: (h, o, r) => decideHuman(h, o, r, () => 0), apply: applyPhysicalEffect },
   "forgetting-keep-estimate-0.3.0-experimental.1": { id: "forgetting-keep-estimate-0.3.0-experimental.1", version: KEEP_ESTIMATE_FORGETTING_VERSION, role: "candidate", label: "候補 忘却は確信だけ薄れる 0.3.0-experimental.1", create: createHuman, decide: decideKeepEstimate, apply: applyPhysicalEffect },
   "forgetting-keep-estimate-ablated-0.3.0-experimental.1": { id: "forgetting-keep-estimate-ablated-0.3.0-experimental.1", version: KEEP_ESTIMATE_FORGETTING_VERSION + "+ablated", role: "control", label: "対照 忘却則を旧版に戻した候補（0.2.0と同じ計算）", create: createHuman, decide: decideKeepEstimateAblated, apply: applyPhysicalEffect },
+  "sound-association-0.4.0-experimental.1": { id: "sound-association-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION, role: "candidate", label: "音条件付き距離予測", create: createHuman, decide: decideSoundAssociation, apply: applyPhysicalEffect },
+  "sound-association-off-0.4.0-experimental.1": { id: "sound-association-off-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION + "+sound-association-off", role: "control", label: "音の関連学習なし", create: createHuman, decide: decideAssociationOff, apply: applyPhysicalEffect },
+  "sound-classification-off-0.4.0-experimental.1": { id: "sound-classification-off-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION + "+sound-classification-off", role: "control", label: "音の分類なし", create: createHuman, decide: decideClassificationOff, apply: applyPhysicalEffect },
+  "sound-attention-off-0.4.0-experimental.1": { id: "sound-attention-off-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION + "+sound-attention-off", role: "control", label: "音への注意なし", create: createHuman, decide: decideAttentionOff, apply: applyPhysicalEffect },
+  "sound-policy-off-0.4.0-experimental.1": { id: "sound-policy-off-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION + "+sound-policy-off", role: "control", label: "音予測の効用寄与なし", create: createHuman, decide: decideSoundPolicyOff, apply: applyPhysicalEffect },
 });
 export const MODEL_IDS = Object.freeze(Object.keys(HUMAN_MODELS));
 export function resolveModel(id: string | undefined): HumanModel {

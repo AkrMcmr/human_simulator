@@ -1,0 +1,1622 @@
+{
+  "format": "human-world-lab/sound-association-review-summary",
+  "schemaVersion": 1,
+  "protocol": {
+    "id": "sound-association-v1",
+    "version": "1.0.0",
+    "baseline": "human-0.2.0",
+    "candidate": "sound-association-0.4.0-experimental.1",
+    "developmentSeeds": [
+      12001,
+      12002,
+      12003,
+      12004,
+      12005,
+      12006,
+      12007,
+      12008
+    ],
+    "validationSeeds": [
+      13001,
+      13002,
+      13003,
+      13004,
+      13005,
+      13006,
+      13007,
+      13008
+    ],
+    "trials": 64,
+    "distance": 6,
+    "delta": 1,
+    "loudness": 0.8,
+    "developmentShapes": [
+      {
+        "openness": 0.15,
+        "resonance": 0.7
+      },
+      {
+        "openness": 0.85,
+        "resonance": 0.3
+      }
+    ],
+    "validationShapes": [
+      {
+        "openness": 0.3,
+        "resonance": 0.15
+      },
+      {
+        "openness": 0.7,
+        "resonance": 0.85
+      }
+    ],
+    "jitter": 0.02,
+    "body": {
+      "hunger": 0.1,
+      "fatigue": 0.1,
+      "cold": 0.1,
+      "health": 1
+    },
+    "minimumAssociation": 0.05,
+    "minimumReversedAssociation": 0.05,
+    "controlTolerance": 1e-12,
+    "evidence": "controlled-receiver-association-not-language-or-human-validation"
+  },
+  "provenance": {
+    "commit": "7797ddbddab6b3220bbe48e20e5e931c5b3e118e",
+    "tree": "41fa62666d2c383c9329f4365e7c8435748bc970",
+    "dirty": false,
+    "sourceHash": "2af4fad455120ae003b5c29cb3f2140a8d84624b6b7b96b171c28e4210a54eca",
+    "sourceFiles": [
+      "cli/review-association.ts",
+      "package-lock.json",
+      "packages/contracts/package.json",
+      "packages/contracts/src/index.ts",
+      "packages/evaluation/package.json",
+      "packages/evaluation/src/index.ts",
+      "packages/experiments/package.json",
+      "packages/experiments/src/index.ts",
+      "packages/human/package.json",
+      "packages/human/src/forgetting-policy.ts",
+      "packages/human/src/index.ts",
+      "packages/human/src/predictive-policy.ts",
+      "packages/human/src/sound-association.ts",
+      "packages/observer/package.json",
+      "packages/observer/src/index.ts",
+      "packages/observer/src/story.ts",
+      "packages/simulation/package.json",
+      "packages/simulation/src/index.ts",
+      "packages/simulation/src/models.ts",
+      "packages/simulation/src/random.ts",
+      "packages/world/package.json",
+      "packages/world/src/index.ts",
+      "research/protocols/core-v1.json",
+      "research/protocols/sound-association-v1.json",
+      "research/studies/sound-association-v1.ts"
+    ],
+    "runtime": "v24.19.0"
+  },
+  "partitions": [
+    {
+      "split": "development",
+      "results": [
+        {
+          "split": "development",
+          "model": "human-0.2.0",
+          "seeds": [
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            12007,
+            12008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "development",
+          "model": "sound-association-0.4.0-experimental.1",
+          "seeds": [
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            12007,
+            12008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0.31267379074390217,
+                "sd": 0.03217622798779421,
+                "interval95": [
+                  0.2919038483387813,
+                  0.3318538832643862
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0.34254753148700984,
+                "sd": 2.967195843610875e-17,
+                "interval95": [
+                  0.3425475314870098,
+                  0.3425475314870099
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0.3102540874736944,
+                "sd": 2.0981243021257878e-17,
+                "interval95": [
+                  0.3102540874736944,
+                  0.31025408747369443
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "development",
+          "model": "sound-association-off-0.4.0-experimental.1",
+          "seeds": [
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            12007,
+            12008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "development",
+          "model": "sound-classification-off-0.4.0-experimental.1",
+          "seeds": [
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            12007,
+            12008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "development",
+          "model": "sound-attention-off-0.4.0-experimental.1",
+          "seeds": [
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            12007,
+            12008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0.3126737907439021,
+                "sd": 0.032176227987794216,
+                "interval95": [
+                  0.2919038483387813,
+                  0.3318538832643862
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0.3425475314870098,
+                "sd": 6.958691073677511e-17,
+                "interval95": [
+                  0.3425475314870098,
+                  0.3425475314870099
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0.3102540874736944,
+                "sd": 2.0981243021257878e-17,
+                "interval95": [
+                  0.3102540874736944,
+                  0.31025408747369443
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "development",
+          "model": "sound-policy-off-0.4.0-experimental.1",
+          "seeds": [
+            12001,
+            12002,
+            12003,
+            12004,
+            12005,
+            12006,
+            12007,
+            12008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "association",
+          "pass": true
+        },
+        {
+          "id": "reversal",
+          "pass": true
+        },
+        {
+          "id": "muted",
+          "pass": true
+        },
+        {
+          "id": "human-0.2.0/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "sound-association-off-0.4.0-experimental.1/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "sound-classification-off-0.4.0-experimental.1/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "sound-policy-off-0.4.0-experimental.1/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "attention-independent",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "split": "validation",
+      "results": [
+        {
+          "split": "validation",
+          "model": "human-0.2.0",
+          "seeds": [
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            13006,
+            13007,
+            13008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "validation",
+          "model": "sound-association-0.4.0-experimental.1",
+          "seeds": [
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            13006,
+            13007,
+            13008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0.308223105542365,
+                "sd": 0.027451973791901087,
+                "interval95": [
+                  0.2917944694815519,
+                  0.32575013090561356
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0.3425475314870098,
+                "sd": 5.93439168722175e-17,
+                "interval95": [
+                  0.3425475314870098,
+                  0.3425475314870098
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0.3102540874736943,
+                "sd": 6.63485160886875e-17,
+                "interval95": [
+                  0.3102540874736943,
+                  0.31025408747369443
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "validation",
+          "model": "sound-association-off-0.4.0-experimental.1",
+          "seeds": [
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            13006,
+            13007,
+            13008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "validation",
+          "model": "sound-classification-off-0.4.0-experimental.1",
+          "seeds": [
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            13006,
+            13007,
+            13008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "validation",
+          "model": "sound-attention-off-0.4.0-experimental.1",
+          "seeds": [
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            13006,
+            13007,
+            13008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0.308223105542365,
+                "sd": 0.02745197379190108,
+                "interval95": [
+                  0.2917944694815519,
+                  0.32575013090561356
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0.3425475314870098,
+                "sd": 7.564894753611627e-17,
+                "interval95": [
+                  0.3425475314870098,
+                  0.3425475314870099
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0.3102540874736944,
+                "sd": 2.967195843610875e-17,
+                "interval95": [
+                  0.3102540874736944,
+                  0.31025408747369443
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "split": "validation",
+          "model": "sound-policy-off-0.4.0-experimental.1",
+          "seeds": [
+            13001,
+            13002,
+            13003,
+            13004,
+            13005,
+            13006,
+            13007,
+            13008
+          ],
+          "checks": [
+            {
+              "id": "association",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "reversal",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "muted",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            },
+            {
+              "id": "paired",
+              "summary": {
+                "n": 8,
+                "mean": 0,
+                "sd": 0,
+                "interval95": [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "association",
+          "pass": true
+        },
+        {
+          "id": "reversal",
+          "pass": true
+        },
+        {
+          "id": "muted",
+          "pass": true
+        },
+        {
+          "id": "human-0.2.0/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "sound-association-off-0.4.0-experimental.1/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "sound-classification-off-0.4.0-experimental.1/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "sound-policy-off-0.4.0-experimental.1/no-cue-effect",
+          "pass": true
+        },
+        {
+          "id": "attention-independent",
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "core": [
+    {
+      "split": "development",
+      "checks": [
+        {
+          "id": "safe-learning",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.399203699547392,
+            "sd": 0,
+            "interval95": [
+              0.399203699547392,
+              0.399203699547392
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.399203699547392,
+            "sd": 0,
+            "interval95": [
+              0.399203699547392,
+              0.399203699547392
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "danger-discrimination",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.41437629768044715,
+            "sd": 0.05665054004512573,
+            "interval95": [
+              0.37578184829668176,
+              0.4501759129942473
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.41437629768044715,
+            "sd": 0.05665054004512573,
+            "interval95": [
+              0.37578184829668176,
+              0.4501759129942473
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "caution-policy",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.6614270243814976,
+            "sd": 0.09575277214685528,
+            "interval95": [
+              0.6020508615454416,
+              0.7245773845571999
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.6614270243814976,
+            "sd": 0.09575277214685528,
+            "interval95": [
+              0.6020508615454416,
+              0.7245773845571999
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "far-no-evidence",
+          "minimum": -0.001,
+          "regressionTolerance": 0.001,
+          "baseline": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "risk-recovery",
+          "minimum": 0.1,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.22124654875901334,
+            "sd": 0.029136303887220102,
+            "interval95": [
+              0.20139678907958958,
+              0.23848384132817418
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.22124654875901334,
+            "sd": 0.029136303887220102,
+            "interval95": [
+              0.20139678907958958,
+              0.23848384132817418
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "prediction-gain",
+          "minimum": 0.03,
+          "regressionTolerance": 0.01,
+          "baseline": {
+            "n": 8,
+            "mean": 0.06383570499334151,
+            "sd": 0.003208553560044225,
+            "interval95": [
+              0.061546681136086835,
+              0.06585175987098756
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.06383570499334151,
+            "sd": 0.003208553560044225,
+            "interval95": [
+              0.061546681136086835,
+              0.06585175987098756
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "prediction-reversal",
+          "minimum": 0.02,
+          "regressionTolerance": 0.01,
+          "baseline": {
+            "n": 8,
+            "mean": 0.10242325604542765,
+            "sd": 0.008051249227594431,
+            "interval95": [
+              0.09722269673551218,
+              0.10723140053205946
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.10242325604542765,
+            "sd": 0.008051249227594431,
+            "interval95": [
+              0.09722269673551218,
+              0.10723140053205946
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "hunger-relief",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.8064867697851867,
+            "sd": 0.04037816993987933,
+            "interval95": [
+              0.7807736977036932,
+              0.8336474784922836
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.8064867697851867,
+            "sd": 0.04037816993987933,
+            "interval95": [
+              0.7807736977036932,
+              0.8336474784922836
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "fatigue-relief",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.6327274999999997,
+            "sd": 0.0329525479179641,
+            "interval95": [
+              0.6115806249999995,
+              0.6519631249999996
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.6327274999999997,
+            "sd": 0.0329525479179641,
+            "interval95": [
+              0.6115806249999995,
+              0.6519631249999996
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "cold-relief",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.540807780326456,
+            "sd": 0.03325234344110042,
+            "interval95": [
+              0.5182303321123686,
+              0.561617557337947
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.540807780326456,
+            "sd": 0.03325234344110042,
+            "interval95": [
+              0.5182303321123686,
+              0.561617557337947
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        }
+      ]
+    },
+    {
+      "split": "validation",
+      "checks": [
+        {
+          "id": "safe-learning",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.399203699547392,
+            "sd": 0,
+            "interval95": [
+              0.399203699547392,
+              0.399203699547392
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.399203699547392,
+            "sd": 0,
+            "interval95": [
+              0.399203699547392,
+              0.399203699547392
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "danger-discrimination",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.3784609782148485,
+            "sd": 0.05406648862710742,
+            "interval95": [
+              0.3445776667429882,
+              0.41335206194818025
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.3784609782148485,
+            "sd": 0.05406648862710742,
+            "interval95": [
+              0.3445776667429882,
+              0.41335206194818025
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "caution-policy",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.5903991260151636,
+            "sd": 0.08434372225828758,
+            "interval95": [
+              0.5410922011667304,
+              0.6440326853624112
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.5903991260151636,
+            "sd": 0.08434372225828758,
+            "interval95": [
+              0.5410922011667304,
+              0.6440326853624112
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "far-no-evidence",
+          "minimum": -0.001,
+          "regressionTolerance": 0.001,
+          "baseline": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "risk-recovery",
+          "minimum": 0.1,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.20277470963227742,
+            "sd": 0.027807283769925396,
+            "interval95": [
+              0.18625361054328882,
+              0.22094565311393677
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.20277470963227742,
+            "sd": 0.027807283769925396,
+            "interval95": [
+              0.18625361054328882,
+              0.22094565311393677
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "prediction-gain",
+          "minimum": 0.03,
+          "regressionTolerance": 0.01,
+          "baseline": {
+            "n": 8,
+            "mean": 0.06578056628362228,
+            "sd": 0.0023326220570436397,
+            "interval95": [
+              0.06424723906730707,
+              0.06754976768905596
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.06578056628362228,
+            "sd": 0.0023326220570436397,
+            "interval95": [
+              0.06424723906730707,
+              0.06754976768905596
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "prediction-reversal",
+          "minimum": 0.02,
+          "regressionTolerance": 0.01,
+          "baseline": {
+            "n": 8,
+            "mean": 0.10836313862914283,
+            "sd": 0.00810630883053185,
+            "interval95": [
+              0.10296692633540475,
+              0.11333417922031595
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.10836313862914283,
+            "sd": 0.00810630883053185,
+            "interval95": [
+              0.10296692633540475,
+              0.11333417922031595
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "hunger-relief",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.8226130142258571,
+            "sd": 0.03363866271586245,
+            "interval95": [
+              0.8027382954758571,
+              0.8455206874999999
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.8226130142258571,
+            "sd": 0.03363866271586245,
+            "interval95": [
+              0.8027382954758571,
+              0.8455206874999999
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "fatigue-relief",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.6462531249999997,
+            "sd": 0.0531755610446258,
+            "interval95": [
+              0.6139681249999995,
+              0.6820081249999996
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.6462531249999997,
+            "sd": 0.0531755610446258,
+            "interval95": [
+              0.6139681249999995,
+              0.6820081249999996
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        },
+        {
+          "id": "cold-relief",
+          "minimum": 0.15,
+          "regressionTolerance": 0.02,
+          "baseline": {
+            "n": 8,
+            "mean": 0.5654042931338041,
+            "sd": 0.058396457871895874,
+            "interval95": [
+              0.5220440009243439,
+              0.5967320987201178
+            ]
+          },
+          "candidate": {
+            "n": 8,
+            "mean": 0.5654042931338041,
+            "sd": 0.058396457871895874,
+            "interval95": [
+              0.5220440009243439,
+              0.5967320987201178
+            ]
+          },
+          "delta": {
+            "n": 8,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "decision": "retain-candidate",
+  "limits": "Controlled receiver only; core seeds are previously observed. No sender learning or free-world benefit established."
+}

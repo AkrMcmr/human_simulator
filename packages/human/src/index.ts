@@ -22,6 +22,9 @@ export type HumanState = {
   explorationTarget: Vec2 | null;
   pending: { peerId: string; distance: number; predictedDelta: number; action: ActionKind } | null;
   learnedTransitions: number;
+  /** Candidate-only extension. Absent from default/legacy checkpoints. */
+  soundAssociations?: Record<string, Record<number, Estimate>>;
+  soundPending?: { tick: number; peerId: string; category: number; distance: number } | null;
 };
 
 export function createHuman(id: string, parameters: Partial<HumanParameters> = {}, body: Partial<Body> = {}): HumanState {
@@ -75,7 +78,7 @@ export const predictedSafety: OutcomeBonus = (action, human, peerDistance, peerI
  *   so confidence fades without the belief drifting. Uncalibrated engineering assumption.
  */
 export type Forgetting = "toward-prior" | "keep-estimate";
-export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting };
+export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -155,8 +158,10 @@ export function decideWithOptions(previous: HumanState, observation: Observation
     const closest = [...human.heardSounds].sort((a, b) => soundDistance(a.shape, heard.shape) - soundDistance(b.shape, heard.shape))[0];
     const novelty = closest && soundDistance(closest.shape, heard.shape) < 0.18 ? 1 / Math.sqrt(1 + closest.samples) : 1;
     auditoryNovelty = Math.max(auditoryNovelty, novelty * heard.loudness);
-    rememberSound(human.heardSounds, heard.shape);
+    if (options.auditoryClassification !== false) rememberSound(human.heardSounds, heard.shape);
   }
+
+  if (options.auditoryAttention === false) auditoryNovelty = 0;
 
   const memory = peer ? human.peers[peer.trackId] : null;
   const uncertainty = memory ? 1 / Math.sqrt(1 + memory.sightings / 8) : 1;
@@ -185,6 +190,7 @@ export function decideWithOptions(previous: HumanState, observation: Observation
   const scores: Score[] = [];
   const addScore = (action: ActionKind, terms: Record<string, number>) => {
     if (outcomeBonus) terms = { ...terms, predictedSafety: outcomeBonus(action, human, peerDistance, peer?.trackId ?? null) };
+    if (options.signalBonus) terms = { ...terms, signalPrediction: options.signalBonus(action, human, peerDistance, peer?.trackId ?? null) };
     scores.push({ action, utility: Object.values(terms).reduce((sum, v) => sum + v, 0), terms });
   };
   const inertia = (action: ActionKind) => human.lastAction === action ? 0.06 : 0;
