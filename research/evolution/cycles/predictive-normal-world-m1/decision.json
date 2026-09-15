@@ -1,0 +1,13 @@
+{
+  "outcome": "retain-candidate",
+  "reason": "通常worldの8条件×開発8・確認8シードで主要効果（共有配置の接触ステップ割合を0.01以上削減、実測約0.028）と副作用7項目を達成。寄与無効は旧版と全対で一致、core-v1に回帰なし。既定化を推奨するが、既定モデルの置換はレビュー後の版更新として行うため候補として保持する。費用として摂食・保温の選択が共有配置で4〜5%減り身体要求の負担がわずかに増える点は許容幅内だが記録する。",
+  "resultHash": "4320ee5343747e8ce36d781e1fec6e7a31faf5f9c4ca6a257f1c11c24907db6a",
+  "specHash": "d14a2a6a02609e89644bcb56f9f7f6a285862f1311faa6b93a6643ff1f758cfe",
+  "source": {
+    "commit": "8a4bc217436813627698fb50b5bf0216150c7431",
+    "tree": "8e1f2da3a9da31041e17eb8856c8625e14abfdcf",
+    "dirty": false,
+    "hash": "9984e872dc25dc6315fe03a5cf57487b2ff67ec9501b5161f4da2e0b9dd86d2f"
+  },
+  "defaultChanged": false
+}

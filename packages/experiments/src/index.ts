@@ -1,20 +1,24 @@
-import type { HumanParameters } from "../../contracts/src/index.ts";
+import type { Body, HumanParameters } from "../../contracts/src/index.ts";
 import { DEFAULT_PARAMETERS } from "../../human/src/index.ts";
 import type { ExperimentConfig, Frame } from "../../simulation/src/index.ts";
-import { runExperiment } from "../../simulation/src/index.ts";
+import { DEFAULT_MODEL_ID, runExperiment } from "../../simulation/src/index.ts";
 import { DEFAULT_WORLD } from "../../world/src/index.ts";
 export type PairSettings = {
   seed: number; horizon: number; initialDistance: number; ambientCold: number; soundEnabled: boolean;
   resourceLayout: "shared" | "separate";
   a: HumanParameters; b: HumanParameters;
+  /** Registered human model id used by both individuals. Both decide endogenously with the same rules. */
+  model: string;
+  /** Initial bodily state shared by both individuals; empty means the model's defaults. */
+  body: Partial<Body>;
 };
 export const DEFAULT_SETTINGS: PairSettings = {
   seed: 42, horizon: 400, initialDistance: 12, ambientCold: 0.36, soundEnabled: true, resourceLayout: "shared",
-  a: { ...DEFAULT_PARAMETERS }, b: { ...DEFAULT_PARAMETERS },
+  a: { ...DEFAULT_PARAMETERS }, b: { ...DEFAULT_PARAMETERS }, model: DEFAULT_MODEL_ID, body: {},
 };
 export function pairExperiment(settings: PairSettings = DEFAULT_SETTINGS): ExperimentConfig {
   return {
-    name: "first-encounter-v1", seed: settings.seed, horizon: settings.horizon,
+    name: "first-encounter-v1", seed: settings.seed, horizon: settings.horizon, model: settings.model,
     world: { ...DEFAULT_WORLD, ambientCold: settings.ambientCold, soundEnabled: settings.soundEnabled },
     resources: settings.resourceLayout === "shared" ? [
       { id: "food-center", kind: "food", position: { x: 20, y: 13 }, amount: 1, radius: 2 },
@@ -23,8 +27,8 @@ export function pairExperiment(settings: PairSettings = DEFAULT_SETTINGS): Exper
       { id: "warm-s", kind: "warmth", position: { x: 16, y: 24 }, amount: 1, radius: 3 },
     ] : undefined,
     agents: [
-      { id: "A", position: { x: 20 - settings.initialDistance / 2, y: 14 }, parameters: { ...settings.a }, body: {} },
-      { id: "B", position: { x: 20 + settings.initialDistance / 2, y: 14 }, parameters: { ...settings.b }, body: {} },
+      { id: "A", position: { x: 20 - settings.initialDistance / 2, y: 14 }, parameters: { ...settings.a }, body: { ...settings.body } },
+      { id: "B", position: { x: 20 + settings.initialDistance / 2, y: 14 }, parameters: { ...settings.b }, body: { ...settings.body } },
     ],
   };
 }

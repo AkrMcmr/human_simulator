@@ -1,12 +1,13 @@
 import protocol from "../protocols/policy-v1.json" with { type: "json" };
-import { createHuman, decideHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
+import { createHuman, decideHuman, decideLegacyHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
 import { decidePredictive } from "../../packages/human/src/predictive-policy.ts";
 import type { Observation } from "../../packages/contracts/src/index.ts";
 import { keyedRandom } from "../../packages/simulation/src/random.ts";
 import { mean, summarizeSamples, type ModelAdapter } from "../../packages/evaluation/src/index.ts";
 
 export { protocol };
-export const baselineModel: ModelAdapter = { create: createHuman, decide: decideHuman, apply: applyPhysicalEffect };
+// The registered baseline of this study is human 0.1.0, which has no outcome term.
+export const baselineModel: ModelAdapter = { create: createHuman, decide: decideLegacyHuman, apply: applyPhysicalEffect };
 export const candidateModel: ModelAdapter = { ...baselineModel, decide: decidePredictive };
 export const ablatedModel: ModelAdapter = { ...baselineModel, decide: (h, o, r) => decideHuman(h, o, r, () => 0) };
 export type Condition = "standard" | "reversed" | "reversal" | "uncontrollable";

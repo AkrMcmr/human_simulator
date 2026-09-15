@@ -3,7 +3,7 @@ import { resolve, dirname } from "node:path";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { DEFAULT_SETTINGS, pairExperiment, measure, compareCuriosity, summarize } from "../packages/experiments/src/index.ts";
-import { archiveRun, runExperiment, restoreRun, stepSimulation, observeSimulation } from "../packages/simulation/src/index.ts";
+import { archiveRun, runExperiment, restoreRun, stepSimulation, observeSimulation, MODEL_IDS } from "../packages/simulation/src/index.ts";
 
 const args = process.argv.slice(2);
 function option(name: string, fallback: string): string {
@@ -26,6 +26,8 @@ settings.soundEnabled = !args.includes("--mute");
 const layout = option("--layout", "shared");
 if (layout !== "shared" && layout !== "separate") throw new Error("Layout must be shared or separate.");
 settings.resourceLayout = layout;
+settings.model = option("--model", settings.model);
+if (!MODEL_IDS.includes(settings.model)) throw new Error("Unknown model. Registered ids: " + MODEL_IDS.join(", "));
 const provenance = {
   sourceCommit: git("rev-parse", "HEAD"),
   sourceHash: git("rev-parse", "HEAD^{tree}"),

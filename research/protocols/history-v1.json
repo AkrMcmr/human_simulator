@@ -1,0 +1,235 @@
+{
+  "id": "experience-history-v1",
+  "version": "1.0.0",
+  "evidence": "engineering-phenomena-in-abstract-two-person-world-not-human-validation",
+  "purpose": "M2: 同じ現在の身体・知覚に対して、相手との経験履歴（危害あり/なし）と記憶への介入（保持・消去・入れ替え）が危険度推定と行動評価をどう変えるか、また危害がなくなった後の更新が強制近接と自由行動でどう違うかを測る",
+  "model": "human-0.2.0",
+  "referenceModel": "human-0.1.0",
+  "pilotSeeds": [
+    6101,
+    6102,
+    6103,
+    6104
+  ],
+  "pilotUse": "尺度確認のみ。閾値固定後にゲート判定へ使わない",
+  "developmentSeeds": [
+    6001,
+    6002,
+    6003,
+    6004,
+    6005,
+    6006,
+    6007,
+    6008
+  ],
+  "validationSeeds": [
+    7001,
+    7002,
+    7003,
+    7004,
+    7005,
+    7006,
+    7007,
+    7008
+  ],
+  "history": {
+    "steps": 60,
+    "distance": 2,
+    "painProbability": 0.5,
+    "painMagnitude": 0.03,
+    "body": {
+      "hunger": 0.1,
+      "fatigue": 0.1,
+      "cold": 0.1
+    }
+  },
+  "probe": {
+    "distance": 2,
+    "body": {
+      "hunger": 0.1,
+      "fatigue": 0.1,
+      "cold": 0.1,
+      "health": 1
+    },
+    "highNeedBody": {
+      "hunger": 0.8,
+      "fatigue": 0.1,
+      "cold": 0.1,
+      "health": 1
+    }
+  },
+  "interventions": [
+    "retain",
+    "erase",
+    "swap"
+  ],
+  "forcedRecovery": {
+    "steps": 96,
+    "checkpoints": [
+      24,
+      48,
+      96
+    ]
+  },
+  "freePhase": {
+    "steps": 120,
+    "body": {
+      "hunger": 0.45,
+      "fatigue": 0.15,
+      "cold": 0.1
+    },
+    "closeDistance": 2.5,
+    "layouts": {
+      "shared": {
+        "positions": {
+          "A": {
+            "x": 18,
+            "y": 14
+          },
+          "B": {
+            "x": 22,
+            "y": 14
+          }
+        },
+        "resources": [
+          {
+            "id": "food-center",
+            "kind": "food",
+            "position": {
+              "x": 20,
+              "y": 13
+            },
+            "amount": 1,
+            "radius": 2
+          },
+          {
+            "id": "warm-n",
+            "kind": "warmth",
+            "position": {
+              "x": 22,
+              "y": 5
+            },
+            "amount": 1,
+            "radius": 3
+          }
+        ]
+      },
+      "separate": {
+        "positions": {
+          "A": {
+            "x": 14,
+            "y": 14
+          },
+          "B": {
+            "x": 26,
+            "y": 14
+          }
+        },
+        "resources": [
+          {
+            "id": "food-west",
+            "kind": "food",
+            "position": {
+              "x": 12,
+              "y": 14
+            },
+            "amount": 1,
+            "radius": 2
+          },
+          {
+            "id": "food-east",
+            "kind": "food",
+            "position": {
+              "x": 28,
+              "y": 14
+            },
+            "amount": 1,
+            "radius": 2
+          },
+          {
+            "id": "warm-n",
+            "kind": "warmth",
+            "position": {
+              "x": 22,
+              "y": 5
+            },
+            "amount": 1,
+            "radius": 3
+          }
+        ]
+      }
+    },
+    "layoutNote": "sharedは中央の食料へ二人が集まるため近接が身体要求で強制される。separateは各自の近くに食料があり、回避が可能なまま相手が見える（初期距離12u、視認16u）"
+  },
+  "unit": "シードごとの対になった差。判定は既定モデルhuman-0.2.0の値。参照としてhuman-0.1.0の同じ測定も保存する",
+  "checks": [
+    {
+      "id": "history-risk",
+      "phenomenon": "P1",
+      "label": "危害履歴は同じ知覚で危険度を上げる（記憶保持）",
+      "minimum": 0.15,
+      "unit": "probe risk, harm minus safe"
+    },
+    {
+      "id": "history-policy",
+      "phenomenon": "P1",
+      "label": "危害履歴は離隔対接近の評価差を広げる（記憶保持）",
+      "minimum": 0.15,
+      "unit": "withdraw minus approach margin, harm minus safe"
+    },
+    {
+      "id": "erase-removes",
+      "phenomenon": "P1",
+      "label": "相手の記憶を消すと履歴の差が消える",
+      "minimum": -0.02,
+      "unit": "negative absolute risk difference after erasing peer memory"
+    },
+    {
+      "id": "swap-reverses",
+      "phenomenon": "P1",
+      "label": "記憶を入れ替えると差の向きが反転する",
+      "minimum": 0.15,
+      "unit": "probe risk, safe-history subject with harm memory minus harm-history subject with safe memory"
+    },
+    {
+      "id": "forced-recovery",
+      "phenomenon": "P2",
+      "label": "危害がなくなり近接が続くと危険度が下がる",
+      "minimum": 0.1,
+      "unit": "probe risk before minus after 96 forced safe steps"
+    },
+    {
+      "id": "free-fixation-separate",
+      "phenomenon": "P2",
+      "label": "回避できる配置では更新機会が減り、危険度が強制近接より高く残る",
+      "minimum": 0.05,
+      "unit": "probe risk after free phase (separate food) minus after forced recovery, harm history"
+    },
+    {
+      "id": "shared-keeps-updating",
+      "phenomenon": "P2",
+      "label": "食料を共有する配置は身体要求が回避を上書きし、近接での証拠更新を保つ",
+      "minimum": 10,
+      "unit": "close-range evidence gain, shared minus separate layout, harm history"
+    }
+  ],
+  "exploratory": [
+    {
+      "id": "need-attenuation",
+      "label": "自由行動後の評価差で、身体要求が高い（空腹0.8）と予測効用による履歴依存が小さくなる",
+      "note": "ゲートにしない。履歴形成中は相手が動かないので距離変化の学習がなく、直後のプローブでは予測効用が0になる。自由行動後のプローブで比較する。差が縮まなければ身体余裕の仮定への反例として記録する"
+    },
+    {
+      "id": "close-evidence",
+      "label": "自由行動中の近接（2.5u未満）での証拠増加量と危険度の低下量",
+      "note": "P2の機構確認。増加量が小さいほど低下が小さいと予測"
+    },
+    {
+      "id": "reference-0.1.0",
+      "label": "旧0.1.0の同じ測定",
+      "note": "P1は0.1.0でも同じ値になると予測（履歴形成とプローブで予測効用が0のため）。自由行動の値は0.2.0と異なりうる。判定はしない"
+    }
+  ],
+  "notAClaim": "危害の記憶と回避のループは工学的な機構の確認で、人間の信頼・恐怖・愛着の再現ではない。本人へ敵味方ラベルや条件名は渡さない",
+  "thresholdBasis": "パイロットシード6101-6104のhuman-0.2.0の測定で尺度を確認し、開発・確認シードを実行する前に固定する"
+}
