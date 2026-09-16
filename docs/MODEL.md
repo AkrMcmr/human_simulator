@@ -29,6 +29,8 @@
 
 相手ごとに危害/無危害の証拠をBeta(1,1)から保持します。直前または現在の距離が2.5u未満で相手を連続視認しているときだけ、直前の接触痛の有無を1件加算します。忘却は既定値0.002で事前分布へ戻します（alpha−1とbeta−1を同じ率で縮めるので、接触がないと推定が0.5へ流れます。[判断0006](../research/decisions/0006-reaction-reversal.md)で480ステップの無接触により無害の記憶の危険度が0.015→0.085に上がることを確認）。
 
+候補0.5.0-experimental.1（`packages/human/src/signal-sender.ts`、登録簿`signal-sender-0.5.0-experimental.1`）は、受信側候補0.4.0の上で、出した音の自分の分類ごとに相手との距離変化を学び、`predictedSafety`と同じ式で分類に得点を付けて温度0.05のsoftmaxで音を選びます（20%は従来の選び方）。自由worldの評価（[判断0012](../research/decisions/0012-signal-sender.md)）では合図は未成立で、反証された候補として登録簿に残しています。
+
 候補0.3.0-experimental.1（`decideWithOptions`の`forgetting: "keep-estimate"`、登録簿`forgetting-keep-estimate-0.3.0-experimental.1`）は、推定alpha/(alpha+beta)を固定したまま総量だけを2+(総量−2)(1−0.002)へ縮めます。証拠の減り方は同じで、推定は流れません。[判断0007](../research/decisions/0007-keep-estimate-forgetting.md)で改善ゲートを達成し候補として保持中。既定ではありません。
 
 この因果帰属は近接と接触痛の関連づけにすぎず、悪意の推定ではありません。遠くで何も起きなかったことを無危害の証拠として加算しません。

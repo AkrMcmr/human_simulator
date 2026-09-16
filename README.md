@@ -103,6 +103,12 @@ npm run study:reversal -- --split development --model forgetting-keep-estimate-0
 
 相手の反応が途中で変わる（無害→危害、危害→無害）ときの更新の遅れと、接触のない期間の忘却を測ります。`--model`と`--baseline-model`で候補と旧版の対比較ができます（[判断0006](research/decisions/0006-reaction-reversal.md)、[判断0007](research/decisions/0007-keep-estimate-forgetting.md)）。
 
+```bash
+npm run study:signal-world -- --split development --model human-0.2.0 --model signal-sender-0.5.0-experimental.1
+```
+
+二人が自由に動く通常worldで、聞いた音の種類と聞き手の次の行動、相手との距離と出す音の種類の結びつきを超過相互情報量で測り、音なし・でたらめ音の介入と比べます。現時点で合図は未成立です（[判断0011](research/decisions/0011-signal-world-m3.md)、[判断0012](research/decisions/0012-signal-sender.md)）。
+
 仮説登録から採否の記録までの手順、対照条件と限界は [研究ループ](research/LOOP.md) を参照してください。
 
 ## 進化させる手順

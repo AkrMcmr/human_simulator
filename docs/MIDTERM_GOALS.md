@@ -51,6 +51,8 @@
 
 成果物: 最小合図のprotocol、対照実験、成立/未成立と理由の報告。M1を前提にし、M2の履歴と観察機能を利用する。
 
+進捗（2026-09-16）: 制御課題の受信側診断（[判断0008](../research/decisions/0008-signal-readiness-m3.md)）と受信側候補（[0010](../research/decisions/0010-sound-association.md)）に続き、自由worldの評価器[`signal-world-v1`](../research/protocols/signal-world-v1.json)と発し手候補（[0011](../research/decisions/0011-signal-world-m3.md)、[0012](../research/decisions/0012-signal-sender.md)）を事前登録して実行。全モデルで合図は未成立。確認できた段階は「音の分類」「新奇音への注意」「制御課題での音と結果の関連学習と利用」まで。自由worldでは両側が学べる構造がなく、発し手の状態と音の連動を初期能力として認めるかが設計相談になった。
+
 ## M4: 人間モデルとしての根拠と共同開発を一段進める
 
 M1〜M3と並行して進める。
