@@ -23,7 +23,7 @@ test('feedback uses only next-tick visibility; no update at cue, gap, lost peer,
  assert.equal(decideSoundAssociation(original,unknown,random).human.soundPending,null);
 });
 test('classification, attention, policy, and association controls separate mechanisms',()=>{
- let h=createHuman('A');h.heardSounds=[{id:1,shape,samples:32}];
+ const h=createHuman('A');h.heardSounds=[{id:1,shape,samples:32}];
  h.soundAssociations={B:{1:{mean:-1,variance:0,samples:32}}};
  const o=associationInput(0,6,shape);
  const full=decideSoundAssociation(h,o,random);

@@ -1,4 +1,5 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff, SOUND_ASSOCIATION_VERSION } from "../../human/src/sound-association.ts";
+import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff, SIGNAL_SENDER_VERSION } from "../../human/src/signal-sender.ts";
 import type { Observation, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect, createHuman, decideHuman, decideLegacyHuman, HUMAN_VERSION, LEGACY_HUMAN_VERSION } from "../../human/src/index.ts";
 import { decidePredictive, PREDICTIVE_POLICY_VERSION } from "../../human/src/predictive-policy.ts";
@@ -29,6 +30,9 @@ export const HUMAN_MODELS: Readonly<Record<string, HumanModel>> = Object.freeze(
   "sound-classification-off-0.4.0-experimental.1": { id: "sound-classification-off-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION + "+sound-classification-off", role: "control", label: "音の分類なし", create: createHuman, decide: decideClassificationOff, apply: applyPhysicalEffect },
   "sound-attention-off-0.4.0-experimental.1": { id: "sound-attention-off-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION + "+sound-attention-off", role: "control", label: "音への注意なし", create: createHuman, decide: decideAttentionOff, apply: applyPhysicalEffect },
   "sound-policy-off-0.4.0-experimental.1": { id: "sound-policy-off-0.4.0-experimental.1", version: SOUND_ASSOCIATION_VERSION + "+sound-policy-off", role: "control", label: "音予測の効用寄与なし", create: createHuman, decide: decideSoundPolicyOff, apply: applyPhysicalEffect },
+  "signal-sender-0.5.0-experimental.1": { id: "signal-sender-0.5.0-experimental.1", version: SIGNAL_SENDER_VERSION, role: "candidate", label: "候補 発し手の音選択＋受信側の音条件付き予測", create: createHuman, decide: decideSignalSender, apply: applyPhysicalEffect },
+  "signal-sender-only-0.5.0-experimental.1": { id: "signal-sender-only-0.5.0-experimental.1", version: SIGNAL_SENDER_VERSION + "+receiver-off", role: "control", label: "対照 発し手の音選択のみ（受信側なし）", create: createHuman, decide: decideSignalSenderOnly, apply: applyPhysicalEffect },
+  "signal-sender-off-0.5.0-experimental.1": { id: "signal-sender-off-0.5.0-experimental.1", version: SIGNAL_SENDER_VERSION + "+sender-off", role: "control", label: "対照 発し手の音選択なし（受信側候補と同じ計算）", create: createHuman, decide: decideSignalSenderOff, apply: applyPhysicalEffect },
 });
 export const MODEL_IDS = Object.freeze(Object.keys(HUMAN_MODELS));
 export function resolveModel(id: string | undefined): HumanModel {

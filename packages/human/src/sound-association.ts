@@ -1,13 +1,13 @@
 import { clamp, magnitude, soundDistance } from '../../contracts/src/index.ts';
 import type { Observation, RandomSource } from '../../contracts/src/index.ts';
 import { decideHuman, decideWithOptions, predictedSafety } from './index.ts';
-import type { HumanState, OutcomeBonus } from './index.ts';
+import type { HumanState, OutcomeBonus, SoundChoice } from './index.ts';
 
 export const SOUND_ASSOCIATION_VERSION = '0.4.0-experimental.1';
-export type SoundOptions = { association?: boolean; classification?: boolean; attention?: boolean; policy?: boolean };
+export type SoundOptions = { association?: boolean; classification?: boolean; attention?: boolean; policy?: boolean; chooseSound?: SoundChoice };
 /** Locally observed correlation, not a causal estimate of the other individual's intention. */
 export function decideWithSoundOptions(previous:HumanState, observation:Observation, random:RandomSource, options:SoundOptions={}) {
-  if(options.association===false) return decideHuman(previous,observation,random);
+  if(options.association===false) return options.chooseSound ? decideWithOptions(previous,observation,random,{outcomeBonus:predictedSafety,chooseSound:options.chooseSound}) : decideHuman(previous,observation,random);
   const human=structuredClone(previous);
   const animals=observation.animals.filter(a=>a.morphologySimilarity>=.7)
     .sort((a,b)=>magnitude(a.relativePosition)-magnitude(b.relativePosition)||a.trackId.localeCompare(b.trackId));
@@ -46,7 +46,7 @@ export function decideWithSoundOptions(previous:HumanState, observation:Observat
     return action==='withdraw'?adjustment:action==='approach'?-adjustment:0;
   };
   const result=decideWithOptions(human,observation,random,{outcomeBonus:predictedSafety,signalBonus:bonus,
-    auditoryClassification:options.classification,auditoryAttention:options.attention});
+    auditoryClassification:options.classification,auditoryAttention:options.attention,chooseSound:options.chooseSound});
   if(sound&&peer&&options.classification!==false) {
     const learned=[...result.human.heardSounds].sort((a,b)=>soundDistance(a.shape,sound.shape)-soundDistance(b.shape,sound.shape)||a.id-b.id)[0];
     if(learned && soundDistance(learned.shape,sound.shape)<.18) result.human.soundPending={tick:observation.tick,peerId:peer.trackId,category:learned.id,distance:magnitude(peer.relativePosition)};

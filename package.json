@@ -24,6 +24,7 @@
     "study:world": "node --experimental-strip-types cli/study-world.ts",
     "study:history": "node --experimental-strip-types cli/study-history.ts",
     "study:reversal": "node --experimental-strip-types cli/study-reversal.ts",
+    "study:signal-world": "node --experimental-strip-types cli/study-signal-world.ts",
     "test:policy": "node --experimental-strip-types --test tests/model/policy.test.ts",
     "evolve": "node --experimental-strip-types cli/evolve.ts",
     "test:evolution": "node --experimental-strip-types --test tests/evolution/*.test.ts",

@@ -1,0 +1,102 @@
+{
+  "id": "signal-world-v1",
+  "version": "1.0.0",
+  "evidence": "free-world-signal-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 二人が自由に動く通常worldで、聞いた音の種類と聞き手の次の行動の結びつき、発し手の状況と出す音の結びつき、距離調整の結果、身体への副作用を、音なし・音の特徴をでたらめに置き換える介入と比べて測る",
+  "models": {
+    "baseline": "human-0.2.0",
+    "receiver": "sound-association-0.4.0-experimental.1",
+    "sender": "signal-sender-0.5.0-experimental.1",
+    "senderOnly": "signal-sender-only-0.5.0-experimental.1",
+    "senderOff": "signal-sender-off-0.5.0-experimental.1"
+  },
+  "pilotSeeds": [
+    14101,
+    14102,
+    14103,
+    14104
+  ],
+  "pilotUse": "尺度確認のみ。閾値固定後にゲート判定へ使わない",
+  "developmentSeeds": [
+    14001,
+    14002,
+    14003,
+    14004,
+    14005,
+    14006,
+    14007,
+    14008
+  ],
+  "validationSeeds": [
+    15001,
+    15002,
+    15003,
+    15004,
+    15005,
+    15006,
+    15007,
+    15008
+  ],
+  "horizon": 900,
+  "lateFrom": 600,
+  "initialDistance": 6,
+  "resourceLayout": "shared",
+  "conditions": [
+    "sound",
+    "muted",
+    "scrambled"
+  ],
+  "soundGrid": 3,
+  "listenerResponses": [
+    "approach",
+    "withdraw",
+    "other"
+  ],
+  "speakerSituations": {
+    "near": 3,
+    "far": 7
+  },
+  "permutations": 200,
+  "unit": "1回の実行内で、聞き手が音源を視認して聞いた音ごとに（音の特徴の3×3区分, 聞き手の次の行動）の対を集め、相互情報量（bit）から区分ラベルを並べ替えた200回の平均を引いた超過量を求める。発し手は（音を出した時の相手との距離区分, 出した音の区分）で同じ計算をする。シードごとの値をまとめる",
+  "checks": [
+    {
+      "id": "listener-association",
+      "phenomenon": "聞き手",
+      "label": "聞いた音の種類に応じて聞き手の次の行動が変わる（音あり − でたらめ音）",
+      "minimum": 0.03,
+      "unit": "excess mutual information, bits"
+    },
+    {
+      "id": "listener-holdout",
+      "phenomenon": "聞き手",
+      "label": "その結びつきが後半（600ステップ以降）でも保たれる",
+      "minimum": 0.03,
+      "unit": "excess mutual information in the late window, bits"
+    },
+    {
+      "id": "speaker-selection",
+      "phenomenon": "発し手",
+      "label": "発し手が相手との距離に応じて出す音の種類を変える",
+      "minimum": 0.03,
+      "unit": "excess mutual information, bits"
+    },
+    {
+      "id": "need-side-effect",
+      "phenomenon": "副作用",
+      "label": "音があることで身体要求の負担が増えない（音なし − 音あり）",
+      "minimum": -0.02,
+      "unit": "mean of max(hunger, fatigue, cold)"
+    }
+  ],
+  "reported": [
+    "contactTicks",
+    "closeFraction",
+    "vocalizations per agent",
+    "heard events per agent",
+    "categories per agent",
+    "raw mutual information and permutation mean"
+  ],
+  "establishedIf": "聞き手2項目と発し手1項目が開発・確認の両群で達成し、副作用も達成したとき「声を手掛かりにした距離調整の最小合図が成立」と呼ぶ。分類数や発声回数の増加は数えない",
+  "notAClaim": "音に意味・正解・成功ラベルを与えない。超過相互情報量は相関の強さで、意図や理解ではない",
+  "thresholdBasis": "パイロットシード14101-14104で既定と受信側候補の尺度を確認（両者とも超過相互情報量は±0.03以内の雑音）してから0.03に固定した。発し手候補の結果は閾値固定前に見ていない"
+}

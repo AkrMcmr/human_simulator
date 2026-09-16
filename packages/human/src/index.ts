@@ -78,7 +78,9 @@ export const predictedSafety: OutcomeBonus = (action, human, peerDistance, peerI
  *   so confidence fades without the belief drifting. Uncalibrated engineering assumption.
  */
 export type Forgetting = "toward-prior" | "keep-estimate";
-export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus };
+/** Candidate hook: choose the base shape of a vocalization from the individual's own produced categories; null keeps the default random reuse. */
+export type SoundChoice = (human: HumanState, peerId: string | null, peerDistance: number | null, random: RandomSource) => SoundShape | null;
+export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus; chooseSound?: SoundChoice };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -236,10 +238,11 @@ export function decideWithOptions(previous: HumanState, observation: Observation
   if (selected === "explore") action.target = { ...human.explorationTarget };
   if (selected === "vocalize") {
     const known = human.producedSounds;
+    const chosen = options.chooseSound?.(human, peer?.trackId ?? null, peerDistance, random) ?? null;
     const repeat = known.length > 0 && random("new-voice") > 0.35;
-    const base = repeat ? known[Math.floor(random("voice-category") * known.length)].shape : {
+    const base = chosen ?? (repeat ? known[Math.floor(random("voice-category") * known.length)].shape : {
       openness: random("voice-openness"), resonance: random("voice-resonance"),
-    };
+    });
     action.sound = {
       openness: clamp(base.openness + (random("motor-noise-o") - 0.5) * 0.07),
       resonance: clamp(base.resonance + (random("motor-noise-r") - 0.5) * 0.07),
