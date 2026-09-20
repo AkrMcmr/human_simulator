@@ -112,3 +112,7 @@ caller-cost-v1（36001–36008 / 37001–37008、[判断0021](../research/decisi
 ## 2026-09-20: convention-v1 第2ラウンド / convention-v2
 
 convention-v1第2ラウンド（40001–40008 / 41001–41008、[判断0023](../research/decisions/0023-contrast.md)）: 対比の候補が確認群で5項目、開発群で4項目（副作用−0.043）。convention-v2（空腹を後ろ3分の1で測る、42001–42008 / 43001–43008、[判断0024](../research/decisions/0024-convention-v2.md)）: 対比の候補が両群5項目を達成し成立。真似のみは確認群の種類依存で未達、生得の声は慣習の2項目で未達。今回の検証: `npm run test:model` 80/80、型検査・lint成功。
+
+## 2026-09-20: lexicon-v1/v2、transmission-v1/v2
+
+lexicon-v1（44001–/45001–、46001–/47001–）・lexicon-v2（48001–/49001–）: 2文脈の候補は暖かさ側のゲートを3ラウンドとも未達（[判断0025](../research/decisions/0025-lexicon.md)〜[0027](../research/decisions/0027-scarce-warmth.md)）。transmission-v1（50001–/51001–）は採用の指標に偏りを発見（[判断0028](../research/decisions/0028-transmission.md)）。transmission-v2（52001–/53001–、16シードの54001–/55001–）: 採用率の利得は4群すべてで閾値0.3を越え、5項目は確認群のみ達成（[判断0029](../research/decisions/0029-transmission-v2.md)）。今回の検証: `npm run test:model` 90/90、型検査・lint成功。

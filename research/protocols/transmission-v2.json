@@ -77,7 +77,7 @@
         55015,
         55016
       ],
-      "status": "reserved for the 16-seed replication (decision 0029, round 2); gates unchanged"
+      "status": "observed 2026-09-20 (decision 0029): candidate passed all five gates in validation and four of five in development (newcomer type dependence 0.018); adoption 0.66 / 0.47"
     }
   },
   "developmentSeeds": [
