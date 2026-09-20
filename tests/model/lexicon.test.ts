@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHuman, decideWithOptions, predictedSafety } from "../../packages/human/src/index.ts";
 import { advanceWorld, createWorld } from "../../packages/world/src/index.ts";
 import { applyWithIntake } from "../../packages/human/src/forager-listener.ts";
-import { contextOf, voiceFor, chooseLexiconVoice, decideLexicon, selectByEstimates } from "../../packages/human/src/lexicon.ts";
+import { contextOf, voiceFor, chooseLexiconVoice, decideLexicon, decideLexiconTransient, selectByEstimates } from "../../packages/human/src/lexicon.ts";
 import { protocol as lexicon } from "../../research/studies/lexicon-v1.ts";
 import { protocol as conv2 } from "../../research/studies/convention-v2.ts";
 import { seedsFor, runCondition, assessSeeds, referentialConfig, checkValue, type SeedResult } from "../../research/studies/referential-v1.ts";
@@ -99,4 +99,18 @@ test("lexicon-v1 uses the v2 world plus a moving warm place and colder ambient, 
   assert.ok(Math.abs(checkValue("warmth-specificity", one, lexicon) - 0.4) < 1e-9, "warmth voice vs the voice used in neither context");
   const a = assessSeeds("t", [one, seed({ openness: .2, resonance: .2 }, { openness: .1, resonance: .9 }, 0.1)], lexicon);
   assert.ok(a.checks.find(c => c.id === "arbitrariness-warmth")!.summary.mean > 0.3 && a.checks.find(c => c.id === "arbitrariness")!.summary.mean === 0);
+});
+test("the transient variant counts warmth only while still cold, silences the shelter call once warm, and uses fresh round-2 seeds", () => {
+  const base = createHuman("A", {}, { hunger: .2, cold: .6 });
+  const warmingCold = applyWithIntake(base, effect(0, 0.02)) as Lex;
+  const warmedUp = { ...warmingCold, body: { ...warmingCold.body, cold: .1 } } as Lex;
+  assert.equal(contextOf(warmingCold, true), "warmth"); assert.equal(contextOf(warmedUp, true), null); assert.equal(contextOf(warmedUp, false), "warmth");
+  const observation = { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [] };
+  const coldScores = decideLexiconTransient(warmingCold, observation, () => 0.5).trace.scores.find(s => s.action === "vocalize")!.terms;
+  const warmScores = decideLexiconTransient(warmedUp, observation, () => 0.5).trace.scores.find(s => s.action === "vocalize")!.terms;
+  assert.ok((coldScores.shelterCall ?? 0) > 0 && (warmScores.shelterCall ?? 0) === 0, "the shelter call works only while warming up");
+  assert.equal(HUMAN_MODELS["lexicon-0.11.0-experimental.2"].apply, applyWithIntake);
+  const r2 = [...seedsFor("development", lexicon, "2"), ...seedsFor("validation", lexicon, "2")];
+  const r1 = [lexicon.pilotSeeds, seedsFor("development", lexicon, "1"), seedsFor("validation", lexicon, "1")].flat();
+  assert.ok(r2.every(s => !r1.includes(s)) && new Set(r2).size === 16);
 });

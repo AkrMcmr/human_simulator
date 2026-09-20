@@ -6,7 +6,8 @@
   "models": {
     "baseline": "human-0.2.0",
     "oneSign": "convention-contrast-0.10.0-experimental.2",
-    "candidate": "lexicon-0.11.0-experimental.1"
+    "candidate": "lexicon-0.11.0-experimental.1",
+    "transient": "lexicon-0.11.0-experimental.2"
   },
   "pilotSeeds": [
     44101,
@@ -37,7 +38,30 @@
         45007,
         45008
       ],
-      "status": "reserved for the two-referent comparison (decision 0025)"
+      "status": "observed 2026-09-20 (decision 0025): candidate failed most gates (warmth convergence 0.14 / 0.16, specificity 0.17 / 0.21, late hunger worse with sound); the one-sign control failed the warmth side as predicted"
+    },
+    "2": {
+      "developmentSeeds": [
+        46001,
+        46002,
+        46003,
+        46004,
+        46005,
+        46006,
+        46007,
+        46008
+      ],
+      "validationSeeds": [
+        47001,
+        47002,
+        47003,
+        47004,
+        47005,
+        47006,
+        47007,
+        47008
+      ],
+      "status": "reserved for the transient-warming candidate (decision 0026); gates unchanged"
     }
   },
   "developmentSeeds": [

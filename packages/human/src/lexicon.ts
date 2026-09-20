@@ -22,10 +22,16 @@ type LexiconState = HumanState & {
   referents?: Record<Referent, Record<number, Estimate>>;
   contextHeard?: Record<Referent, Record<number, number>>;
 };
-export function contextOf(human: HumanState): Referent | null {
+export const TRANSIENT = { coldAbove: 0.3 };
+/**
+ * Which need is being satisfied right now. Eating is transient by nature (intake happens only while eating);
+ * with `transient`, being sheltered counts only while the body is still cold (0.11.0-experimental.2, decision 0026),
+ * so the warmth context is the act of warming up rather than the hours spent sitting warm.
+ */
+export function contextOf(human: HumanState, transient = false): Referent | null {
   const h = human as LexiconState;
   if ((h.lastIntake ?? 0) > 0) return "food";
-  if (h.lastWarm) return "warmth";
+  if (h.lastWarm && (!transient || human.body.cold > TRANSIENT.coldAbove)) return "warmth";
   return null;
 }
 /** The heard category this individual's experience ties to the referent, or null. */
@@ -43,8 +49,8 @@ export function voiceFor(human: HumanState, kind: Referent): SoundShape | null {
   return best?.shape ?? null;
 }
 /** In a context, imitate that context's voice; outside both, avoid both voices (farthest own category, at least CONTRAST.minimumGap from each). */
-export function chooseLexiconVoice(human: HumanState): SoundShape | null {
-  const context = contextOf(human);
+export function chooseLexiconVoice(human: HumanState, transient = false): SoundShape | null {
+  const context = contextOf(human, transient);
   const food = voiceFor(human, "food"), warmth = voiceFor(human, "warmth");
   if (context === "food") return food;
   if (context === "warmth") return warmth;
@@ -63,7 +69,7 @@ export function selectByEstimates(human: HumanState, sounds: HeardSound[], estim
   }
   return random(purpose + "-unknown") < REFERENT.unknownFollowRate ? [...scored].sort((a, b) => b.sound.loudness - a.sound.loudness)[0].sound : null;
 }
-export function decideLexicon(previous: HumanState, observation: Observation, random: RandomSource) {
+export function decideLexicon(previous: HumanState, observation: Observation, random: RandomSource, transient = false) {
   const human: LexiconState = structuredClone(previous);
   const self = observation.selfPosition;
   const seen: Record<Referent, { x: number; y: number }[]> = { food: [], warmth: [] };
@@ -90,7 +96,7 @@ export function decideLexicon(previous: HumanState, observation: Observation, ra
     kept.push(m);
   }
   human.recentSounds = kept;
-  const context = contextOf(human);
+  const context = contextOf(human, transient);
   if (context) {
     for (const s of observation.sounds) {
       const category = nearestHeardCategory(human, s);
@@ -98,8 +104,10 @@ export function decideLexicon(previous: HumanState, observation: Observation, ra
     }
   }
   const result = decideWithSenderOptions(human, observation, random, {
-    stateCoupling: CONVENTION.stateCoupling, satiationCall: FOOD_CALL.utility, shelterCall: LEXICON.shelterCall,
-    chooseSound: (h) => chooseLexiconVoice(h),
+    stateCoupling: CONVENTION.stateCoupling, satiationCall: FOOD_CALL.utility,
+    // With transient contexts the shelter call is silenced once the body is warm; the core term only checks lastWarm.
+    shelterCall: transient && human.body.cold <= TRANSIENT.coldAbove ? 0 : LEXICON.shelterCall,
+    chooseSound: (h) => chooseLexiconVoice(h, transient),
     soundOrienting: (h, sounds, r) => selectByEstimates(h, sounds, (h as LexiconState).referents?.food, r, "lexicon-food"),
     warmthOrienting: (h, sounds, r) => selectByEstimates(h, sounds, (h as LexiconState).referents?.warmth, r, "lexicon-warmth"),
   });
@@ -113,3 +121,5 @@ export function decideLexicon(previous: HumanState, observation: Observation, ra
   if (next.recentSounds.length > LEXICON.maxRecent) next.recentSounds = next.recentSounds.slice(-LEXICON.maxRecent);
   return result;
 }
+/** 0.11.0-experimental.2: the same lexicon with the warmth context limited to warming up while still cold. */
+export const decideLexiconTransient = (h: HumanState, o: Observation, r: RandomSource) => decideLexicon(h, o, r, true);
