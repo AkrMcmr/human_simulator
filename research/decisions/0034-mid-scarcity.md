@@ -11,7 +11,7 @@
   - 反証: 暖かさ側のどれかが両群で閾値未満。本セッションでの2文脈の系統はこれで最後とし、結果を所有者に報告する。
 - 開発条件・確認条件: 開発64001–64008、確認65001–65008。パイロット64101–64104。いずれも未使用。
 - 実行コマンド: `npm run study:referential -- --protocol lexicon3 --split development --model human-0.2.0 --model convention-contrast-0.10.0-experimental.2 --model lexicon-0.11.0-experimental.3 --model lexicon-0.11.0-experimental.4 --out outputs/lexicon-v3-development.json`（確認は`--split validation`）。
-- パイロットで見えたこと: 実行後に追記。
+- パイロットで見えたこと（64101–64104、候補は含めない。[結果](../results/lexicon-v3-pilot.md) / [JSON](../results/lexicon-v3-pilot.json)）: 1つの声の対照でも暖かい場所での声が110〜246回あり、機会は確保された（H2の前提）。暖かさ側の帰無は区別0.13（最大0.23）・特異性0.09（最大0.19）・寒さの種類依存0.04（最大0.18）で、lexicon-v2の閾値の下。閾値は据え置きで固定。閾値の固定は候補の実行の前。
 - 結果ファイル・ハッシュ: 実行後に追記。
 - 採否と判断者・理由: 実行後に追記。
 - 限界と次の問い: 4人・同じモデル。指示対象は2つ。組み合わせ（文法）はない。
