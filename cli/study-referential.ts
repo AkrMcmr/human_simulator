@@ -3,7 +3,8 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { runReferentialPartition, protocol } from "../research/studies/referential-v1.ts";
+import { runReferentialPartition, protocol as protocolV1, type ReferentialProtocol } from "../research/studies/referential-v1.ts";
+import protocolV2 from "../research/protocols/referential-v2.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -14,14 +15,17 @@ const modelIds: string[] = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--check") { options.set("--check", "true"); continue; }
   if (args[i] === "--model") { if (!args[i + 1] || args[i + 1].startsWith("--")) throw new Error("Missing value for --model"); modelIds.push(args[++i]); continue; }
-  if (!["--split", "--out"].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith("--") || options.has(args[i])) throw new Error("Unknown/duplicate option or missing value: " + args[i]);
+  if (!["--split", "--out", "--protocol"].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith("--") || options.has(args[i])) throw new Error("Unknown/duplicate option or missing value: " + args[i]);
   options.set(args[i], args[++i]);
 }
+const protocolName = options.get("--protocol") ?? "v1";
+if (protocolName !== "v1" && protocolName !== "v2") throw new Error("--protocol must be v1 or v2");
+const protocol: ReferentialProtocol = protocolName === "v2" ? (protocolV2 as unknown as ReferentialProtocol) : protocolV1;
 const split = options.get("--split") ?? "development";
 if (split !== "development" && split !== "validation" && split !== "pilot") throw new Error("--split must be development, validation, or pilot");
 if (!modelIds.length) modelIds.push(protocol.models.baseline);
 for (const id of modelIds) if (!Object.hasOwn(HUMAN_MODELS, id)) throw new Error("Unregistered model: " + id);
-const target = resolve(options.get("--out") ?? `outputs/referential-${split}.json`);
+const target = resolve(options.get("--out") ?? `outputs/${protocol.id}-${split}.json`);
 if (!target.endsWith(".json")) throw new Error("Output must be JSON");
 function git(...argv: string[]) { try { return execFileSync("git", argv, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return "unavailable"; } }
 function files(path: string): string[] { return readdirSync(resolve(root, path), { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(path + "/" + e.name) : [path + "/" + e.name]); }
@@ -33,16 +37,16 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
-const partitions = modelIds.map(id => runReferentialPartition(split, id));
+const partitions = modelIds.map(id => runReferentialPartition(split, id, protocol));
 const output = { format: "human-world-lab/referential-study", schemaVersion: 1, protocol, provenance, seedUse: split === "pilot" ? "pilot seeds: scale check only, not a gate" : split, models: Object.fromEntries(modelIds.map(id => [id, versionsFor(id).human])), partitions, established: Object.fromEntries(partitions.map(p => [p.model, p.established])), decision: "diagnostics-of-registered-models-not-default-promotion" };
 mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, JSON.stringify(output, null, 2) + "\n");
 const f = (x: number, d = 4) => x.toFixed(d);
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-const lines = ["# 情報の非対称がある採餌課題（referential-v1）", "", `- 条件群: ${split}`, `- ソース: ${provenance.commit}`, `- 未コミット変更: ${provenance.dirty}`, `- モデルコードSHA256: ${provenance.modelHash}`, `- 評価器SHA256: ${provenance.evaluatorHash}`, `- 環境SHA256: ${provenance.environmentHash}`, `- シード: ${partitions[0].seeds.join(", ")}`, `- 実行: ${protocol.horizon}ステップ、視界${protocol.world.visionRadius}u、聴覚${protocol.world.hearingRadius}u、食料3か所（各0.6）、初期空腹${protocol.body.hunger}、二人とも同じモデル。対照は音なし、方向をでたらめにする介入、音の特徴をでたらめにする介入`, "", "値はシードごとの差の平均 ± 標本SD。高いほど「声が食料の手掛かりとして働く」方向。人間の言語や意図の再現ではない。", ""];
+const lines = [`# 情報の非対称がある採餌課題（${protocol.id}）`, "", `- 条件群: ${split}`, `- ソース: ${provenance.commit}`, `- 未コミット変更: ${provenance.dirty}`, `- モデルコードSHA256: ${provenance.modelHash}`, `- 評価器SHA256: ${provenance.evaluatorHash}`, `- 環境SHA256: ${provenance.environmentHash}`, `- シード: ${partitions[0].seeds.join(", ")}`, `- 実行: ${protocol.horizon}ステップ、視界${protocol.world.visionRadius}u、聴覚${protocol.world.hearingRadius}u、食料${protocol.resources.filter(r => r.kind === "food").length}か所（各${protocol.resources.find(r => r.kind === "food")?.amount}）、初期空腹${protocol.body.hunger}、二人とも同じモデル。対照は音なし、方向をでたらめにする介入、音の特徴をでたらめにする介入`, "", "値はシードごとの差の平均 ± 標本SD。高いほど「声が食料の手掛かりとして働く」方向。人間の言語や意図の再現ではない。", ""];
 for (const p of partitions) {
   lines.push(`## ${p.model}`, "", "| 項目 | 平均 ± SD | 閾値 | 判定 |", "| --- | ---: | ---: | --- |");
   for (const c of p.checks) lines.push(`| ${c.label ?? c.id} | ${f(c.summary.mean)} ± ${f(c.summary.sd)} | ${c.minimum ?? "報告のみ"} | ${c.status} |`);

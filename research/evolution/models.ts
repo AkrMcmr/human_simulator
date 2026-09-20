@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
-import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager } from "../../packages/human/src/forager-listener.ts";
+import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
 import { createHuman, decideHuman, decideLegacyHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
 import { decidePredictive } from "../../packages/human/src/predictive-policy.ts";
 import { decideKeepEstimate, decideKeepEstimateAblated } from "../../packages/human/src/forgetting-policy.ts";
@@ -29,5 +29,8 @@ export const models: Record<string, ModelAdapter> = {
   "voice-state-only-0.6.0-experimental.1": { create: createHuman, decide: decideVoiceStateOnly, apply: applyPhysicalEffect },
   "forager-listener-0.7.0-experimental.1": { create: createHuman, decide: decideForagerListener, apply: applyPhysicalEffect },
   "forager-listener-only-0.7.0-experimental.1": { create: createHuman, decide: decideForagerListenerOnly, apply: applyPhysicalEffect },
-  "selective-forager-0.7.0-experimental.2": { create: createHuman, decide: decideSelectiveForager, apply: applyPhysicalEffect },
+  "selective-forager-0.7.0-experimental.2": { create: createHuman, decide: (h, o, r) => decideSelectiveForager(h, o, r), apply: applyPhysicalEffect },
+  "food-call-forager-0.8.0-experimental.1": { create: createHuman, decide: decideFoodCallForager, apply: applyWithIntake },
+  "food-call-selective-0.8.0-experimental.1": { create: createHuman, decide: decideFoodCallSelective, apply: applyWithIntake },
+  "food-call-only-0.8.0-experimental.1": { create: createHuman, decide: decideFoodCallOnly, apply: applyWithIntake },
 };

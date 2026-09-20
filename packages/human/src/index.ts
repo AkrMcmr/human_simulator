@@ -87,7 +87,9 @@ export type SoundChoice = (human: HumanState, peerId: string | null, peerDistanc
  */
 export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus; chooseSound?: SoundChoice; stateCoupling?: number;
   /** Candidate hook (0.7.0-experimental.*): when hungry with no remembered food, explore toward a heard sound. `true` picks the loudest (innate, category-blind); a function picks which sound to follow, or null for none. */
-  soundOrienting?: boolean | ((human: HumanState, sounds: HeardSound[], random: RandomSource) => HeardSound | null) };
+  soundOrienting?: boolean | ((human: HumanState, sounds: HeardSound[], random: RandomSource) => HeardSound | null);
+  /** Candidate hook (0.8.0-experimental.*): extra vocalize utility right after eating (a "food call" tendency). Requires the candidate's apply to record lastIntake. */
+  satiationCall?: number };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -225,6 +227,7 @@ export function decideWithOptions(previous: HumanState, observation: Observation
     learnedChange: peer && voiceResponse ? p.curiosity * Math.min(0.2, Math.abs(voiceResponse.mean) * 0.2) : 0,
     danger: -perceivedRisk * p.caution * 0.22,
     fatigue: -human.body.fatigue * 0.1, cost: -0.07,
+    ...(options.satiationCall ? { satiationCall: ((human as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0 ? options.satiationCall : 0 } : {}),
   });
   const ordered = [...scores].sort((a, b) => b.utility - a.utility || a.action.localeCompare(b.action));
   const exploratory = random("epsilon") < p.exploration;

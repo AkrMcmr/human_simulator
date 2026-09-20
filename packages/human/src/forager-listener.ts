@@ -1,5 +1,6 @@
 import { clamp, soundDistance } from "../../contracts/src/index.ts";
-import type { HeardSound, Observation, RandomSource } from "../../contracts/src/index.ts";
+import type { HeardSound, Observation, PhysicalEffect, RandomSource } from "../../contracts/src/index.ts";
+import { applyPhysicalEffect } from "./index.ts";
 import type { Estimate, HumanState } from "./index.ts";
 import { decideWithSenderOptions } from "./signal-sender.ts";
 import { VOICE_STATE } from "./voice-state.ts";
@@ -15,6 +16,18 @@ import { VOICE_STATE } from "./voice-state.ts";
 export const FORAGER_LISTENER_VERSION = "0.7.0-experimental.1";
 export const SELECTIVE_FORAGER_VERSION = "0.7.0-experimental.2";
 export const SELECTIVE = { outcomeWindow: 30, exploreRate: 0.15, unknownFollowRate: 0.5, hungerThreshold: 0.4, outcomeScale: 0.3 };
+/**
+ * 0.8.0-experimental.*: food call. Right after a step in which the individual ate, vocalizing gains extra utility, so
+ * voices tend to be produced at food. An innate emission tendency (research decision 0015), not a meaning.
+ */
+export const FOOD_CALL_VERSION = "0.8.0-experimental.1";
+export const FOOD_CALL = { utility: 0.45 };
+/** Candidate-only apply: remembers how much was eaten in the last step. The default apply does not record this. */
+export function applyWithIntake(previous: HumanState, effect: PhysicalEffect): HumanState {
+  const next = applyPhysicalEffect(previous, effect) as HumanState & { lastIntake?: number };
+  next.lastIntake = effect.foodIntake;
+  return next;
+}
 type ForagerState = HumanState & { orientOutcomes?: Record<number, Estimate>; orientPending?: { category: number; tick: number; hunger: number } | null };
 
 export function nearestHeardCategory(human: HumanState, sound: HeardSound): number | null {
@@ -36,7 +49,7 @@ export function selectSoundToFollow(human: HumanState, sounds: HeardSound[], ran
   if (choice && choice.category !== null && !state.orientPending) state.orientPending = { category: choice.category, tick, hunger: human.body.hunger };
   return choice?.sound ?? null;
 }
-export function decideSelectiveForager(previous: HumanState, observation: Observation, random: RandomSource) {
+export function decideSelectiveForager(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number) {
   const human: ForagerState = structuredClone(previous);
   const pending = human.orientPending;
   if (pending && observation.tick - pending.tick >= SELECTIVE.outcomeWindow) {
@@ -54,8 +67,14 @@ export function decideSelectiveForager(previous: HumanState, observation: Observ
     }
     human.orientPending = null;
   }
-  return decideWithSenderOptions(human, observation, random, { stateCoupling: VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectSoundToFollow(h, sounds, r, observation.tick) });
+  return decideWithSenderOptions(human, observation, random, { stateCoupling: VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectSoundToFollow(h, sounds, r, observation.tick), satiationCall });
 }
+/** Food call + blind orienting on the full stack. */
+export const decideFoodCallForager = (h: HumanState, o: Observation, r: RandomSource) => decideWithSenderOptions(h, o, r, { stateCoupling: VOICE_STATE.coupling, soundOrienting: true, satiationCall: FOOD_CALL.utility });
+/** Food call + selective orienting on the full stack. */
+export const decideFoodCallSelective = (h: HumanState, o: Observation, r: RandomSource) => decideSelectiveForager(h, o, r, FOOD_CALL.utility);
+/** Food call alone on the default model: voices at food, but nobody follows them. */
+export const decideFoodCallOnly = (h: HumanState, o: Observation, r: RandomSource) => decideWithSenderOptions(h, o, r, { sender: false, receiver: false, satiationCall: FOOD_CALL.utility });
 /** Blind orienting on the full learning stack. */
 export const decideForagerListener = (h: HumanState, o: Observation, r: RandomSource) => decideWithSenderOptions(h, o, r, { stateCoupling: VOICE_STATE.coupling, soundOrienting: true });
 /** Blind orienting alone on the default model: no coupling, no learning. */

@@ -15,6 +15,7 @@
 | 履歴介入の現象確認 | `npm run study:history -- --split development`。パイロットは`--split pilot`で尺度確認のみ。既定モデルの現象確認で候補比較ではない |
 | 反応の途中変化・忘却 | `npm run study:reversal -- --split development`。`--model`と`--baseline-model`で対比較。改訂サイクルでは`study: "reversal-v1"`として実行 |
 | 自由worldの最小合図 | `npm run study:signal-world -- --split development --model ID ...`。5モデル×2群で1分弱。`--check`は全モデルの成立で終了0 |
+| 情報の非対称がある採餌 | `npm run study:referential -- --split development --model ID ...`。`--check`はいずれかのモデルの成立で終了0 |
 | UI | `npm run typecheck`、`npm run build`、`node --test tests/*.test.mjs`。ブラウザQAは明示的に依頼された範囲 |
 
 `test:model`は`tests/model/*.test.ts`なのでpolicyのテストも含みます。`test:policy`はその絞り込みです。`npm test`はスターター由来のビルド＋画面側テストであり、モデル・評価器のテストすべてを実行するコマンドではありません。

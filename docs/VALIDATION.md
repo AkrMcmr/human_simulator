@@ -84,3 +84,7 @@ Codexの受信側診断（0008）と受信側候補（0010）を取り込み、�
 ## 2026-09-20: 状態連動の声（ユーザー指定の初期能力）
 
 所有者の判断で発声の状態連動を初期能力として採用し、候補0.6.0-experimental.1と対照3種をsignal-world-v1第2ラウンド（開発16001–16008・確認17001–17008）で測定。全モデルで合図は未成立、副作用なし（[判断0013](../research/decisions/0013-voice-state.md)）。診断スクリプトで危険度・身体要求・音区分の分布を確認し、状態差の不足を原因として記録。今回の検証: `npm run test:model` 51/51（voice-state 3件を追加）、`npm run test:evaluation` 6/6、`npm run test:evolution` 5/5、`npm run test:observer` 7/7、型検査・lint成功。既定モデルの計算は変更していません（連動は候補のみ）。
+
+## 2026-09-20: 音源定位と情報の非対称がある採餌課題
+
+契約0.2.0・世界0.2.0で聞いた音に方向を加えました。既定モデルの判断は変わらず、0.1.0・0.2.0のcore-v1保存測定値を引き続き再現します（テストで確認）。referential-v1で既定・状態連動・盲目的な定位・選択的な定位を開発18001–18008・確認19001–19008で測定。主要指標は全モデル未達、初回摂食までの時間は定位で一貫して短縮（[判断0014](../research/decisions/0014-referential-foraging.md)）。今回の検証: `npm run test:model` 56/56（referential 5件を追加）、`npm run test:evaluation` 6/6、`npm run test:evolution` 5/5、`npm run test:observer` 7/7、型検査・lint成功。

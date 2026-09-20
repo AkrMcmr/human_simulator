@@ -107,6 +107,12 @@ npm run study:reversal -- --split development --model forgetting-keep-estimate-0
 npm run study:signal-world -- --split development --model human-0.2.0 --model signal-sender-0.5.0-experimental.1
 ```
 
+```bash
+npm run study:referential -- --split development --model human-0.2.0 --model selective-forager-0.7.0-experimental.2
+```
+
+視界を狭め食料を散らした課題で、声の方向が食料への手掛かりになるかを、音なし・でたらめな方向・でたらめな特徴と比べます（[判断0014](research/decisions/0014-referential-foraging.md)）。
+
 二人が自由に動く通常worldで、聞いた音の種類と聞き手の次の行動、相手との距離と出す音の種類の結びつきを超過相互情報量で測り、音なし・でたらめ音の介入と比べます。`--round 2`で第2ラウンドのシード群を使います。現時点で合図は未成立です（[判断0011](research/decisions/0011-signal-world-m3.md)、[0012](research/decisions/0012-signal-sender.md)、[0013](research/decisions/0013-voice-state.md)）。
 
 仮説登録から採否の記録までの手順、対照条件と限界は [研究ループ](research/LOOP.md) を参照してください。

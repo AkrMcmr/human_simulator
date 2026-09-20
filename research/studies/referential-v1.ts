@@ -1,11 +1,12 @@
-import protocol from "../protocols/referential-v1.json" with { type: "json" };
+import protocolV1 from "../protocols/referential-v1.json" with { type: "json" };
 import type { ActionIntent, DecisionTrace } from "../../packages/contracts/src/index.ts";
 import { createSimulation, resolveModel, type ExperimentConfig, type SimulatorState } from "../../packages/simulation/src/index.ts";
 import { DEFAULT_WORLD, advanceWorld, senseWorld, type Resource } from "../../packages/world/src/index.ts";
 import { keyedRandom } from "../../packages/simulation/src/random.ts";
 import { mean, summarizeSamples, type Summary } from "../../packages/evaluation/src/index.ts";
 
-export { protocol };
+export type ReferentialProtocol = typeof protocolV1;
+export const protocol = protocolV1;
 export type Condition = "sound" | "muted" | "misdirected" | "scrambled";
 export type RunResult = {
   condition: Condition; model: string; seed: number;
@@ -13,7 +14,7 @@ export type RunResult = {
   heardEvents: number; unseenHeardEvents: number; towardSourceFraction: number; foodAfterHearingFraction: number;
   contactTicks: number; closeFraction: number; vocalizations: number; minimumHealth: number;
 };
-export function referentialConfig(seed: number, modelId: string, soundEnabled: boolean): ExperimentConfig {
+export function referentialConfig(seed: number, modelId: string, soundEnabled: boolean, protocol: ReferentialProtocol = protocolV1): ExperimentConfig {
   return {
     name: "referential-v1", seed, horizon: protocol.horizon, model: modelId,
     world: { ...DEFAULT_WORLD, ...protocol.world, soundEnabled },
@@ -22,9 +23,9 @@ export function referentialConfig(seed: number, modelId: string, soundEnabled: b
   };
 }
 /** Free world with narrow vision and scattered food. Interventions touch only what listeners hear: nothing, a wrong direction, or a wrong shape. */
-export function runCondition(modelId: string, seed: number, condition: Condition): RunResult {
+export function runCondition(modelId: string, seed: number, condition: Condition, protocol: ReferentialProtocol = protocolV1): RunResult {
   const model = resolveModel(modelId);
-  let state: SimulatorState = createSimulation(referentialConfig(seed, modelId, condition !== "muted"));
+  let state: SimulatorState = createSimulation(referentialConfig(seed, modelId, condition !== "muted", protocol));
   const ids = state.humans.map(h => h.id);
   const intervene = keyedRandom(seed, "referential/intervene", 0);
   const hungers: number[] = [];
@@ -83,36 +84,39 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   };
 }
 export type SeedResult = { seed: number; model: string } & Record<Condition, RunResult>;
-export function runSeed(modelId: string, seed: number): SeedResult {
-  return { seed, model: modelId, sound: runCondition(modelId, seed, "sound"), muted: runCondition(modelId, seed, "muted"), misdirected: runCondition(modelId, seed, "misdirected"), scrambled: runCondition(modelId, seed, "scrambled") };
+export function runSeed(modelId: string, seed: number, protocol: ReferentialProtocol = protocolV1): SeedResult {
+  return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging by their direction. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "contact-side-effect"] as const;
-export function checkValue(id: string, r: SeedResult): number {
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "contact-side-effect"] as const;
+export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
+  const h = protocol.horizon;
   switch (id) {
     case "forage-benefit": return r.muted.meanHunger - r.sound.meanHunger;
     case "direction-dependence": return r.misdirected.meanHunger - r.sound.meanHunger;
     case "shape-dependence": return r.scrambled.meanHunger - r.sound.meanHunger;
-    case "latency-benefit": return (r.muted.meanFirstFoodTick - r.sound.meanFirstFoodTick) / protocol.horizon;
+    case "latency-benefit": return (r.muted.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
+    case "latency-direction": return (r.misdirected.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
+    case "latency-shape": return (r.scrambled.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;
     default: throw new Error("Unknown check " + id);
   }
 }
 export type Check = { id: string; label?: string; minimum: number | null; values: number[]; summary: Summary; status: "pass" | "fail" | "reported" };
-export function assessSeeds(name: string, results: SeedResult[]) {
+export function assessSeeds(name: string, results: SeedResult[], protocol: ReferentialProtocol = protocolV1) {
   const registered = new Map((protocol.checks as { id: string; label: string; minimum: number }[]).map(c => [c.id, c]));
   const checks: Check[] = MEASURES.map(id => {
-    const values = results.map(r => checkValue(id, r));
-    const summary = summarizeSamples(values, "referential/" + name + "/" + id);
+    const values = results.map(r => checkValue(id, r, protocol));
+    const summary = summarizeSamples(values, protocol.id + "/" + name + "/" + id);
     const c = registered.get(id);
     return { id, label: c?.label, minimum: c?.minimum ?? null, values, summary, status: c ? (summary.mean >= c.minimum ? "pass" : "fail") : "reported" };
   });
   const gated = checks.filter(c => c.minimum !== null);
   return { checks, established: gated.length > 0 && gated.every(c => c.status === "pass") };
 }
-export function runReferentialPartition(name: "development" | "validation" | "pilot", modelId: string) {
+export function runReferentialPartition(name: "development" | "validation" | "pilot", modelId: string, protocol: ReferentialProtocol = protocolV1) {
   resolveModel(modelId);
   const seeds = name === "development" ? protocol.developmentSeeds : name === "validation" ? protocol.validationSeeds : protocol.pilotSeeds;
-  const results = seeds.map(seed => runSeed(modelId, seed));
-  return { name, seeds, model: modelId, results, ...assessSeeds(name + "/" + modelId, results) };
+  const results = seeds.map(seed => runSeed(modelId, seed, protocol));
+  return { name, protocol: protocol.id, seeds, model: modelId, results, ...assessSeeds(name + "/" + modelId, results, protocol) };
 }
