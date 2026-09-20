@@ -120,3 +120,7 @@ lexicon-v1（44001–/45001–、46001–/47001–）・lexicon-v2（48001–/49
 ## 2026-09-20: generations-v1
 
 generations-v1（56001–56008 / 57001–57008、[判断0030](../research/decisions/0030-generations.md)）: 候補は入れ替え後の収束と種類依存を両群達成、系統の連続（0.096 / 0.084）と任意性（0.075 / 0.071）は未達。今回の検証: `npm run test:model` 92/92（generations 2件を追加）、型検査・lint成功。
+
+## 2026-09-20: convention-v2 再現、lexicon-v3、generations-v2、fine-hearing、valence-v1
+
+convention-v2の16シード再現（[判断0035](../research/decisions/0035-convention-replication.md)）は5項目を両群で達成。lexicon-v3・分離・中間の希少性・細かい聴覚（[判断0031](../research/decisions/0031-memory-credit.md)〜[0036](../research/decisions/0036-fine-hearing.md)）は暖かさ側が未達で、2文脈の系統は7ラウンドで閉じた。generations-v2（[判断0032](../research/decisions/0032-generations-v2.md)）は連続0.115 / 0.125で未達（漂いとして記録）。valence-v1（70001–70008 / 71001–71008、[判断0037](../research/decisions/0037-valence.md)）: 契約0.3.0（`poison`効果）・世界0.5.0（毒の食料）を追加、既定の世界は不変（保存結果と一致するテスト）。候補は良い声・悪い声の収束と任意性を両群達成、区別は0.283 / 0.213（閾値0.25、対照0.06未満）、毒の利益は後ろ3分の1で−0.03 / −0.04で未成立。世界0.6.0（`foodSpawn.lifetime`）でvalence-v2を事前登録。今回の検証: `npm run test:model` 103/103（valence 5件を追加）、型検査・lint成功。
