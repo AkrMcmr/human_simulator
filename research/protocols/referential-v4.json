@@ -1,0 +1,61 @@
+{
+  "id": "referential-v4",
+  "version": "1.0.0",
+  "evidence": "free-world-recurring-information-asymmetry-four-individuals-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: referential-v3の世界（食料が尽きると別の場所に現れる）に4人を置き、空腹の聞き手が同時に複数の声を別々の場所から聞くとき、声の種類で追う相手を選ぶ聞き手が、見つけた個体以外の到着を早めるかを測る。音あり・音なし・方向をでたらめにする・音の特徴をでたらめにする、の4条件（判断0018の診断に基づく）",
+  "models": {
+    "baseline": "human-0.2.0",
+    "eatingBlind": "eating-voice-blind-0.8.0-experimental.2",
+    "foodCallReferent": "food-call-referent-0.8.0-experimental.3",
+    "eatingReferent": "eating-voice-referent-0.8.0-experimental.3"
+  },
+  "pilotSeeds": [28101, 28102, 28103, 28104],
+  "pilotUse": "尺度確認のみ（既定・盲目的な定位・連動なしの出所評価）。候補eating-voice-referentはパイロットで走らせない。閾値固定後にゲート判定へ使わない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [28001, 28002, 28003, 28004, 28005, 28006, 28007, 28008],
+      "validationSeeds": [29001, 29002, 29003, 29004, 29005, 29006, 29007, 29008],
+      "status": "reserved for the four-individual comparison (decision 0019)"
+    }
+  },
+  "developmentSeeds": [28001, 28002, 28003, 28004, 28005, 28006, 28007, 28008],
+  "validationSeeds": [29001, 29002, 29003, 29004, 29005, 29006, 29007, 29008],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 4,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        { "x": 33, "y": 23 }, { "x": 20, "y": 3 }, { "x": 5, "y": 22 }, { "x": 35, "y": 6 },
+        { "x": 20, "y": 25 }, { "x": 12, "y": 20 }, { "x": 28, "y": 8 }, { "x": 8, "y": 12 },
+        { "x": 32, "y": 16 }, { "x": 16, "y": 7 }, { "x": 24, "y": 21 }, { "x": 7, "y": 5 }
+      ]
+    }
+  },
+  "agents": { "A": { "x": 10, "y": 14 }, "B": { "x": 30, "y": 14 }, "C": { "x": 20, "y": 6 }, "D": { "x": 20, "y": 22 } },
+  "body": { "hunger": 0.5, "fatigue": 0.15, "cold": 0.1 },
+  "resources": [
+    { "id": "food-1", "kind": "food", "position": { "x": 7, "y": 5 }, "amount": 4, "radius": 2 },
+    { "id": "warm-c", "kind": "warmth", "position": { "x": 20, "y": 14 }, "amount": 1, "radius": 3 }
+  ],
+  "conditions": ["sound", "muted", "misdirected", "scrambled"],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。到着遅れは、食料ごとに『先に食べた個体の初回摂食から、他の各個体の初回摂食まで』のステップ（上限300、未到着は上限）を上限比で他の個体について平均し、先の発見が実行終了の300ステップ前までに起きた食料について平均する。接触・4u未満はどの対でも起きたステップの割合",
+  "checks": [
+    { "id": "arrival-benefit", "label": "音があると、見つけた個体以外の到着が早まる（音なし − 音あり、上限比）", "minimum": 0.1, "unit": "normalized arrival delay difference" },
+    { "id": "arrival-direction", "label": "方向をでたらめにすると早まりが消える（でたらめ方向 − 音あり）", "minimum": 0.1, "unit": "normalized arrival delay difference" },
+    { "id": "arrival-shape", "label": "音の特徴をでたらめにすると早まりが減る（でたらめ特徴 − 音あり）。種類を使う候補だけに期待", "minimum": 0.05, "unit": "normalized arrival delay difference" },
+    { "id": "forage-benefit", "label": "音があることで空腹の平均が悪化しない（音なし − 音あり）", "minimum": -0.02, "unit": "mean hunger difference" },
+    { "id": "contact-side-effect", "label": "音があることで接触が増えない（音なし − 音あり）", "minimum": -0.01, "unit": "fraction of ticks with contact" }
+  ],
+  "reported": ["meanHunger", "foodIntake", "firstFoodTick", "arrivalDelay", "patchesFound", "patchesShared", "spawns", "heardEvents (source not visible)", "towardSourceFraction", "contactTicks", "closeFraction"],
+  "notAClaim": "音に意味・正解・成功ラベルを与えない。方向への定位は生得の知覚と探索傾向で、音の種類の理解ではない。食料の出現位置は実験者が固定した列で、世界の生態の再現ではない",
+  "thresholdBasis": "暫定: referential-v3の閾値を引き継ぐ。パイロット28101-28104で既定・盲目的な定位・連動なしの出所評価の尺度を確認してから固定し、変更があればここに記す。候補の結果は閾値固定前に見ない。食料の量4は4人分（v3の量2は2人分）",
+  "establishedIf": "5項目を開発・確認の両群で達成したモデルについて「声の種類を手掛かりに食料へ向かう受け手側の合図利用が成立」と呼ぶ。arrival-shape未達で他が達成なら「定位による手掛かり利用」に留まる"
+}

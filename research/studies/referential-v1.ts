@@ -13,7 +13,7 @@ export type RunResult = {
   meanHunger: number; foodIntake: number; firstFoodTick: Record<string, number>; meanFirstFoodTick: number;
   heardEvents: number; unseenHeardEvents: number; towardSourceFraction: number; foodAfterHearingFraction: number;
   contactTicks: number; closeFraction: number; vocalizations: number; minimumHealth: number;
-  /** v3: per food patch, the second individual's first eating tick minus the finder's, capped (unseen arrivals count as the cap), as a fraction of the cap; averaged over patches found early enough for a full window. 1 when no patch qualifies. */
+  /** v3/v4: per food patch, each non-finder's first eating tick minus the finder's, capped (never arriving counts as the cap), as a fraction of the cap, averaged over the non-finders; then averaged over patches found early enough for a full window. 1 when no patch qualifies. */
   arrivalDelay: number; patchesFound: number; patchesShared: number; spawns: number;
 };
 const arrivalCapOf = (protocol: ReferentialProtocol) => (protocol as unknown as { arrivalCap?: number }).arrivalCap ?? 300;
@@ -80,8 +80,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     }
     for (const h of state.humans) { hungers.push(h.body.hunger); minimumHealth = Math.min(minimumHealth, h.body.health); }
     if (advanced.events.some(e => e.kind === "contact")) contactTicks++;
-    const [a, b] = state.world.animals;
-    if (Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y) < 4) closeTicks++;
+    const animals = state.world.animals;
+    if (animals.some((a, i) => animals.slice(i + 1).some(b => Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y) < 4))) closeTicks++;
   }
   for (const id of ids) if (!(id in firstFoodTick)) firstFoodTick[id] = protocol.horizon;
   const fed = ids.filter(id => firstFoodTick[id] < protocol.horizon);
@@ -92,7 +92,10 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     const ticks = Object.values(arrivals).sort((a, b) => a - b);
     if (ticks.length > 1) patchesShared++;
     if (ticks[0] > protocol.horizon - cap) continue;
-    delays.push(Math.min(cap, ticks.length > 1 ? ticks[1] - ticks[0] : cap) / cap);
+    // Every individual other than the finder: its own arrival delay, or the cap when it never ate there.
+    const others = ids.length - 1;
+    const total = ticks.slice(1).reduce((sum, t) => sum + Math.min(cap, t - ticks[0]), 0) + (others - (ticks.length - 1)) * cap;
+    delays.push(total / others / cap);
   }
   return {
     condition, model: model.id, seed,
