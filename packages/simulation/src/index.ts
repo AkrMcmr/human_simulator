@@ -77,7 +77,8 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
     const sp = value.world.foodSpawn;
     if (!object(sp) || !foodAmount(sp.amount) || !finite(sp.radius) || (sp.radius as number) <= 0 || (sp.radius as number) > 100 || !unit(sp.depletedBelow)
         || !Array.isArray(sp.positions) || sp.positions.length < 1 || sp.positions.length > 64 || !sp.positions.every(inBounds)
-        || (sp.toxicEvery !== undefined && (!Number.isInteger(sp.toxicEvery) || (sp.toxicEvery as number) < 1))) throw new Error("食料の出現設定が不正です。");
+        || (sp.toxicEvery !== undefined && (!Number.isInteger(sp.toxicEvery) || (sp.toxicEvery as number) < 1))
+        || (sp.lifetime !== undefined && (!Number.isInteger(sp.lifetime) || (sp.lifetime as number) < 1))) throw new Error("食料の出現設定が不正です。");
   }
   const ids = new Set<string>();
   for (const a of value.agents) {

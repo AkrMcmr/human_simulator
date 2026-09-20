@@ -5,6 +5,7 @@ import { advanceWorld, createWorld, WORLD_VERSION } from "../../packages/world/s
 import { applyWithIntake } from "../../packages/human/src/forager-listener.ts";
 import { valenceOf, valenceVoice, chooseValenceVoice, selectSafeFood, decideValence } from "../../packages/human/src/valence.ts";
 import { protocol as valence } from "../../research/studies/valence-v1.ts";
+import { protocol as valence2 } from "../../research/studies/valence-v2.ts";
 import { protocol as v5 } from "../../research/studies/referential-v5.ts";
 import { seedsFor, runCondition, checkValue, referentialConfig, type SeedResult } from "../../research/studies/referential-v1.ts";
 import { HUMAN_MODELS, runExperiment, createSimulation, VERSIONS } from "../../packages/simulation/src/index.ts";
@@ -13,7 +14,7 @@ type V = ReturnType<typeof createHuman> & { lastIntake?: number; lastPoison?: nu
 const effect = (foodIntake: number, poison = 0) => ({ ambientCold: .3, foodIntake, exertion: 0, resting: false, collision: 0, ...(poison ? { poison } : {}) });
 
 test("world 0.5.0: a toxic patch poisons its eaters, spawned patches are toxic every n-th time, wholesome food never sets poison", () => {
-  assert.equal(WORLD_VERSION, "0.5.0"); assert.equal(VERSIONS.contracts, "0.3.0");
+  assert.equal(WORLD_VERSION, "0.6.0"); assert.equal(VERSIONS.contracts, "0.3.0");
   const animals = [{ id: "A", position: { x: 7, y: 5 } }];
   const toxic = createWorld(animals, { foodRegeneration: 0, foodSpawn: { amount: 1, radius: 2, depletedBelow: 0.01, positions: [{ x: 20, y: 3 }, { x: 5, y: 22 }], toxicEvery: 2 } }, [{ id: "f", kind: "food", position: { x: 7, y: 5 }, amount: 0.05, radius: 2, toxic: true }]);
   const step1 = advanceWorld(toxic, { A: { kind: "forage" } }, 0);
@@ -80,4 +81,26 @@ test("valence-v1 makes every second spawned patch toxic, uses fresh seeds, and t
   assert.ok(Math.abs(checkValue("convergence-bad", seed, valence) - 0.2) < 1e-9 && checkValue("valence-distinctness", seed, valence) > 0.5);
   const v5run = runCondition("human-0.2.0", 70101, "sound", { ...v5, horizon: 300 } as typeof v5);
   assert.equal(v5run.poisonIntake, 0, "worlds without toxic patches record no poison");
+});
+
+test("world 0.6.0: an uneaten patch rots after its lifetime and the next patch appears; without a lifetime it stands forever", () => {
+  const animals = [{ id: "A", position: { x: 30, y: 30 } }];
+  const spawn = { amount: 1, radius: 2, depletedBelow: 0.01, positions: [{ x: 20, y: 3 }, { x: 5, y: 22 }], toxicEvery: 2 };
+  const rotting = createWorld(animals, { foodRegeneration: 0, foodSpawn: { ...spawn, lifetime: 10 } }, [{ id: "f", kind: "food", position: { x: 7, y: 5 }, amount: 1, radius: 2, toxic: true }]);
+  let w = rotting; const spawns: number[] = [];
+  for (let t = 0; t < 25; t++) { const step = advanceWorld(w, { A: { kind: "rest" } }, t); w = step.world; for (const e of step.events) if (e.kind === "spawn") spawns.push(e.tick); }
+  assert.deepEqual(spawns, [10, 20], "the initial patch rots at tick 10 and the first spawned patch at tick 20");
+  const [initial, first, second] = w.resources.filter(r => r.kind === "food");
+  assert.ok(initial.spent && initial.amount === 0 && first.spent && !second.spent, "rotten patches stay visible with nothing left");
+  assert.equal(first.since, 10); assert.equal(second.since, 20); assert.equal(second.toxic, true, "the spawn count and toxicity sequence are unchanged by rot");
+  const standing = createWorld(animals, { foodRegeneration: 0, foodSpawn: spawn }, [{ id: "f", kind: "food", position: { x: 7, y: 5 }, amount: 1, radius: 2 }]);
+  let u = standing; for (let t = 0; t < 25; t++) u = advanceWorld(u, { A: { kind: "rest" } }, t).world;
+  assert.equal(u.resources.filter(r => r.kind === "food").length, 1, "no lifetime: nothing rots (0.5.0 behavior)");
+  const base = referentialConfig(1, "human-0.2.0", true, valence2) as { world: { foodSpawn?: { lifetime?: number } } };
+  assert.throws(() => createSimulation({ ...base, world: { ...base.world, foodSpawn: { ...base.world.foodSpawn!, lifetime: 0 } } } as Parameters<typeof createSimulation>[0]), /食料の出現設定/);
+  const v1 = [valence.pilotSeeds, seedsFor("development", valence, "1"), seedsFor("validation", valence, "1")].flat();
+  const v2 = [valence2.pilotSeeds, seedsFor("development", valence2, "1"), seedsFor("validation", valence2, "1")].flat();
+  assert.equal(new Set([...v1, ...v2]).size, v1.length + v2.length, "valence-v2 seeds are fresh");
+  const run = runExperiment({ ...referentialConfig(v2[0], "valence-0.12.0-experimental.1", true, valence2), horizon: 520 });
+  assert.ok(run.state.world.resources.some(r => r.kind === "food" && r.spent), "in the valence-v2 world some patch has rotted or been eaten by tick 520");
 });

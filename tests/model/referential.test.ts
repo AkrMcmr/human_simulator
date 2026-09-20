@@ -16,7 +16,7 @@ test("heard sounds carry a direction, the sensor boundary keeps the speaker iden
   assert.equal(obs.sounds.length, 1);
   assert.equal(obs.sounds[0].visibleSourceId, null, "out of sight: no identity even with a direction");
   assert.deepEqual(obs.sounds[0].relativePosition, { x: 10, y: 0 });
-  assert.equal(VERSIONS.contracts, "0.3.0"); assert.equal(VERSIONS.world, "0.5.0");
+  assert.equal(VERSIONS.contracts, "0.3.0"); assert.equal(VERSIONS.world, "0.6.0");
 });
 test("referential-v1 seeds are fresh and its configuration validates with narrow vision and scattered food", () => {
   const all = [protocol.pilotSeeds, protocol.developmentSeeds, protocol.validationSeeds].flat();
