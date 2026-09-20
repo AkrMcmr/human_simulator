@@ -118,9 +118,17 @@ export function assessSeeds(name: string, results: SeedResult[]) {
   const established = checks.every(c => c.status === "pass");
   return { checks, established };
 }
-export function runSignalWorldPartition(name: "development" | "validation" | "pilot", modelId: string) {
+export type Round = keyof typeof protocol.rounds;
+/** Seed rounds keep thresholds fixed while later candidates are judged on seeds nobody has observed. */
+export function seedsFor(name: "development" | "validation" | "pilot", round: Round = "1"): number[] {
+  if (name === "pilot") return protocol.pilotSeeds;
+  const r = protocol.rounds[round];
+  if (!r) throw new Error("Unknown seed round " + String(round));
+  return name === "development" ? r.developmentSeeds : r.validationSeeds;
+}
+export function runSignalWorldPartition(name: "development" | "validation" | "pilot", modelId: string, round: Round = "1") {
   resolveModel(modelId);
-  const seeds = name === "development" ? protocol.developmentSeeds : name === "validation" ? protocol.validationSeeds : protocol.pilotSeeds;
+  const seeds = seedsFor(name, round);
   const results = seeds.map(seed => runSeed(modelId, seed));
-  return { name, seeds, model: modelId, results, ...assessSeeds(name + "/" + modelId, results) };
+  return { name, round, seeds, model: modelId, results, ...assessSeeds(name + "/" + round + "/" + modelId, results) };
 }

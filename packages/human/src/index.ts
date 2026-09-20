@@ -80,7 +80,12 @@ export const predictedSafety: OutcomeBonus = (action, human, peerDistance, peerI
 export type Forgetting = "toward-prior" | "keep-estimate";
 /** Candidate hook: choose the base shape of a vocalization from the individual's own produced categories; null keeps the default random reuse. */
 export type SoundChoice = (human: HumanState, peerId: string | null, peerDistance: number | null, random: RandomSource) => SoundShape | null;
-export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus; chooseSound?: SoundChoice };
+/**
+ * State-coupled voice (user-specified innate capacity, decided 2026-09-20): a share of the produced sound's
+ * features leaks the speaker's current state. Openness follows perceived risk, resonance follows the strongest
+ * bodily need. No meaning is attached; this only makes the sound carry information the individual did not choose to send.
+ */
+export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus; chooseSound?: SoundChoice; stateCoupling?: number };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -243,9 +248,13 @@ export function decideWithOptions(previous: HumanState, observation: Observation
     const base = chosen ?? (repeat ? known[Math.floor(random("voice-category") * known.length)].shape : {
       openness: random("voice-openness"), resonance: random("voice-resonance"),
     });
+    const coupling = options.stateCoupling ?? 0;
+    const expressed = coupling > 0
+      ? { openness: (1 - coupling) * base.openness + coupling * clamp(perceivedRisk * 2), resonance: (1 - coupling) * base.resonance + coupling * bodilyNeed }
+      : base;
     action.sound = {
-      openness: clamp(base.openness + (random("motor-noise-o") - 0.5) * 0.07),
-      resonance: clamp(base.resonance + (random("motor-noise-r") - 0.5) * 0.07),
+      openness: clamp(expressed.openness + (random("motor-noise-o") - 0.5) * 0.07),
+      resonance: clamp(expressed.resonance + (random("motor-noise-r") - 0.5) * 0.07),
     };
     rememberSound(human.producedSounds, action.sound, 0.14);
   }

@@ -1,5 +1,6 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
+import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
 import { createHuman, decideHuman, decideLegacyHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
 import { decidePredictive } from "../../packages/human/src/predictive-policy.ts";
 import { decideKeepEstimate, decideKeepEstimateAblated } from "../../packages/human/src/forgetting-policy.ts";
@@ -22,4 +23,7 @@ export const models: Record<string, ModelAdapter> = {
   "signal-sender-0.5.0-experimental.1": { create: createHuman, decide: decideSignalSender, apply: applyPhysicalEffect },
   "signal-sender-only-0.5.0-experimental.1": { create: createHuman, decide: decideSignalSenderOnly, apply: applyPhysicalEffect },
   "signal-sender-off-0.5.0-experimental.1": { create: createHuman, decide: decideSignalSenderOff, apply: applyPhysicalEffect },
+  "voice-state-0.6.0-experimental.1": { create: createHuman, decide: decideVoiceState, apply: applyPhysicalEffect },
+  "voice-state-receiver-0.6.0-experimental.1": { create: createHuman, decide: decideVoiceStateReceiver, apply: applyPhysicalEffect },
+  "voice-state-only-0.6.0-experimental.1": { create: createHuman, decide: decideVoiceStateOnly, apply: applyPhysicalEffect },
 };

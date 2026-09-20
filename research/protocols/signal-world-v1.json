@@ -8,7 +8,10 @@
     "receiver": "sound-association-0.4.0-experimental.1",
     "sender": "signal-sender-0.5.0-experimental.1",
     "senderOnly": "signal-sender-only-0.5.0-experimental.1",
-    "senderOff": "signal-sender-off-0.5.0-experimental.1"
+    "senderOff": "signal-sender-off-0.5.0-experimental.1",
+    "voiceState": "voice-state-0.6.0-experimental.1",
+    "voiceStateReceiver": "voice-state-receiver-0.6.0-experimental.1",
+    "voiceStateOnly": "voice-state-only-0.6.0-experimental.1"
   },
   "pilotSeeds": [
     14101,
@@ -98,5 +101,53 @@
   ],
   "establishedIf": "聞き手2項目と発し手1項目が開発・確認の両群で達成し、副作用も達成したとき「声を手掛かりにした距離調整の最小合図が成立」と呼ぶ。分類数や発声回数の増加は数えない",
   "notAClaim": "音に意味・正解・成功ラベルを与えない。超過相互情報量は相関の強さで、意図や理解ではない",
-  "thresholdBasis": "パイロットシード14101-14104で既定と受信側候補の尺度を確認（両者とも超過相互情報量は±0.03以内の雑音）してから0.03に固定した。発し手候補の結果は閾値固定前に見ていない"
+  "thresholdBasis": "パイロットシード14101-14104で既定と受信側候補の尺度を確認（両者とも超過相互情報量は±0.03以内の雑音）してから0.03に固定した。発し手候補の結果は閾値固定前に見ていない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        14001,
+        14002,
+        14003,
+        14004,
+        14005,
+        14006,
+        14007,
+        14008
+      ],
+      "validationSeeds": [
+        15001,
+        15002,
+        15003,
+        15004,
+        15005,
+        15006,
+        15007,
+        15008
+      ],
+      "status": "observed 2026-09-16 (decisions 0011, 0012)"
+    },
+    "2": {
+      "developmentSeeds": [
+        16001,
+        16002,
+        16003,
+        16004,
+        16005,
+        16006,
+        16007,
+        16008
+      ],
+      "validationSeeds": [
+        17001,
+        17002,
+        17003,
+        17004,
+        17005,
+        17006,
+        17007,
+        17008
+      ],
+      "status": "reserved for the state-coupled voice comparison (decision 0013); thresholds unchanged"
+    }
+  }
 }
