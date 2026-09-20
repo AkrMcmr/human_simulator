@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
-import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
+import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
 import { createHuman, decideHuman, decideLegacyHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
 import { decidePredictive } from "../../packages/human/src/predictive-policy.ts";
 import { decideKeepEstimate, decideKeepEstimateAblated } from "../../packages/human/src/forgetting-policy.ts";
@@ -37,4 +37,5 @@ export const models: Record<string, ModelAdapter> = {
   "eating-voice-blind-0.8.0-experimental.2": { create: createHuman, decide: decideEatingBlind, apply: applyWithIntake },
   "eating-voice-referent-0.8.0-experimental.3": { create: createHuman, decide: decideEatingReferent, apply: applyWithIntake },
   "food-call-referent-0.8.0-experimental.3": { create: createHuman, decide: decideFoodCallReferent, apply: applyWithIntake },
+  "learned-caller-0.9.0-experimental.1": { create: createHuman, decide: decideLearnedCaller, apply: applyWithIntake },
 };

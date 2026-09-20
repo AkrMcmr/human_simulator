@@ -1,0 +1,224 @@
+{
+  "id": "caller-cost-v1",
+  "version": "1.0.0",
+  "evidence": "free-world-caller-cost-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 4人・食料が移り変わる世界（referential-v4/v5と同一）で、食後の呼び声が発し手自身に何をもたらすかを学ぶ発し手が、声を聞かれる条件（音あり）では呼び声を減らし、聞かれない条件（音なし）では減らさないかを測る。呼び声は他者を自分の食料へ呼ぶので発し手には費用のはず（判断0021）",
+  "models": {
+    "baseline": "human-0.2.0",
+    "fixedCaller": "eating-voice-referent-0.8.0-experimental.3",
+    "learnedCaller": "learned-caller-0.9.0-experimental.1"
+  },
+  "pilotSeeds": [
+    36101,
+    36102,
+    36103,
+    36104
+  ],
+  "pilotUse": "尺度確認のみ（固定の呼び声eating-voice-referentで、音あり・音なしの呼び声回数の自然な差＝帰無の尺度を見る）。候補learned-callerはパイロットで走らせない。閾値固定後にゲート判定へ使わない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        36001,
+        36002,
+        36003,
+        36004,
+        36005,
+        36006,
+        36007,
+        36008
+      ],
+      "validationSeeds": [
+        37001,
+        37002,
+        37003,
+        37004,
+        37005,
+        37006,
+        37007,
+        37008
+      ],
+      "status": "reserved for the caller-cost comparison (decision 0021)"
+    }
+  },
+  "developmentSeeds": [
+    36001,
+    36002,
+    36003,
+    36004,
+    36005,
+    36006,
+    36007,
+    36008
+  ],
+  "validationSeeds": [
+    37001,
+    37002,
+    37003,
+    37004,
+    37005,
+    37006,
+    37007,
+    37008
+  ],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 4,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ]
+    }
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。呼び声の抑制は（音なしの食後の呼び声回数 − 音ありの回数）/ 音なしの回数。到着遅れ・空腹はreferential-v5と同じ",
+  "checks": [
+    {
+      "id": "call-suppression",
+      "label": "聞かれる条件では食後の呼び声が減る（音なし − 音あり）/ 音なし",
+      "minimum": 0.3,
+      "unit": "fraction of food calls given up"
+    }
+  ],
+  "reported": [
+    "foodCalls",
+    "vocalizations",
+    "arrival-benefit",
+    "arrival-direction",
+    "shape-dependence",
+    "forage-benefit",
+    "meanHunger",
+    "arrivalDelay",
+    "patchesFound",
+    "patchesShared",
+    "spawns",
+    "contactTicks"
+  ],
+  "notAClaim": "音に意味・正解・成功ラベルを与えない。発し手が学ぶのは自分の空腹の変化だけで、聞き手の反応や意図は与えない。食料の出現位置は固定列",
+  "thresholdBasis": "暫定0.3。パイロット36101-36104で固定の呼び声（学習なし）の音あり−音なしの差の尺度を見てから固定する。候補の結果は閾値固定前に見ない",
+  "establishedIf": "call-suppressionを開発・確認の両群で達成した発し手について「呼び声の費用を学んで黙る」と呼ぶ。成立は「この世界では呼び声が発し手に不利」の証拠であり、合図の成立ではない。到着の短縮（報告のみ）が0.10を下回れば、受け手側の手掛かりも消えたと記す"
+}

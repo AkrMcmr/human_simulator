@@ -8,6 +8,7 @@ import protocolV2 from "../research/protocols/referential-v2.json" with { type: 
 import protocolV3 from "../research/protocols/referential-v3.json" with { type: "json" };
 import protocolV4 from "../research/protocols/referential-v4.json" with { type: "json" };
 import protocolV5 from "../research/protocols/referential-v5.json" with { type: "json" };
+import protocolCaller from "../research/protocols/caller-cost-v1.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -22,7 +23,7 @@ for (let i = 0; i < args.length; i++) {
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
-const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol };
+const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol };
 if (!Object.hasOwn(protocols, protocolName)) throw new Error("--protocol must be one of " + Object.keys(protocols).join(", "));
 const protocol: ReferentialProtocol = protocols[protocolName];
 const split = options.get("--split") ?? "development";
@@ -41,7 +42,7 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
@@ -66,6 +67,7 @@ for (const p of partitions) {
     `| 聞いた回数 / 音源が見えなかった回数 | ${s("sound", r => r.heardEvents, 0)} / ${s("sound", r => r.unseenHeardEvents, 0)} | 0 / 0 | ${s("misdirected", r => r.heardEvents, 0)} / ${s("misdirected", r => r.unseenHeardEvents, 0)} | ${s("scrambled", r => r.heardEvents, 0)} / ${s("scrambled", r => r.unseenHeardEvents, 0)} |`,
     `| 音を聞いた直後に音源の方へ動いた割合 | ${s("sound", r => r.towardSourceFraction)} | — | ${s("misdirected", r => r.towardSourceFraction)} | ${s("scrambled", r => r.towardSourceFraction)} |`,
     `| 初回摂食が聞いた直後（${protocol.hearWindow}ステップ以内）だった割合 | ${s("sound", r => r.foodAfterHearingFraction)} | — | ${s("misdirected", r => r.foodAfterHearingFraction)} | ${s("scrambled", r => r.foodAfterHearingFraction)} |`,
+    `| 発声回数 / うち食後の呼び声 | ${s("sound", r => r.vocalizations, 0)} / ${s("sound", r => r.foodCalls, 0)} | ${s("muted", r => r.vocalizations, 0)} / ${s("muted", r => r.foodCalls, 0)} | ${s("misdirected", r => r.vocalizations, 0)} / ${s("misdirected", r => r.foodCalls, 0)} | ${s("scrambled", r => r.vocalizations, 0)} / ${s("scrambled", r => r.foodCalls, 0)} |`,
     `| 接触ステップ割合 | ${s("sound", r => r.contactTicks)} | ${s("muted", r => r.contactTicks)} | ${s("misdirected", r => r.contactTicks)} | ${s("scrambled", r => r.contactTicks)} |`,
     `| 4u未満の割合 | ${s("sound", r => r.closeFraction)} | ${s("muted", r => r.closeFraction)} | ${s("misdirected", r => r.closeFraction)} | ${s("scrambled", r => r.closeFraction)} |`,
     `| 最低健康 | ${s("sound", r => r.minimumHealth)} | ${s("muted", r => r.minimumHealth)} | ${s("misdirected", r => r.minimumHealth)} | ${s("scrambled", r => r.minimumHealth)} |`, "");

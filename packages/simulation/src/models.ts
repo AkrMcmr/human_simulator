@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff, SOUND_ASSOCIATION_VERSION } from "../../human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff, SIGNAL_SENDER_VERSION } from "../../human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly, VOICE_STATE_VERSION } from "../../human/src/voice-state.ts";
-import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, applyWithIntake, FORAGER_LISTENER_VERSION, SELECTIVE_FORAGER_VERSION, FOOD_CALL_VERSION, EATING_VOICE_VERSION, REFERENT_LEARNER_VERSION } from "../../human/src/forager-listener.ts";
+import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, applyWithIntake, FORAGER_LISTENER_VERSION, SELECTIVE_FORAGER_VERSION, FOOD_CALL_VERSION, EATING_VOICE_VERSION, REFERENT_LEARNER_VERSION, LEARNED_CALLER_VERSION } from "../../human/src/forager-listener.ts";
 import type { Observation, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect, createHuman, decideHuman, decideLegacyHuman, HUMAN_VERSION, LEGACY_HUMAN_VERSION } from "../../human/src/index.ts";
 import { decidePredictive, PREDICTIVE_POLICY_VERSION } from "../../human/src/predictive-policy.ts";
@@ -48,6 +48,7 @@ export const HUMAN_MODELS: Readonly<Record<string, HumanModel>> = Object.freeze(
   "eating-voice-blind-0.8.0-experimental.2": { id: "eating-voice-blind-0.8.0-experimental.2", version: EATING_VOICE_VERSION + "+blind", role: "control", label: "対照 食べている状態が声に漏れる＋呼び声＋盲目的な定位", create: createHuman, decide: decideEatingBlind, apply: applyWithIntake },
   "eating-voice-referent-0.8.0-experimental.3": { id: "eating-voice-referent-0.8.0-experimental.3", version: REFERENT_LEARNER_VERSION, role: "candidate", label: "候補 声の出所に食料があったかを学び、種類で追う（食べている状態が声に漏れる）", create: createHuman, decide: decideEatingReferent, apply: applyWithIntake },
   "food-call-referent-0.8.0-experimental.3": { id: "food-call-referent-0.8.0-experimental.3", version: REFERENT_LEARNER_VERSION + "+no-eating-voice", role: "control", label: "対照 同じ学習、食べている状態は声に漏れない", create: createHuman, decide: decideFoodCallReferent, apply: applyWithIntake },
+  "learned-caller-0.9.0-experimental.1": { id: "learned-caller-0.9.0-experimental.1", version: LEARNED_CALLER_VERSION, role: "candidate", label: "候補 出所評価＋食べる声に、食後の呼び声が自分の空腹に何をもたらしたかの学習を足す", create: createHuman, decide: decideLearnedCaller, apply: applyWithIntake },
 });
 export const MODEL_IDS = Object.freeze(Object.keys(HUMAN_MODELS));
 export function resolveModel(id: string | undefined): HumanModel {

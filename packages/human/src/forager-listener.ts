@@ -147,3 +147,42 @@ export function decideReferentLearner(previous: HumanState, observation: Observa
 export const decideEatingReferent = (h: HumanState, o: Observation, r: RandomSource) => decideReferentLearner(h, o, r, FOOD_CALL.utility, EATING_VOICE.coupling);
 /** Referent learner without eating coupling: voices at food are not acoustically distinct, so referents should not separate. */
 export const decideFoodCallReferent = (h: HumanState, o: Observation, r: RandomSource) => decideReferentLearner(h, o, r, FOOD_CALL.utility, undefined);
+
+/**
+ * 0.9.0-experimental.1: the caller learns what its own food call costs it (research decision 0021). While eating,
+ * an individual either calls or stays silent; CALLER.window ticks later the change in its own hunger is credited
+ * to that choice. The innate food-call utility is scaled by the learned advantage of calling over staying
+ * silent. Nothing about listeners, meaning, or success is given; only the caller's own later hunger.
+ */
+export const LEARNED_CALLER_VERSION = "0.9.0-experimental.1";
+export const CALLER = { window: 60, minimumSamples: 3, gain: 4, floor: 0, ceiling: 2 };
+type CallerState = HumanState & { lastIntake?: number; callOutcomes?: { call: Estimate; silent: Estimate }; callPending?: { called: boolean; tick: number; hunger: number } | null };
+/** Multiplier on the innate food-call utility from the caller's own experience: 1 until both choices have been tried. */
+export function callModulation(human: HumanState): number {
+  const o = (human as CallerState).callOutcomes;
+  if (!o || o.call.samples < CALLER.minimumSamples || o.silent.samples < CALLER.minimumSamples) return 1;
+  return clamp(1 + CALLER.gain * (o.call.mean - o.silent.mean), CALLER.floor, CALLER.ceiling);
+}
+export function decideLearnedCaller(previous: HumanState, observation: Observation, random: RandomSource) {
+  const human: CallerState = structuredClone(previous);
+  const pending = human.callPending;
+  if (pending && observation.tick - pending.tick >= CALLER.window) {
+    if (human.parameters.learningRate > 0) {
+      human.callOutcomes ??= { call: { mean: 0, variance: 1, samples: 0 }, silent: { mean: 0, variance: 1, samples: 0 } };
+      const e = pending.called ? human.callOutcomes.call : human.callOutcomes.silent;
+      const relief = pending.hunger - human.body.hunger; // positive when the choice was followed by less hunger
+      const rate = human.parameters.learningRate;
+      const residual = relief - e.mean;
+      e.mean += rate * residual;
+      e.variance = Math.max(0, (1 - rate) * e.variance + rate * residual * residual);
+      e.samples++;
+    }
+    human.callPending = null;
+  }
+  const eating = (human.lastIntake ?? 0) > 0;
+  const result = decideReferentLearner(human, observation, random, FOOD_CALL.utility * callModulation(human), EATING_VOICE.coupling);
+  const next = result.human as CallerState;
+  next.callPending = human.callPending ?? null;
+  if (eating && !next.callPending) next.callPending = { called: result.action.kind === "vocalize", tick: observation.tick, hunger: human.body.hunger };
+  return result;
+}

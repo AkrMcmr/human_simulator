@@ -1,5 +1,6 @@
 import protocolV1 from "../protocols/referential-v1.json" with { type: "json" };
 import type { ActionIntent, DecisionTrace } from "../../packages/contracts/src/index.ts";
+import type { HumanState } from "../../packages/human/src/index.ts";
 import { createSimulation, resolveModel, type ExperimentConfig, type SimulatorState } from "../../packages/simulation/src/index.ts";
 import { DEFAULT_WORLD, advanceWorld, senseWorld, type Resource } from "../../packages/world/src/index.ts";
 import { keyedRandom } from "../../packages/simulation/src/random.ts";
@@ -15,6 +16,8 @@ export type RunResult = {
   contactTicks: number; closeFraction: number; vocalizations: number; minimumHealth: number;
   /** v3/v4: per food patch, each non-finder's first eating tick minus the finder's, capped (never arriving counts as the cap), as a fraction of the cap, averaged over the non-finders; then averaged over patches found early enough for a full window. 1 when no patch qualifies. */
   arrivalDelay: number; patchesFound: number; patchesShared: number; spawns: number;
+  /** Vocalizations made by an individual that took in food on the previous tick (caller-cost-v1). */
+  foodCalls: number;
 };
 const arrivalCapOf = (protocol: ReferentialProtocol) => (protocol as unknown as { arrivalCap?: number }).arrivalCap ?? 300;
 export function referentialConfig(seed: number, modelId: string, soundEnabled: boolean, protocol: ReferentialProtocol = protocolV1): ExperimentConfig {
@@ -33,7 +36,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const intervene = keyedRandom(seed, "referential/intervene", 0);
   const hungers: number[] = [];
   const firstFoodTick: Record<string, number> = {};
-  let foodIntake = 0, heardEvents = 0, unseenHeardEvents = 0, towardChecks = 0, towardHits = 0, contactTicks = 0, closeTicks = 0, vocalizations = 0, minimumHealth = 1;
+  let foodIntake = 0, heardEvents = 0, unseenHeardEvents = 0, towardChecks = 0, towardHits = 0, contactTicks = 0, closeTicks = 0, vocalizations = 0, minimumHealth = 1, foodCalls = 0;
   const lastHeard: Record<string, number> = {};
   const patchArrivals: Record<string, Record<string, number>> = {};
   let spawns = 0;
@@ -55,7 +58,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         lastHeard[h.id] = tick;
       }
       if (observation.sounds.length) { const loudest = [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0]; pendingDirections[h.id] = { ...loudest.relativePosition }; }
-      if (result.action.kind === "vocalize") vocalizations++;
+      if (result.action.kind === "vocalize") { vocalizations++; if (((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) foodCalls++; }
       actions[h.id] = result.action; traces[h.id] = result.trace;
       return result.human;
     });
@@ -103,7 +106,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
     contactTicks: contactTicks / protocol.horizon, closeFraction: closeTicks / protocol.horizon, vocalizations, minimumHealth,
-    arrivalDelay: delays.length ? mean(delays) : 1, patchesFound: Object.keys(patchArrivals).length, patchesShared, spawns,
+    arrivalDelay: delays.length ? mean(delays) : 1, patchesFound: Object.keys(patchArrivals).length, patchesShared, spawns, foodCalls,
   };
 }
 export type SeedResult = { seed: number; model: string } & Record<Condition, RunResult>;
@@ -111,7 +114,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   switch (id) {
@@ -124,6 +127,8 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "arrival-benefit": return r.muted.arrivalDelay - r.sound.arrivalDelay;
     case "arrival-direction": return r.misdirected.arrivalDelay - r.sound.arrivalDelay;
     case "arrival-shape": return r.scrambled.arrivalDelay - r.sound.arrivalDelay;
+    // Fraction of food calls given up when others can hear them (muted callers pay no sharing cost).
+    case "call-suppression": return (r.muted.foodCalls - r.sound.foodCalls) / Math.max(1, r.muted.foodCalls);
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;
     default: throw new Error("Unknown check " + id);
   }
