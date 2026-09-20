@@ -70,7 +70,8 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
   if (value.world.warmthCycle !== undefined) {
     const wc = value.world.warmthCycle;
     if (!object(wc) || !Number.isInteger(wc.lifetime) || (wc.lifetime as number) < 10 || (wc.lifetime as number) > 10000 || !finite(wc.radius) || (wc.radius as number) <= 0 || (wc.radius as number) > 100
-        || !Array.isArray(wc.positions) || wc.positions.length < 1 || wc.positions.length > 64 || !wc.positions.every(inBounds)) throw new Error("暖かい場所の移り変わりの設定が不正です。");
+        || !Array.isArray(wc.positions) || wc.positions.length < 1 || wc.positions.length > 64 || !wc.positions.every(inBounds)
+        || (wc.count !== undefined && (!Number.isInteger(wc.count) || (wc.count as number) < 1 || (wc.count as number) > 8))) throw new Error("暖かい場所の移り変わりの設定が不正です。");
   }
   if (value.world.foodSpawn !== undefined) {
     const sp = value.world.foodSpawn;

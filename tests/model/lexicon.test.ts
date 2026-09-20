@@ -35,6 +35,8 @@ test("world 0.4.0: the warm place goes out and reappears on schedule, a spent pl
   assert.ok(after.effects.A.ambientCold > 0.3, "standing on a spent place no longer shelters");
   const second = advanceWorld({ ...after.world }, { A: { kind: "rest" } }, 199);
   assert.deepEqual(second.world.resources.at(-1)!.position, { x: 35, y: 20 });
+  const two = advanceWorld(createWorld(animals, { warmthCycle: { lifetime: 50, radius: 3, count: 2, positions: [{ x: 5, y: 5 }, { x: 35, y: 20 }, { x: 20, y: 20 }] } }, [{ id: "warm-c", kind: "warmth", position: { x: 20, y: 14 }, amount: 1, radius: 3 }]), { A: { kind: "rest" } }, 49);
+  assert.deepEqual(two.world.resources.filter(r => !r.spent).map(r => r.position), [{ x: 5, y: 5 }, { x: 35, y: 20 }], "count keeps two warm places alive");
 });
 test("applyWithIntake records shelter, context follows intake then shelter, and the warmth-orienting hook fires only when cold with no known warm place", () => {
   const base = createHuman("A", {}, { hunger: .2, cold: .6 });
@@ -74,13 +76,14 @@ test("visiting a sound's source credits food and warmth separately, context-hear
   assert.equal(HUMAN_MODELS["lexicon-0.11.0-experimental.1"].apply, applyWithIntake);
 });
 test("lexicon-v1 uses the v2 world plus a moving warm place and colder ambient, fresh seeds, and the two-referent measures compute", () => {
-  assert.deepEqual(lexicon.resources, conv2.resources); assert.equal((lexicon.world as { ambientCold: number }).ambientCold, 0.6);
-  assert.equal((lexicon.world as unknown as { warmthCycle: { positions: unknown[] } }).warmthCycle.positions.length, 6);
+  assert.deepEqual(lexicon.resources.filter(r => r.kind === "food"), conv2.resources.filter(r => r.kind === "food")); assert.equal((lexicon.world as { ambientCold: number }).ambientCold, 0.7);
+  assert.equal((lexicon.world as unknown as { warmthCycle: { positions: unknown[]; count: number } }).warmthCycle.count, 2);
+  assert.equal(lexicon.resources.filter(r => r.kind === "warmth").length, 2);
   const all = [lexicon.pilotSeeds, seedsFor("development", lexicon, "1"), seedsFor("validation", lexicon, "1")].flat();
   assert.equal(new Set(all).size, all.length); assert.ok(all.every(s => s >= 44000));
   assert.deepEqual(lexicon.checks.map(c => c.id), ["convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "shape-dependence", "cold-shape-dependence", "forage-benefit"]);
   const state = createSimulation(referentialConfig(lexicon.pilotSeeds[0], "lexicon-0.11.0-experimental.1", true, lexicon));
-  assert.equal(state.world.parameters.warmthCycle?.lifetime, 500);
+  assert.equal(state.world.parameters.warmthCycle?.lifetime, 400);
   const run = runExperiment({ ...referentialConfig(lexicon.pilotSeeds[0], "lexicon-0.11.0-experimental.1", true, lexicon), horizon: 60 });
   assert.equal(run.frames.length, 61);
   const short = { ...lexicon, horizon: 600 } as typeof lexicon;

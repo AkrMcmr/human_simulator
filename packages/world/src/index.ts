@@ -9,7 +9,7 @@ export type WorldParameters = {
   /** 0.3.0: when a food patch falls to `depletedBelow` it is marked spent (still visible, never regrows) and a fresh patch appears at the next position of this fixed sequence. Omitted: no spawning (0.2.0 behavior). */
   foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[] };
   /** 0.4.0: every `lifetime` ticks the warm place goes out (stays visible, spent, gives no warmth) and a fresh one appears at the next fixed position. Omitted: warm places are permanent (0.3.0 behavior). */
-  warmthCycle?: { lifetime: number; radius: number; positions: Vec2[] };
+  warmthCycle?: { lifetime: number; radius: number; positions: Vec2[]; /** Warm places alive after each cycle (default 1). */ count?: number };
 };
 export type PhysicalAnimal = { id: string; position: Vec2; velocity: Vec2 };
 export type Resource = { id: string; kind: "food" | "warmth"; position: Vec2; amount: number; radius: number; spent?: boolean };
@@ -151,11 +151,13 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
   if (p.warmthCycle && (tick + 1) % p.warmthCycle.lifetime === 0) {
     // The warm place goes out: it stays visible with nothing left so a remembered place is corrected by seeing it cold.
     for (const r of world.resources) if (r.kind === "warmth" && !r.spent) { r.spent = true; r.amount = 0; }
-    const n = world.warmed ?? 0;
-    const position = p.warmthCycle.positions[n % p.warmthCycle.positions.length];
-    world.resources.push({ id: "warm-cycle-" + (n + 1), kind: "warmth", position: { ...position }, amount: 1, radius: p.warmthCycle.radius });
-    world.warmed = n + 1;
-    events.push({ tick: tick + 1, kind: "spawn", actorId: "warm-cycle-" + (n + 1), value: 1 });
+    for (let k = 0; k < (p.warmthCycle.count ?? 1); k++) {
+      const n = world.warmed ?? 0;
+      const position = p.warmthCycle.positions[n % p.warmthCycle.positions.length];
+      world.resources.push({ id: "warm-cycle-" + (n + 1), kind: "warmth", position: { ...position }, amount: 1, radius: p.warmthCycle.radius });
+      world.warmed = n + 1;
+      events.push({ tick: tick + 1, kind: "spawn", actorId: "warm-cycle-" + (n + 1), value: 1 });
+    }
   }
   return { world, effects, events };
 }
