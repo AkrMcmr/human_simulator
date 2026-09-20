@@ -182,3 +182,20 @@ test("lexicon-v3 sits between v1 and v2 in warmth supply and uses fresh seeds", 
   const used = [v2.pilotSeeds, ...["1", "2", "3"].map(r => [...seedsFor("development", v2, r), ...seedsFor("validation", v2, r)])].flat();
   assert.ok(all.every(s => !used.includes(s)) && new Set(all).size === all.length && all.every(s => s >= 64000));
 });
+test("finer hearing splits heard sounds 0.12 apart into separate categories, while default hearing merges them", async () => {
+  const { decideLexiconFine, FINE_HEARING } = await import("../../packages/human/src/lexicon.ts");
+  const { decideWithOptions: decide, predictedSafety: ps } = await import("../../packages/human/src/index.ts");
+  const a = { visibleSourceId: null, shape: { openness: .30, resonance: .50 }, loudness: .5, relativePosition: { x: 5, y: 0 } };
+  const b = { visibleSourceId: null, shape: { openness: .42, resonance: .50 }, loudness: .5, relativePosition: { x: -5, y: 0 } };
+  const observation = { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [a, b] };
+  const coarse = decide(createHuman("A"), observation, () => 0.5, { outcomeBonus: ps }).human;
+  const fine = decide(createHuman("A"), observation, () => 0.5, { outcomeBonus: ps, auditoryResolution: FINE_HEARING.auditoryResolution }).human;
+  assert.equal(coarse.heardSounds.length, 1); assert.equal(fine.heardSounds.length, 2);
+  const viaModel = decideLexiconFine(createHuman("A", {}, { hunger: .5, cold: .5 }), observation, () => 0.5).human;
+  assert.equal(viaModel.heardSounds.length, 2, "the fine candidate hears two categories");
+  assert.equal(HUMAN_MODELS["lexicon-0.11.0-experimental.5"].apply, applyWithIntake);
+  const { protocol: v3 } = await import("../../research/studies/lexicon-v3.ts");
+  const r2 = [...seedsFor("development", v3, "2"), ...seedsFor("validation", v3, "2")];
+  const r1 = [v3.pilotSeeds, seedsFor("development", v3, "1"), seedsFor("validation", v3, "1")].flat();
+  assert.ok(r2.every(s => !r1.includes(s)) && new Set(r2).size === 16 && r2.every(s => s >= 68000));
+});

@@ -94,6 +94,8 @@ export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetti
   satiationCall?: number;
   /** Candidate term (0.11.0-experimental.*): extra utility of vocalizing on the tick after being sheltered (lastWarm), the warmth counterpart of satiationCall. */
   shelterCall?: number;
+  /** Candidate perception (0.11.0-experimental.5): distance below which a heard sound joins an existing heard category. Default 0.18 (the 0.1.0 value); smaller means finer hearing. */
+  auditoryResolution?: number;
   /** Candidate hook (0.8.0-experimental.2): the eating state also leaks into the voice, pulling both features toward the high corner while the individual has just eaten. Requires lastIntake from the candidate's apply. */
   eatingCoupling?: number };
 
@@ -175,7 +177,7 @@ export function decideWithOptions(previous: HumanState, observation: Observation
     const closest = [...human.heardSounds].sort((a, b) => soundDistance(a.shape, heard.shape) - soundDistance(b.shape, heard.shape))[0];
     const novelty = closest && soundDistance(closest.shape, heard.shape) < 0.18 ? 1 / Math.sqrt(1 + closest.samples) : 1;
     auditoryNovelty = Math.max(auditoryNovelty, novelty * heard.loudness);
-    if (options.auditoryClassification !== false) rememberSound(human.heardSounds, heard.shape);
+    if (options.auditoryClassification !== false) rememberSound(human.heardSounds, heard.shape, options.auditoryResolution ?? 0.18);
   }
 
   if (options.auditoryAttention === false) auditoryNovelty = 0;
