@@ -81,7 +81,7 @@ test("lexicon-v1 uses the v2 world plus a moving warm place and colder ambient, 
   assert.equal(lexicon.resources.filter(r => r.kind === "warmth").length, 2);
   const all = [lexicon.pilotSeeds, seedsFor("development", lexicon, "1"), seedsFor("validation", lexicon, "1")].flat();
   assert.equal(new Set(all).size, all.length); assert.ok(all.every(s => s >= 44000));
-  assert.deepEqual(lexicon.checks.map(c => c.id), ["convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "shape-dependence", "cold-shape-dependence", "forage-benefit"]);
+  assert.deepEqual(lexicon.checks.map(c => c.id), ["convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "shape-dependence", "cold-shape-dependence", "forage-benefit"]);
   const state = createSimulation(referentialConfig(lexicon.pilotSeeds[0], "lexicon-0.11.0-experimental.1", true, lexicon));
   assert.equal(state.world.parameters.warmthCycle?.lifetime, 400);
   const run = runExperiment({ ...referentialConfig(lexicon.pilotSeeds[0], "lexicon-0.11.0-experimental.1", true, lexicon), horizon: 60 });
@@ -89,12 +89,14 @@ test("lexicon-v1 uses the v2 world plus a moving warm place and colder ambient, 
   const short = { ...lexicon, horizon: 600 } as typeof lexicon;
   const r = runCondition("human-0.2.0", lexicon.pilotSeeds[1], "sound", short);
   assert.ok(Number.isFinite(r.lateMeanCold) && r.warmthVoiceDispersion >= 0 && r.warmthVoiceDispersion <= 1.5);
-  const seed = (fc: { openness: number; resonance: number } | null, wc: { openness: number; resonance: number } | null, wd: number): SeedResult => ({ seed: 1, model: "m", sound: { ...r, foodVoiceCentroid: fc, warmthVoiceCentroid: wc, warmthVoiceDispersion: wd, lateMeanCold: 0.3 }, muted: { ...r, warmthVoiceDispersion: 0.5, lateMeanCold: 0.4 }, misdirected: r, scrambled: { ...r, lateMeanCold: 0.45 } });
+  const seed = (fc: { openness: number; resonance: number } | null, wc: { openness: number; resonance: number } | null, wd: number): SeedResult => ({ seed: 1, model: "m", sound: { ...r, foodVoiceCentroid: fc, warmthVoiceCentroid: wc, warmthVoiceDispersion: wd, lateMeanCold: 0.3, otherVoiceCentroid: { openness: .6, resonance: .9 } }, muted: { ...r, warmthVoiceDispersion: 0.5, warmthVoiceCentroid: { openness: .5, resonance: .5 }, lateMeanCold: 0.4 }, misdirected: r, scrambled: { ...r, lateMeanCold: 0.45 } });
   const one = seed({ openness: .2, resonance: .2 }, { openness: .6, resonance: .5 }, 0.1);
   assert.ok(Math.abs(checkValue("distinctness", one, lexicon) - 0.5) < 1e-9);
   assert.ok(Math.abs(checkValue("convergence-warmth", one, lexicon) - 0.4) < 1e-9);
   assert.ok(Math.abs(checkValue("cold-benefit", one, lexicon) - 0.1) < 1e-9 && Math.abs(checkValue("cold-shape-dependence", one, lexicon) - 0.15) < 1e-9);
   assert.equal(checkValue("distinctness", seed({ openness: .2, resonance: .2 }, null, 1), lexicon), 0);
+  assert.equal(checkValue("convergence-warmth", seed({ openness: .2, resonance: .2 }, null, 1), lexicon), 0, "too few sheltered calls: no convergence credited");
+  assert.ok(Math.abs(checkValue("warmth-specificity", one, lexicon) - 0.4) < 1e-9, "warmth voice vs the voice used in neither context");
   const a = assessSeeds("t", [one, seed({ openness: .2, resonance: .2 }, { openness: .1, resonance: .9 }, 0.1)], lexicon);
   assert.ok(a.checks.find(c => c.id === "arbitrariness-warmth")!.summary.mean > 0.3 && a.checks.find(c => c.id === "arbitrariness")!.summary.mean === 0);
 });

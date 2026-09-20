@@ -30,6 +30,8 @@ export type RunResult = {
   lateMeanCold: number;
   /** lexicon-v1: late calls made while sheltered (lastWarm), pooled over individuals: dispersion around their centroid and the centroid itself. */
   warmthVoiceDispersion: number; warmthVoiceCentroid: { openness: number; resonance: number } | null; warmthCalls: number;
+  /** lexicon-v1: late calls made in neither context (not eating, not sheltered), pooled. A second voice used for everything outside food would coincide with the warmth voice; a warmth-specific voice would not. */
+  otherVoiceCentroid: { openness: number; resonance: number } | null; otherCalls: number;
   /** Mean distance of every food call in the last third (all individuals pooled) to the pooled centroid; low when the group's food calls concentrate on one voice. 1 when fewer than 5 calls. */
   foodVoiceDispersion: number;
 };
@@ -58,6 +60,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const foodVoiceSums: Record<string, { openness: number; resonance: number; count: number }> = {};
   const lateFoodCalls: { openness: number; resonance: number }[] = [];
   const lateWarmthCalls: { openness: number; resonance: number }[] = [];
+  const lateOtherCalls: { openness: number; resonance: number }[] = [];
+  let otherCalls = 0;
   const lateColds: number[] = [];
   let warmthCalls = 0;
   const heardBeforeFood: Record<string, boolean> = {};
@@ -83,6 +87,9 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         if ((h as HumanState & { lastWarm?: boolean }).lastWarm && ((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) <= 0) {
           warmthCalls++;
           if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateWarmthCalls.push({ ...result.action.sound });
+        } else if (!(h as HumanState & { lastWarm?: boolean }).lastWarm && ((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) <= 0) {
+          otherCalls++;
+          if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateOtherCalls.push({ ...result.action.sound });
         }
         if (((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) {
           foodCalls++;
@@ -139,12 +146,13 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     const centroid = calls.length >= 5 ? { openness: mean(calls.map(c => c.openness)), resonance: mean(calls.map(c => c.resonance)) } : null;
     return { centroid, dispersion: centroid ? mean(calls.map(c => Math.hypot(c.openness - centroid.openness, c.resonance - centroid.resonance))) : 1 };
   };
-  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls);
+  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls), otherPool = pool(lateOtherCalls);
   const foodVoiceDispersion = foodPool.dispersion;
   return {
     condition, model: model.id, seed,
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
+    otherVoiceCentroid: otherPool.centroid, otherCalls,
     meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
@@ -157,7 +165,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "cold-benefit", "cold-shape-dependence", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -179,7 +187,10 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     // Per seed: distance of this run's food-voice centroid from the across-seed mean centroid. Needs the whole seed set, so assessSeeds computes it; alone it is 0.
     case "arbitrariness": return 0;
     // lexicon-v1: the same two convention measures for calls made while sheltered, the distance between the two shared voices, and cold-based function.
-    case "convergence-warmth": return r.muted.warmthVoiceDispersion - r.sound.warmthVoiceDispersion;
+    // Uninformative (fewer than 5 late sheltered calls in either condition) counts as no convergence.
+    case "convergence-warmth": return r.muted.warmthVoiceCentroid && r.sound.warmthVoiceCentroid ? r.muted.warmthVoiceDispersion - r.sound.warmthVoiceDispersion : 0;
+    // Distance between the warmth voice and the voice used in neither context; 0 when either is missing.
+    case "warmth-specificity": return r.sound.warmthVoiceCentroid && r.sound.otherVoiceCentroid ? Math.hypot(r.sound.warmthVoiceCentroid.openness - r.sound.otherVoiceCentroid.openness, r.sound.warmthVoiceCentroid.resonance - r.sound.otherVoiceCentroid.resonance) : 0;
     case "arbitrariness-warmth": return 0;
     case "distinctness": return r.sound.foodVoiceCentroid && r.sound.warmthVoiceCentroid ? Math.hypot(r.sound.foodVoiceCentroid.openness - r.sound.warmthVoiceCentroid.openness, r.sound.foodVoiceCentroid.resonance - r.sound.warmthVoiceCentroid.resonance) : 0;
     case "cold-benefit": return r.muted.lateMeanCold - r.sound.lateMeanCold;
