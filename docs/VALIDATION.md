@@ -96,3 +96,7 @@ Codexの受信側診断（0008）と受信側候補（0010）を取り込み、�
 ## 2026-09-20: referential-v2 第2・第3ラウンド、世界0.3.0、referential-v3
 
 referential-v2の第2ラウンド（22001–22008 / 23001–23008、[判断0016](../research/decisions/0016-eating-coupling.md)）と第3ラウンド（24001–24008 / 25001–25008、[判断0017](../research/decisions/0017-referent-learner.md)）で、食べている状態の連動と出所評価の聞き手を測定。方向の2項目は再現、種類依存は未達。世界0.3.0（食料の再生率と出現列。既定の挙動は不変で、0.1.0・0.2.0のcore-v1保存測定値を引き続き再現）を追加し、referential-v3（26001–26008 / 27001–27008、[判断0018](../research/decisions/0018-referential-v3.md)）で到着遅れを主要指標に4モデルを測定。到着の短縮・方向依存は定位のある3モデルで両群達成、種類依存は未達。今回の検証: `npm run test:model` 68/68（referent-learner 4件、referential-v3 3件を追加）、型検査・lint成功。
+
+## 2026-09-20: referential-v4 / v5（4人）
+
+研究コードを人数に一般化（二人の値は保存結果と一致することをテストで確認）。referential-v4（28001–28008 / 29001–29008、[判断0019](../research/decisions/0019-referential-v4.md)）は到着の2項目を3モデルで両群達成、到着で測る種類依存は全モデル未達。referential-v5（30001–30008 / 31001–31008、[判断0020](../research/decisions/0020-referential-v5.md)）は種類依存を空腹で測り、候補だけ両群達成、空腹の副作用を開発群で外して未成立。第2ラウンドを登録。今回の検証: `npm run test:model` 72/72（referential-v4 2件、v5 2件を追加）、型検査・lint成功。

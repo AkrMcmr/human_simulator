@@ -33,7 +33,30 @@
         31007,
         31008
       ],
-      "status": "reserved for the cost-avoidance type-dependence comparison (decision 0020)"
+      "status": "observed 2026-09-20 (decision 0020): candidate passed all four gates in validation and three of four in development (forage-benefit -0.028)"
+    },
+    "2": {
+      "developmentSeeds": [
+        32001,
+        32002,
+        32003,
+        32004,
+        32005,
+        32006,
+        32007,
+        32008
+      ],
+      "validationSeeds": [
+        33001,
+        33002,
+        33003,
+        33004,
+        33005,
+        33006,
+        33007,
+        33008
+      ],
+      "status": "reserved for the replication of decision 0020 with unchanged gates"
     }
   },
   "developmentSeeds": [
