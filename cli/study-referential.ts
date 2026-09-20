@@ -7,6 +7,7 @@ import { runReferentialPartition, protocol as protocolV1, type ReferentialProtoc
 import protocolV2 from "../research/protocols/referential-v2.json" with { type: "json" };
 import protocolV3 from "../research/protocols/referential-v3.json" with { type: "json" };
 import protocolV4 from "../research/protocols/referential-v4.json" with { type: "json" };
+import protocolV5 from "../research/protocols/referential-v5.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -21,7 +22,7 @@ for (let i = 0; i < args.length; i++) {
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
-const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol };
+const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol };
 if (!Object.hasOwn(protocols, protocolName)) throw new Error("--protocol must be one of " + Object.keys(protocols).join(", "));
 const protocol: ReferentialProtocol = protocols[protocolName];
 const split = options.get("--split") ?? "development";
@@ -40,7 +41,7 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };

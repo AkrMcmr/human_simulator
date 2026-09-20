@@ -1,0 +1,238 @@
+{
+  "id": "referential-v5",
+  "version": "1.0.0",
+  "evidence": "free-world-recurring-information-asymmetry-four-individuals-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: referential-v4と同じ4人・食料が移り変わる世界で、声の種類の利用を「到着」ではなく「費用の回避」で測る。判断0019の診断: 種類で追う相手を選ぶ聞き手は、到着の利益を保ちながら食料のない声を追って群がる費用を払わない。でたらめ特徴で空腹が悪化することを種類依存のゲートにする",
+  "models": {
+    "baseline": "human-0.2.0",
+    "eatingBlind": "eating-voice-blind-0.8.0-experimental.2",
+    "foodCallReferent": "food-call-referent-0.8.0-experimental.3",
+    "eatingReferent": "eating-voice-referent-0.8.0-experimental.3"
+  },
+  "pilotSeeds": [],
+  "pilotUse": "パイロットなし。世界はreferential-v4と同一で、尺度は判断0019の第1ラウンド（観察済み28001–28008 / 29001–29008）を参考にした。観察済みシードは判定に使わない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        30001,
+        30002,
+        30003,
+        30004,
+        30005,
+        30006,
+        30007,
+        30008
+      ],
+      "validationSeeds": [
+        31001,
+        31002,
+        31003,
+        31004,
+        31005,
+        31006,
+        31007,
+        31008
+      ],
+      "status": "reserved for the cost-avoidance type-dependence comparison (decision 0020)"
+    }
+  },
+  "developmentSeeds": [
+    30001,
+    30002,
+    30003,
+    30004,
+    30005,
+    30006,
+    30007,
+    30008
+  ],
+  "validationSeeds": [
+    31001,
+    31002,
+    31003,
+    31004,
+    31005,
+    31006,
+    31007,
+    31008
+  ],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 4,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ]
+    }
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。到着遅れは、食料ごとに『先に食べた個体の初回摂食から、他の各個体の初回摂食まで』のステップ（上限300、未到着は上限）を上限比で他の個体について平均し、先の発見が実行終了の300ステップ前までに起きた食料について平均する。接触・4u未満はどの対でも起きたステップの割合。種類依存は空腹の平均の差（でたらめ特徴 − 音あり）で測る",
+  "checks": [
+    {
+      "id": "arrival-benefit",
+      "label": "音があると、見つけた個体以外の到着が早まる（音なし − 音あり、上限比）",
+      "minimum": 0.1,
+      "unit": "normalized arrival delay difference"
+    },
+    {
+      "id": "arrival-direction",
+      "label": "方向をでたらめにすると早まりが消える（でたらめ方向 − 音あり）",
+      "minimum": 0.1,
+      "unit": "normalized arrival delay difference"
+    },
+    {
+      "id": "shape-dependence",
+      "label": "音の特徴をでたらめにすると空腹が悪化する（でたらめ特徴 − 音あり）。種類で追う相手を選ぶ候補だけに期待",
+      "minimum": 0.03,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "forage-benefit",
+      "label": "音があることで空腹の平均が悪化しない（音なし − 音あり）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    }
+  ],
+  "reported": [
+    "meanHunger",
+    "foodIntake",
+    "firstFoodTick",
+    "arrivalDelay",
+    "arrival-shape",
+    "patchesFound",
+    "patchesShared",
+    "spawns",
+    "heardEvents (source not visible)",
+    "towardSourceFraction",
+    "contactTicks",
+    "closeFraction"
+  ],
+  "notAClaim": "音に意味・正解・成功ラベルを与えない。方向への定位は生得の知覚と探索傾向で、音の種類の理解ではない。食料の出現位置は実験者が固定した列で、世界の生態の再現ではない",
+  "thresholdBasis": "referential-v4第1ラウンド（判断0019、観察済み）で、候補の空腹の種類依存は0.062 / 0.040、種類を使わない盲目は0.053 / −0.001、連動なしの出所評価は0.016 / 0.006、既定は0.007 / 0.019だった。閾値0.03は両群での達成を要求することで、片群だけ高い盲目（0.053 / −0.001）を排除しつつ候補の観察値の下に置いた。到着の2閾値と空腹の副作用はv4から据え置き。到着の種類依存は報告のみ（到着は種類に鈍いと診断）。接触は報告のみ。候補の結果はこのシード群では未観察",
+  "establishedIf": "4項目を開発・確認の両群で達成したモデルについて「声の種類を手掛かりに追う相手を選び、食料のない声を追う費用を避ける受け手側の合図利用が成立」と呼ぶ。shape-dependence未達で他が達成なら「定位による手掛かり利用」に留まる"
+}
