@@ -65,7 +65,7 @@ JSONと同名のMarkdownレポートを出力します。全フレームの実�
 | --- | --- | --- |
 | 視界5u・聴覚24u、食料3か所、二人を20u離して空腹0.5で開始、900ステップ。音なし、聞こえる音の方向をでたらめにする介入、音の特徴をでたらめにする介入 | 空腹の平均、初回摂食までの時間、摂食量、音を聞いた直後に音源へ動いた割合、接触、近接 | 音の意味や意図。方向への定位は生得の知覚と探索傾向 |
 
-`npm run study:referential -- --model ID`で複数モデルを同じシードで測れます。[判断0014](decisions/0014-referential-foraging.md)。
+`npm run study:referential -- --model ID`で複数モデルを同じシードで測れます。[判断0014](decisions/0014-referential-foraging.md)。`--protocol v2`（[判断0015](decisions/0015-referential-v2.md)、第2・第3ラウンドは[0016](decisions/0016-eating-coupling.md)・[0017](decisions/0017-referent-learner.md)）、`--protocol v3`（食料が移り変わる世界、[判断0018](decisions/0018-referential-v3.md)）。閾値は据え置き、候補ごとに`--round`で未使用のシード群を使います。
 
 `npm run study:signal-world -- --model ID`で複数モデルを同じシードで測れます。[判断0011](decisions/0011-signal-world-m3.md)に既定と受信側候補、[判断0012](decisions/0012-signal-sender.md)に発し手候補の結果があります。
 

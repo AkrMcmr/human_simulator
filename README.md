@@ -109,9 +109,10 @@ npm run study:signal-world -- --split development --model human-0.2.0 --model si
 
 ```bash
 npm run study:referential -- --split development --model human-0.2.0 --model selective-forager-0.7.0-experimental.2
+npm run study:referential -- --protocol v3 --split development --model human-0.2.0 --model eating-voice-referent-0.8.0-experimental.3
 ```
 
-視界を狭め食料を散らした課題で、声の方向が食料への手掛かりになるかを、音なし・でたらめな方向・でたらめな特徴と比べます（[判断0014](research/decisions/0014-referential-foraging.md)）。
+視界を狭め食料を散らした課題で、声の方向が食料への手掛かりになるかを、音なし・でたらめな方向・でたらめな特徴と比べます（[判断0014](research/decisions/0014-referential-foraging.md)）。`--protocol v2`は初回摂食までの時間を主要指標にした版（[判断0015](research/decisions/0015-referential-v2.md)）、`--protocol v3`は食料が尽きると別の場所に現れる世界で「もう一人の到着遅れ」を発見ごとに測る版（[判断0018](research/decisions/0018-referential-v3.md)）。`--round N`で未使用のシード群を選びます。
 
 二人が自由に動く通常worldで、聞いた音の種類と聞き手の次の行動、相手との距離と出す音の種類の結びつきを超過相互情報量で測り、音なし・でたらめ音の介入と比べます。`--round 2`で第2ラウンドのシード群を使います。現時点で合図は未成立です（[判断0011](research/decisions/0011-signal-world-m3.md)、[0012](research/decisions/0012-signal-sender.md)、[0013](research/decisions/0013-voice-state.md)）。
 
