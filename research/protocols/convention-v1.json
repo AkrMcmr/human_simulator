@@ -7,7 +7,8 @@
     "baseline": "human-0.2.0",
     "innateVoice": "eating-voice-referent-0.8.0-experimental.3",
     "noImitation": "convention-no-imitation-0.10.0-experimental.1",
-    "candidate": "convention-0.10.0-experimental.1"
+    "candidate": "convention-0.10.0-experimental.1",
+    "contrast": "convention-contrast-0.10.0-experimental.2"
   },
   "pilotSeeds": [
     38101,

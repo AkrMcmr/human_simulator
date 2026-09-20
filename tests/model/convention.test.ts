@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHuman } from "../../packages/human/src/index.ts";
-import { chooseImitatedFoodVoice, decideConvention, decideConventionNoImitation, CONVENTION, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
+import { chooseImitatedFoodVoice, chooseContrastiveVoice, decideConvention, decideConventionNoImitation, CONVENTION, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
 import { protocol as convention } from "../../research/studies/convention-v1.ts";
 import { protocol as v5 } from "../../research/studies/referential-v5.ts";
 import { protocol as caller } from "../../research/studies/caller-cost-v1.ts";
@@ -56,4 +56,19 @@ test("convention-v1 keeps the v5 world, uses fresh seeds, and the food-voice mea
   assert.ok(arb.summary.mean > 0.4, "centroids that differ across seeds score as arbitrary");
   const same = assessSeeds("t", [fake(0.1, { openness: .5, resonance: .5 }), fake(0.1, { openness: .5, resonance: .5 })], convention);
   assert.equal(same.checks.find(c => c.id === "arbitrariness")!.summary.mean, 0);
+});
+test("the contrastive speaker imitates the food voice while eating and avoids it otherwise", () => {
+  const h = eater();
+  h.soundReferents = { 2: { mean: .6, variance: .1, samples: 4 } };
+  h.producedSounds = [{ id: 1, shape: { openness: .1, resonance: .9 }, samples: 3 }, { id: 2, shape: { openness: .62, resonance: .41 }, samples: 3 }];
+  assert.deepEqual(chooseContrastiveVoice(h), { openness: .6, resonance: .4 }, "eating: the food voice");
+  const quiet = { ...h, lastIntake: 0 } as Speaker;
+  assert.deepEqual(chooseContrastiveVoice(quiet), { openness: .1, resonance: .9 }, "not eating: the own category farthest from the food voice");
+  const onlyNear = { ...quiet, producedSounds: [{ id: 2, shape: { openness: .62, resonance: .41 }, samples: 3 }] } as Speaker;
+  assert.equal(chooseContrastiveVoice(onlyNear), null, "no category far enough: default voice");
+  assert.equal(chooseContrastiveVoice(eater()), null, "no food voice known: default voice");
+  assert.equal(HUMAN_MODELS["convention-contrast-0.10.0-experimental.2"].apply, applyWithIntake);
+  const r2 = [...seedsFor("development", convention, "2"), ...seedsFor("validation", convention, "2")];
+  const r1 = [convention.pilotSeeds, seedsFor("development", convention, "1"), seedsFor("validation", convention, "1")].flat();
+  assert.ok(r2.every(s => !r1.includes(s)) && new Set(r2).size === 16);
 });

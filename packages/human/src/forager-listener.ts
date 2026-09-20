@@ -198,10 +198,10 @@ export function decideLearnedCaller(previous: HumanState, observation: Observati
 export const CONVENTION_VERSION = "0.10.0-experimental.1";
 export const CONVENTION = { stateCoupling: 0.2, heardWeight: 0.5, minimumScore: 0.05 };
 type ConventionState = ReferentState & { lastIntake?: number; eatingHeard?: Record<number, number> };
-/** Which heard category to reproduce while eating, or null to fall back to the default voice. */
-export function chooseImitatedFoodVoice(human: HumanState): { openness: number; resonance: number } | null {
+/** The heard category this individual's experience ties to food (best referent estimate plus share heard while eating), or null. */
+export function foodVoiceOf(human: HumanState): { openness: number; resonance: number } | null {
   const state = human as ConventionState;
-  if ((state.lastIntake ?? 0) <= 0 || !human.heardSounds.length) return null;
+  if (!human.heardSounds.length) return null;
   const heardTotal = Object.values(state.eatingHeard ?? {}).reduce((a, b) => a + b, 0);
   let best: { shape: { openness: number; resonance: number }; score: number } | null = null;
   for (const c of human.heardSounds) {
@@ -211,7 +211,24 @@ export function chooseImitatedFoodVoice(human: HumanState): { openness: number; 
   }
   return best?.shape ?? null;
 }
-export function decideConvention(previous: HumanState, observation: Observation, random: RandomSource, imitate = true) {
+/** Which heard category to reproduce while eating, or null to fall back to the default voice. */
+export function chooseImitatedFoodVoice(human: HumanState): { openness: number; resonance: number } | null {
+  return ((human as ConventionState).lastIntake ?? 0) > 0 ? foodVoiceOf(human) : null;
+}
+/**
+ * 0.10.0-experimental.2 (research decision 0023): contrast. While eating, imitate the food voice as above; when not
+ * eating, avoid it: produce the own produced category farthest from the food voice (at least CONTRAST.minimumGap
+ * away), so the shared voice is reserved for food. Nothing else changes.
+ */
+export const CONTRAST = { minimumGap: 0.25 };
+export function chooseContrastiveVoice(human: HumanState): { openness: number; resonance: number } | null {
+  const food = foodVoiceOf(human);
+  if (!food) return null;
+  if (((human as ConventionState).lastIntake ?? 0) > 0) return food;
+  const far = [...human.producedSounds].map(c => ({ shape: { ...c.shape }, gap: soundDistance(c.shape, food) })).filter(c => c.gap >= CONTRAST.minimumGap).sort((a, b) => b.gap - a.gap)[0];
+  return far?.shape ?? null;
+}
+export function decideConvention(previous: HumanState, observation: Observation, random: RandomSource, imitate: boolean | "contrast" = true) {
   const human: ConventionState = structuredClone(previous);
   if ((human.lastIntake ?? 0) > 0) {
     for (const s of observation.sounds) {
@@ -219,7 +236,10 @@ export function decideConvention(previous: HumanState, observation: Observation,
       if (category !== null) { human.eatingHeard ??= {}; human.eatingHeard[category] = (human.eatingHeard[category] ?? 0) + 1; }
     }
   }
-  return decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, { stateCoupling: CONVENTION.stateCoupling, chooseSound: imitate ? (h) => chooseImitatedFoodVoice(h) : undefined });
+  const chooseSound: SoundChoice | undefined = imitate === "contrast" ? (h) => chooseContrastiveVoice(h) : imitate ? (h) => chooseImitatedFoodVoice(h) : undefined;
+  return decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, { stateCoupling: CONVENTION.stateCoupling, chooseSound });
 }
+/** Candidate 0.10.0-experimental.2: imitation at food plus avoidance of the food voice elsewhere. */
+export const decideConventionContrast = (h: HumanState, o: Observation, r: RandomSource) => decideConvention(h, o, r, "contrast");
 /** Control: same weak coupling, same listener, no imitation, so food voices stay each speaker's own. */
 export const decideConventionNoImitation = (h: HumanState, o: Observation, r: RandomSource) => decideConvention(h, o, r, false);
