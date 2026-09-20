@@ -38,7 +38,7 @@
         57007,
         57008
       ],
-      "status": "reserved for the generations comparison (decision 0030); thresholds fixed after the pilot"
+      "status": "observed 2026-09-20 (decision 0030): candidate kept a late convention after all founders were replaced (convergence 0.154 / 0.150) but lineage continuity failed (0.096 / 0.084): the shared voice persists as a convention yet drifts"
     }
   },
   "developmentSeeds": [
