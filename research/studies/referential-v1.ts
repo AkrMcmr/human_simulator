@@ -24,6 +24,8 @@ export type RunResult = {
   foodVoiceSpread: number;
   /** Mean of the qualifying centroids, or null. */
   foodVoiceCentroid: { openness: number; resonance: number } | null;
+  /** Mean distance of every food call in the last third (all individuals pooled) to the pooled centroid; low when the group's food calls concentrate on one voice. 1 when fewer than 5 calls. */
+  foodVoiceDispersion: number;
 };
 const arrivalCapOf = (protocol: ReferentialProtocol) => (protocol as unknown as { arrivalCap?: number }).arrivalCap ?? 300;
 export function referentialConfig(seed: number, modelId: string, soundEnabled: boolean, protocol: ReferentialProtocol = protocolV1): ExperimentConfig {
@@ -47,6 +49,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const patchArrivals: Record<string, Record<string, number>> = {};
   let spawns = 0;
   const foodVoiceSums: Record<string, { openness: number; resonance: number; count: number }> = {};
+  const lateFoodCalls: { openness: number; resonance: number }[] = [];
   const heardBeforeFood: Record<string, boolean> = {};
   const pendingDirections: Record<string, { x: number; y: number } | null> = {};
   for (let tick = 0; tick < protocol.horizon; tick++) {
@@ -69,7 +72,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         vocalizations++;
         if (((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) {
           foodCalls++;
-          if (tick >= protocol.horizon * 2 / 3 && result.action.sound) { const v = foodVoiceSums[h.id] ??= { openness: 0, resonance: 0, count: 0 }; v.openness += result.action.sound.openness; v.resonance += result.action.sound.resonance; v.count++; }
+          if (tick >= protocol.horizon * 2 / 3 && result.action.sound) { const v = foodVoiceSums[h.id] ??= { openness: 0, resonance: 0, count: 0 }; v.openness += result.action.sound.openness; v.resonance += result.action.sound.resonance; v.count++; lateFoodCalls.push({ ...result.action.sound }); }
         }
       }
       actions[h.id] = result.action; traces[h.id] = result.trace;
@@ -118,9 +121,11 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const pairs: number[] = [];
   for (let i = 0; i < qualifying.length; i++) for (let j = i + 1; j < qualifying.length; j++) pairs.push(Math.hypot(qualifying[i].openness - qualifying[j].openness, qualifying[i].resonance - qualifying[j].resonance));
   const foodVoiceCentroid = qualifying.length ? { openness: mean(qualifying.map(v => v.openness)), resonance: mean(qualifying.map(v => v.resonance)) } : null;
+  const pooled = lateFoodCalls.length >= 5 ? { openness: mean(lateFoodCalls.map(c => c.openness)), resonance: mean(lateFoodCalls.map(c => c.resonance)) } : null;
+  const foodVoiceDispersion = pooled ? mean(lateFoodCalls.map(c => Math.hypot(c.openness - pooled.openness, c.resonance - pooled.resonance))) : 1;
   return {
     condition, model: model.id, seed,
-    foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid,
+    foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     meanHunger: mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
@@ -148,8 +153,8 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "arrival-shape": return r.scrambled.arrivalDelay - r.sound.arrivalDelay;
     // Fraction of food calls given up when others can hear them (muted callers pay no sharing cost).
     case "call-suppression": return (r.muted.foodCalls - r.sound.foodCalls) / Math.max(1, r.muted.foodCalls);
-    // Food voices of different individuals are closer when they can hear each other (imitation) than when muted.
-    case "convergence-gain": return r.muted.foodVoiceSpread - r.sound.foodVoiceSpread;
+    // The group's food calls concentrate on one voice when individuals can hear each other (imitation) but not when muted.
+    case "convergence-gain": return r.muted.foodVoiceDispersion - r.sound.foodVoiceDispersion;
     // Per seed: distance of this run's food-voice centroid from the across-seed mean centroid. Needs the whole seed set, so assessSeeds computes it; alone it is 0.
     case "arbitrariness": return 0;
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;

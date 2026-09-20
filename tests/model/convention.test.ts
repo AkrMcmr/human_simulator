@@ -48,7 +48,8 @@ test("convention-v1 keeps the v5 world, uses fresh seeds, and the food-voice mea
   const short = { ...convention, horizon: 600 } as typeof convention;
   const sound = runCondition("eating-voice-referent-0.8.0-experimental.3", convention.pilotSeeds[0], "sound", short);
   assert.ok(sound.foodVoiceSpread >= 0 && sound.foodVoiceSpread <= 1.5 && Object.values(sound.foodVoices).every(v => v.count > 0));
-  const fake = (spread: number, c: { openness: number; resonance: number }): SeedResult => ({ seed: 1, model: "m", sound: { ...sound, foodVoiceSpread: spread, foodVoiceCentroid: c }, muted: { ...sound, foodVoiceSpread: 0.5 }, misdirected: sound, scrambled: sound });
+  assert.ok(sound.foodVoiceDispersion >= 0 && sound.foodVoiceDispersion <= 1);
+  const fake = (dispersion: number, c: { openness: number; resonance: number }): SeedResult => ({ seed: 1, model: "m", sound: { ...sound, foodVoiceDispersion: dispersion, foodVoiceCentroid: c }, muted: { ...sound, foodVoiceDispersion: 0.5 }, misdirected: sound, scrambled: sound });
   const a = assessSeeds("t", [fake(0.1, { openness: .2, resonance: .2 }), fake(0.1, { openness: .8, resonance: .8 })], convention);
   const gain = a.checks.find(c => c.id === "convergence-gain")!, arb = a.checks.find(c => c.id === "arbitrariness")!;
   assert.ok(Math.abs(gain.summary.mean - 0.4) < 1e-9, "closer voices under sound score higher");
