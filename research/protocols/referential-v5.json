@@ -56,7 +56,46 @@
         33007,
         33008
       ],
-      "status": "reserved for the replication of decision 0020 with unchanged gates"
+      "status": "observed 2026-09-20 (decision 0020): candidate passed all four gates in development and three of four in validation (forage-benefit -0.035)"
+    },
+    "3": {
+      "developmentSeeds": [
+        34001,
+        34002,
+        34003,
+        34004,
+        34005,
+        34006,
+        34007,
+        34008,
+        34009,
+        34010,
+        34011,
+        34012,
+        34013,
+        34014,
+        34015,
+        34016
+      ],
+      "validationSeeds": [
+        35001,
+        35002,
+        35003,
+        35004,
+        35005,
+        35006,
+        35007,
+        35008,
+        35009,
+        35010,
+        35011,
+        35012,
+        35013,
+        35014,
+        35015,
+        35016
+      ],
+      "status": "reserved for the 16-seed variance-reduction replication (decision 0020, round 3); gates unchanged"
     }
   },
   "developmentSeeds": [
