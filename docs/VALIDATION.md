@@ -100,3 +100,7 @@ referential-v2の第2ラウンド（22001–22008 / 23001–23008、[判断0016]
 ## 2026-09-20: referential-v4 / v5（4人）
 
 研究コードを人数に一般化（二人の値は保存結果と一致することをテストで確認）。referential-v4（28001–28008 / 29001–29008、[判断0019](../research/decisions/0019-referential-v4.md)）は到着の2項目を3モデルで両群達成、到着で測る種類依存は全モデル未達。referential-v5（30001–30008 / 31001–31008、[判断0020](../research/decisions/0020-referential-v5.md)）は種類依存を空腹で測り、候補だけ両群達成、空腹の副作用を開発群で外して未成立。第2ラウンドを登録。今回の検証: `npm run test:model` 72/72（referential-v4 2件、v5 2件を追加）、型検査・lint成功。
+
+## 2026-09-20: referential-v5 第2・第3ラウンド
+
+第2ラウンド（32001–32008 / 33001–33008）は開発群のみ4項目達成。第3ラウンド（16シード、34001–34016 / 35001–35016）で候補`eating-voice-referent-0.8.0-experimental.3`が両群4項目を達成し成立（[判断0020](../research/decisions/0020-referential-v5.md)）。対照は未達。今回の検証: `npm run test:model` 75/75（caller-cost 3件を追加）、型検査・lint成功。
