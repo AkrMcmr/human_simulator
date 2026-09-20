@@ -114,3 +114,16 @@ test("the transient variant counts warmth only while still cold, silences the sh
   const r1 = [lexicon.pilotSeeds, seedsFor("development", lexicon, "1"), seedsFor("validation", lexicon, "1")].flat();
   assert.ok(r2.every(s => !r1.includes(s)) && new Set(r2).size === 16);
 });
+test("lexicon-v2 keeps the v1 checks and food, makes warmth scarce, and uses fresh seeds", async () => {
+  const { protocol: v2 } = await import("../../research/studies/lexicon-v2.ts");
+  assert.deepEqual(v2.checks, lexicon.checks);
+  assert.deepEqual(v2.resources.filter(r => r.kind === "food"), lexicon.resources.filter(r => r.kind === "food"));
+  assert.equal(v2.resources.filter(r => r.kind === "warmth").length, 1);
+  const w = v2.world as unknown as { ambientCold: number; warmthCycle: { lifetime: number; radius: number; count: number } };
+  assert.equal(w.ambientCold, 0.8); assert.deepEqual([w.warmthCycle.lifetime, w.warmthCycle.radius, w.warmthCycle.count], [300, 2.5, 1]);
+  const all = [v2.pilotSeeds, seedsFor("development", v2, "1"), seedsFor("validation", v2, "1")].flat();
+  const used = [lexicon.pilotSeeds, seedsFor("development", lexicon, "1"), seedsFor("validation", lexicon, "1"), seedsFor("development", lexicon, "2"), seedsFor("validation", lexicon, "2")].flat();
+  assert.ok(all.every(s => !used.includes(s)) && new Set(all).size === all.length && all.every(s => s >= 48000));
+  const state = createSimulation(referentialConfig(v2.pilotSeeds[0], "lexicon-0.11.0-experimental.2", true, v2));
+  assert.equal(state.world.parameters.warmthCycle?.count, 1);
+});
