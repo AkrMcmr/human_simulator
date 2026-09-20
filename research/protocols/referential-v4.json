@@ -31,9 +31,9 @@
       "radius": 2,
       "depletedBelow": 0.01,
       "positions": [
-        { "x": 33, "y": 23 }, { "x": 20, "y": 3 }, { "x": 5, "y": 22 }, { "x": 35, "y": 6 },
-        { "x": 20, "y": 25 }, { "x": 12, "y": 20 }, { "x": 28, "y": 8 }, { "x": 8, "y": 12 },
-        { "x": 32, "y": 16 }, { "x": 16, "y": 7 }, { "x": 24, "y": 21 }, { "x": 7, "y": 5 }
+        { "x": 5, "y": 22 }, { "x": 35, "y": 6 }, { "x": 20, "y": 25 }, { "x": 12, "y": 20 },
+        { "x": 28, "y": 8 }, { "x": 8, "y": 12 }, { "x": 32, "y": 16 }, { "x": 16, "y": 7 },
+        { "x": 24, "y": 21 }, { "x": 7, "y": 5 }, { "x": 33, "y": 23 }, { "x": 20, "y": 3 }
       ]
     }
   },
@@ -41,6 +41,8 @@
   "body": { "hunger": 0.5, "fatigue": 0.15, "cold": 0.1 },
   "resources": [
     { "id": "food-1", "kind": "food", "position": { "x": 7, "y": 5 }, "amount": 4, "radius": 2 },
+    { "id": "food-2", "kind": "food", "position": { "x": 33, "y": 23 }, "amount": 4, "radius": 2 },
+    { "id": "food-3", "kind": "food", "position": { "x": 20, "y": 3 }, "amount": 4, "radius": 2 },
     { "id": "warm-c", "kind": "warmth", "position": { "x": 20, "y": 14 }, "amount": 1, "radius": 3 }
   ],
   "conditions": ["sound", "muted", "misdirected", "scrambled"],
@@ -56,6 +58,6 @@
   ],
   "reported": ["meanHunger", "foodIntake", "firstFoodTick", "arrivalDelay", "patchesFound", "patchesShared", "spawns", "heardEvents (source not visible)", "towardSourceFraction", "contactTicks", "closeFraction"],
   "notAClaim": "音に意味・正解・成功ラベルを与えない。方向への定位は生得の知覚と探索傾向で、音の種類の理解ではない。食料の出現位置は実験者が固定した列で、世界の生態の再現ではない",
-  "thresholdBasis": "暫定: referential-v3の閾値を引き継ぐ。パイロット28101-28104で既定・盲目的な定位・連動なしの出所評価の尺度を確認してから固定し、変更があればここに記す。候補の結果は閾値固定前に見ない。食料の量4は4人分（v3の量2は2人分）",
+  "thresholdBasis": "暫定: referential-v3の閾値を引き継ぐ。食料は3か所（1か所・2か所では餓死者が出て到着遅れが死者で埋まった。判断0019）。パイロット28101-28104で既定・盲目的な定位・連動なしの出所評価の尺度を確認してから固定し、変更があればここに記す。候補の結果は閾値固定前に見ない。食料の量4は4人分（v3の量2は2人分）",
   "establishedIf": "5項目を開発・確認の両群で達成したモデルについて「声の種類を手掛かりに食料へ向かう受け手側の合図利用が成立」と呼ぶ。arrival-shape未達で他が達成なら「定位による手掛かり利用」に留まる"
 }
