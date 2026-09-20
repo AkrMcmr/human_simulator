@@ -38,7 +38,7 @@
         65007,
         65008
       ],
-      "status": "reserved for the mid-scarcity comparison (decision 0034); thresholds fixed after the pilot"
+      "status": "observed 2026-09-20 (decision 0034): both lexicon candidates failed the warmth-side gates (warmth convergence at most 0.161, distinctness at most 0.229, specificity at most 0.204) although sheltered calls were abundant; the two-context line is closed for this session"
     }
   },
   "developmentSeeds": [
