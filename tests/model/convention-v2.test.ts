@@ -18,3 +18,8 @@ test("convention-v2 keeps the v1 world and thresholds, uses fresh seeds, and gat
   assert.ok(Math.abs(checkValue("shape-dependence", seed, v2) - 0.15) < 1e-9);
   assert.equal(checkValue("forage-benefit", seed, v1), 0, "v1 still uses whole-run hunger");
 });
+test("convention-v2 round 2 reserves sixteen fresh seeds per group", () => {
+  const r2 = [...seedsFor("development", v2, "2"), ...seedsFor("validation", v2, "2")];
+  const r1 = [...seedsFor("development", v2, "1"), ...seedsFor("validation", v2, "1")];
+  assert.equal(new Set(r2).size, 32); assert.ok(r2.every(s => !r1.includes(s) && s >= 66000));
+});

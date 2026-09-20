@@ -35,6 +35,45 @@
         43008
       ],
       "status": "observed 2026-09-20 (decision 0024): convention-contrast-0.10.0-experimental.2 passed all five gates in both groups; imitation alone failed late shape-dependence in validation; the innate voice failed the convention gates"
+    },
+    "2": {
+      "developmentSeeds": [
+        66001,
+        66002,
+        66003,
+        66004,
+        66005,
+        66006,
+        66007,
+        66008,
+        66009,
+        66010,
+        66011,
+        66012,
+        66013,
+        66014,
+        66015,
+        66016
+      ],
+      "validationSeeds": [
+        67001,
+        67002,
+        67003,
+        67004,
+        67005,
+        67006,
+        67007,
+        67008,
+        67009,
+        67010,
+        67011,
+        67012,
+        67013,
+        67014,
+        67015,
+        67016
+      ],
+      "status": "reserved for the 16-seed replication of decision 0024 (decision 0035); gates unchanged"
     }
   },
   "developmentSeeds": [
