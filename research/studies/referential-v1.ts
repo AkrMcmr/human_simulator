@@ -32,6 +32,8 @@ export type RunResult = {
   warmthVoiceDispersion: number; warmthVoiceCentroid: { openness: number; resonance: number } | null; warmthCalls: number;
   /** lexicon-v1: late calls made in neither context (not eating, not sheltered), pooled. A second voice used for everything outside food would coincide with the warmth voice; a warmth-specific voice would not. */
   otherVoiceCentroid: { openness: number; resonance: number } | null; otherCalls: number;
+  /** valence-v1: poisoned intake summed over the run and over the last third; late calls made while poisoned (bad voice), pooled. */
+  poisonIntake: number; latePoisonIntake: number; badVoiceDispersion: number; badVoiceCentroid: { openness: number; resonance: number } | null; badCalls: number;
   /** transmission-v1: with a newcomer replaced mid-run, the distance between its late food voice and the incumbents' pooled late food voice (1 when either is missing), and its own late hunger. */
   newcomerDistance: number; newcomerLateHunger: number;
   /** transmission-v2: the newcomer's late food calls themselves, so adoption can be judged against the incumbents' voice of another condition. */
@@ -70,6 +72,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const lateWarmthCalls: { openness: number; resonance: number }[] = [];
   const lateOtherCalls: { openness: number; resonance: number }[] = [];
   let otherCalls = 0;
+  const lateBadCalls: { openness: number; resonance: number }[] = [];
+  let badCalls = 0, poisonIntake = 0, latePoisonIntake = 0;
   const lateColds: number[] = [];
   let warmthCalls = 0;
   const heardBeforeFood: Record<string, boolean> = {};
@@ -105,6 +109,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       if (observation.sounds.length) { const loudest = [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0]; pendingDirections[h.id] = { ...loudest.relativePosition }; }
       if (result.action.kind === "vocalize") {
         vocalizations++;
+        const poisoned = ((h as HumanState & { lastPoison?: number }).lastPoison ?? 0) > 0;
+        if (poisoned) { badCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateBadCalls.push({ ...result.action.sound }); }
         if ((h as HumanState & { lastWarm?: boolean }).lastWarm && ((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) <= 0) {
           warmthCalls++;
           if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateWarmthCalls.push({ ...result.action.sound });
@@ -112,7 +118,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
           otherCalls++;
           if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateOtherCalls.push({ ...result.action.sound });
         }
-        if (((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) {
+        if (((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0 && !poisoned) {
           foodCalls++;
           if (extras.earlyWindow && tick >= extras.earlyWindow[0] && tick < extras.earlyWindow[1] && result.action.sound) earlyCalls.push({ ...result.action.sound });
           if (tick >= protocol.horizon * 2 / 3 && result.action.sound) { const v = foodVoiceSums[h.id] ??= { openness: 0, resonance: 0, count: 0 }; v.openness += result.action.sound.openness; v.resonance += result.action.sound.resonance; v.count++; if (newcomer && h.id === newcomer.id) incomerCalls.push({ ...result.action.sound }); else lateFoodCalls.push({ ...result.action.sound }); }
@@ -131,6 +137,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         if (Math.hypot(dx, dy) > 1e-9) { towardChecks++; if (dx * direction.x + dy * direction.y > 0) towardHits++; }
       }
     }
+    for (const id of Object.keys(advanced.effects)) { const p = advanced.effects[id].poison ?? 0; poisonIntake += p; if (tick >= protocol.horizon * 2 / 3) latePoisonIntake += p; }
     for (const e of advanced.events) {
       if (e.kind === "spawn") spawns++;
       if (e.kind !== "food") continue;
@@ -168,7 +175,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     const centroid = calls.length >= 5 ? { openness: mean(calls.map(c => c.openness)), resonance: mean(calls.map(c => c.resonance)) } : null;
     return { centroid, dispersion: centroid ? mean(calls.map(c => Math.hypot(c.openness - centroid.openness, c.resonance - centroid.resonance))) : 1 };
   };
-  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls), otherPool = pool(lateOtherCalls), incomerPool = pool(incomerCalls), earlyPool = pool(earlyCalls);
+  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls), otherPool = pool(lateOtherCalls), incomerPool = pool(incomerCalls), earlyPool = pool(earlyCalls), badPool = pool(lateBadCalls);
   // Without a newcomer, lateFoodCalls holds everyone; with one, it holds the incumbents and incomerCalls the newcomer.
   const newcomerDistance = newcomer && incomerPool.centroid && foodPool.centroid ? Math.hypot(incomerPool.centroid.openness - foodPool.centroid.openness, incomerPool.centroid.resonance - foodPool.centroid.resonance) : 1;
   const foodVoiceDispersion = foodPool.dispersion;
@@ -177,6 +184,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
     otherVoiceCentroid: otherPool.centroid, otherCalls,
+    poisonIntake, latePoisonIntake, badVoiceDispersion: badPool.dispersion, badVoiceCentroid: badPool.centroid, badCalls,
     newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0, newcomerCalls: incomerCalls,
     earlyVoiceCentroid: earlyPool.centroid, earlyCalls: earlyCalls.length,
     meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
@@ -191,7 +199,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -233,6 +241,11 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     }
     case "newcomer-benefit": return r.muted.newcomerLateHunger - r.sound.newcomerLateHunger;
     // generations-v1: after every original individual has been replaced, the late food voice still sits where the early one was. Higher is better: LINEAGE_SPAN minus the early-to-late distance; 0 when either voice is missing or the late voice is not concentrated.
+    // valence-v1: the bad-food voice concentrates when audible; the two voices differ; less poison is eaten with sound than muted, and more again with scrambled shapes (late third, as fractions of the muted late poison).
+    case "convergence-bad": return r.muted.badVoiceCentroid && r.sound.badVoiceCentroid ? r.muted.badVoiceDispersion - r.sound.badVoiceDispersion : 0;
+    case "valence-distinctness": return r.sound.foodVoiceCentroid && r.sound.badVoiceCentroid ? Math.hypot(r.sound.foodVoiceCentroid.openness - r.sound.badVoiceCentroid.openness, r.sound.foodVoiceCentroid.resonance - r.sound.badVoiceCentroid.resonance) : 0;
+    case "poison-benefit": return (r.muted.latePoisonIntake - r.sound.latePoisonIntake) / Math.max(0.05, r.muted.latePoisonIntake);
+    case "poison-shape": return (r.scrambled.latePoisonIntake - r.sound.latePoisonIntake) / Math.max(0.05, r.muted.latePoisonIntake);
     case "lineage-continuity": {
       const early = r.sound.earlyVoiceCentroid, late = r.sound.foodVoiceCentroid;
       if (!early || !late || r.sound.foodVoiceDispersion > ADOPTION_RADIUS) return 0;

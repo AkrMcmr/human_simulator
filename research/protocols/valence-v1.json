@@ -1,0 +1,260 @@
+{
+  "id": "valence-v1",
+  "version": "1.0.0",
+  "evidence": "free-world-two-valence-conventional-voices-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 4人・食料が移り変わる世界で、現れる食料の2つに1つが毒（見た目は同じ、食べると健康を失う。世界0.5.0）。食べて初めて分かる良し悪しを、経験と真似だけで「良い食料の声」と「悪い食料の声」に分け、形成後に聞き手が毒を避けて良い食料へ着くかを測る。判断0037",
+  "models": {
+    "baseline": "human-0.2.0",
+    "oneSign": "convention-contrast-0.10.0-experimental.2",
+    "candidate": "valence-0.12.0-experimental.1"
+  },
+  "pilotSeeds": [
+    70101,
+    70102,
+    70103,
+    70104
+  ],
+  "pilotUse": "尺度確認のみ（既定・1つの声の候補）。候補valenceはパイロットで走らせない。閾値固定後にゲート判定へ使わない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        70001,
+        70002,
+        70003,
+        70004,
+        70005,
+        70006,
+        70007,
+        70008
+      ],
+      "validationSeeds": [
+        71001,
+        71002,
+        71003,
+        71004,
+        71005,
+        71006,
+        71007,
+        71008
+      ],
+      "status": "reserved for the two-valence comparison (decision 0037)"
+    }
+  },
+  "developmentSeeds": [
+    70001,
+    70002,
+    70003,
+    70004,
+    70005,
+    70006,
+    70007,
+    70008
+  ],
+  "validationSeeds": [
+    71001,
+    71002,
+    71003,
+    71004,
+    71005,
+    71006,
+    71007,
+    71008
+  ],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 4,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ],
+      "toxicEvery": 2
+    }
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 4,
+      "radius": 2,
+      "toxic": true
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。到着遅れは、食料ごとに『先に食べた個体の初回摂食から、他の各個体の初回摂食まで』のステップ（上限300、未到着は上限）を上限比で他の個体について平均し、先の発見が実行終了の300ステップ前までに起きた食料について平均する。接触・4u未満はどの対でも起きたステップの割合。種類依存は空腹の平均の差（でたらめ特徴 − 音あり）で測る。良い食料の声＝毒でない摂食の直後の声、悪い食料の声＝毒の摂食の直後の声（いずれも後ろ3分の1）。毒の摂食量は後ろ3分の1の合計。毒の利益＝（音なし − 音あり）/ 音なし、毒の種類依存＝（でたらめ特徴 − 音あり）/ 音なし",
+  "checks": [
+    {
+      "id": "convergence-gain",
+      "label": "良い食料の声は聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "arbitrariness",
+      "label": "良い食料の声の収束先はシードごとに異なる",
+      "minimum": 0.08,
+      "unit": "sound distance"
+    },
+    {
+      "id": "convergence-bad",
+      "label": "悪い食料の声は聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "valence-distinctness",
+      "label": "良い声と悪い声が別の音（重心間の距離）",
+      "minimum": 0.25,
+      "unit": "sound distance"
+    },
+    {
+      "id": "poison-benefit",
+      "label": "聞き合えると毒の摂食が減る（後ろ3分の1、音なし比）",
+      "minimum": 0.2,
+      "unit": "fraction of muted late poison"
+    },
+    {
+      "id": "poison-shape",
+      "label": "音の特徴をでたらめにすると毒の摂食が増える（後ろ3分の1、音なし比）",
+      "minimum": 0.1,
+      "unit": "fraction of muted late poison"
+    },
+    {
+      "id": "forage-benefit",
+      "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    }
+  ],
+  "reported": [
+    "poisonIntake",
+    "latePoisonIntake",
+    "badCalls",
+    "foodCalls",
+    "foodVoiceCentroid",
+    "badVoiceCentroid",
+    "shape-dependence",
+    "arrival-benefit",
+    "minimumHealth"
+  ],
+  "notAClaim": "毒は見た目では分からず、食べた本人の身体にだけ現れる。音に意味・正解を与えない。語・文法・意図の再現ではない",
+  "thresholdBasis": "暫定。パイロット70101-70104で既定（毒を避けられない）と1つの声の候補（良い声だけ）の尺度を見てから固定する。特に毒の摂食の音なし水準と、1つの声の候補の毒の利益（方向だけで毒を避けられるか）が帰無になる。候補の結果は閾値固定前に見ない",
+  "establishedIf": "7項目を開発・確認の両群で達成した候補について「経験と真似だけで、良い食料の声と悪い食料の声が集団ごとに別々に共有され、形成後に聞き手が毒を避ける（2つの価値を持つ語彙の最小形）」と呼ぶ",
+  "hungerWindow": "late"
+}

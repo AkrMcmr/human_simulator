@@ -302,7 +302,8 @@ export function applyPhysicalEffect(previous: HumanState, effect: PhysicalEffect
   body.fatigue = clamp(body.fatigue + 0.001 + effect.exertion * 0.002 - (effect.resting ? 0.025 : 0));
   body.cold = clamp(body.cold + (effect.ambientCold - body.cold) * 0.025 - effect.exertion * 0.0006);
   const stress = Math.max(0, body.hunger - 0.9) + Math.max(0, body.cold - 0.85) + Math.max(0, body.fatigue - 0.95);
-  body.health = clamp(body.health - stress * 0.006 - effect.collision * 0.006 + (stress === 0 ? 0.00015 : 0));
+  // Poisoned intake (contracts 0.3.0) costs health in proportion; wholesome food never sets it.
+  body.health = clamp(body.health - stress * 0.006 - effect.collision * 0.006 - (effect.poison ?? 0) * 0.15 + (stress === 0 ? 0.00015 : 0));
   human.lastPain = effect.collision;
   return human;
 }

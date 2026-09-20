@@ -61,6 +61,7 @@ export function chooseLexiconVoice(human: HumanState, transient = false, separat
 }
 /** Follow the sound whose category has the best estimate for the referent; unknown categories by chance, negative ones only when exploring. */
 export function selectByEstimates(human: HumanState, sounds: HeardSound[], estimates: Record<number, Estimate> | undefined, random: RandomSource, purpose: string): HeardSound | null {
+  if (!sounds.length) return null;
   const scored = sounds.map(s => { const category = nearestHeardCategory(human, s); const e = category === null ? undefined : estimates?.[category]; return { sound: s, mean: e && e.samples > 0 ? e.mean : null }; });
   const known = scored.filter(x => x.mean !== null) as { sound: HeardSound; mean: number }[];
   if (known.length) {

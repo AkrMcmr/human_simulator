@@ -1,18 +1,18 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.4.0";
+export const WORLD_VERSION = "0.5.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
   /** Food regrowth per tick (0.3.0; omitted means the 0.2.0 constant 0.003). */
   foodRegeneration?: number;
   /** 0.3.0: when a food patch falls to `depletedBelow` it is marked spent (still visible, never regrows) and a fresh patch appears at the next position of this fixed sequence. Omitted: no spawning (0.2.0 behavior). */
-  foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[] };
+  foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[]; /** 0.5.0: every n-th spawned patch is toxic (1-based count; omitted: none). */ toxicEvery?: number };
   /** 0.4.0: every `lifetime` ticks the warm place goes out (stays visible, spent, gives no warmth) and a fresh one appears at the next fixed position. Omitted: warm places are permanent (0.3.0 behavior). */
   warmthCycle?: { lifetime: number; radius: number; positions: Vec2[]; /** Warm places alive after each cycle (default 1). */ count?: number };
 };
 export type PhysicalAnimal = { id: string; position: Vec2; velocity: Vec2 };
-export type Resource = { id: string; kind: "food" | "warmth"; position: Vec2; amount: number; radius: number; spent?: boolean };
+export type Resource = { id: string; kind: "food" | "warmth"; position: Vec2; amount: number; radius: number; spent?: boolean; /** 0.5.0: eating here poisons (looks like any other food). */ toxic?: boolean };
 export type SoundEmission = { sourceId: string; position: Vec2; shape: SoundShape; tick: number };
 export type WorldEvent = { tick: number; kind: "sound" | "contact" | "food" | "spawn"; actorId: string; value: number };
 export type WorldState = {
@@ -133,6 +133,7 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
     for (const eater of eaters) {
       const portion = total / eaters.length;
       effects[eater.id].foodIntake += portion;
+      if (resource.toxic && portion > 0) effects[eater.id].poison = (effects[eater.id].poison ?? 0) + portion;
       if (portion > 0) events.push({ tick: tick + 1, kind: "food", actorId: eater.id, value: portion });
     }
     if (resource.spent) { resource.amount = 0; continue; }
@@ -143,7 +144,8 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
       resource.spent = true; resource.amount = 0;
       const n = world.spawned ?? 0;
       const position = p.foodSpawn.positions[n % p.foodSpawn.positions.length];
-      world.resources.push({ id: "food-spawn-" + (n + 1), kind: "food", position: { ...position }, amount: p.foodSpawn.amount, radius: p.foodSpawn.radius });
+      const toxic = p.foodSpawn.toxicEvery ? (n + 1) % p.foodSpawn.toxicEvery === 0 : false;
+      world.resources.push({ id: "food-spawn-" + (n + 1), kind: "food", position: { ...position }, amount: p.foodSpawn.amount, radius: p.foodSpawn.radius, ...(toxic ? { toxic: true } : {}) });
       world.spawned = n + 1;
       events.push({ tick: tick + 1, kind: "spawn", actorId: "food-spawn-" + (n + 1), value: p.foodSpawn.amount });
     }

@@ -76,7 +76,8 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
   if (value.world.foodSpawn !== undefined) {
     const sp = value.world.foodSpawn;
     if (!object(sp) || !foodAmount(sp.amount) || !finite(sp.radius) || (sp.radius as number) <= 0 || (sp.radius as number) > 100 || !unit(sp.depletedBelow)
-        || !Array.isArray(sp.positions) || sp.positions.length < 1 || sp.positions.length > 64 || !sp.positions.every(inBounds)) throw new Error("食料の出現設定が不正です。");
+        || !Array.isArray(sp.positions) || sp.positions.length < 1 || sp.positions.length > 64 || !sp.positions.every(inBounds)
+        || (sp.toxicEvery !== undefined && (!Number.isInteger(sp.toxicEvery) || (sp.toxicEvery as number) < 1))) throw new Error("食料の出現設定が不正です。");
   }
   const ids = new Set<string>();
   for (const a of value.agents) {
@@ -99,7 +100,7 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
       if (!object(r) || typeof r.id !== "string" || !/^[A-Za-z0-9_-]{1,32}$/.test(r.id) || ["__proto__", "constructor", "prototype"].includes(r.id) || resourceIds.has(r.id)
         || !["food", "warmth"].includes(r.kind as string) || !object(r.position)
         || !finite(r.position.x) || !finite(r.position.y) || r.position.x < 0 || r.position.x > width || r.position.y < 0 || r.position.y > height
-        || !foodAmount(r.amount) || !finite(r.radius) || r.radius <= 0 || r.radius > 100) throw new Error("資源設定が不正です。");
+        || !foodAmount(r.amount) || !finite(r.radius) || r.radius <= 0 || r.radius > 100 || (r.toxic !== undefined && typeof r.toxic !== "boolean")) throw new Error("資源設定が不正です。");
       resourceIds.add(r.id);
     }
   }

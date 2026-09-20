@@ -1,5 +1,5 @@
 /** Public signals shared by human, world, and runner. Never put a peer's mind here. */
-export const CONTRACT_VERSION = "0.2.0";
+export const CONTRACT_VERSION = "0.3.0";
 export type Vec2 = { x: number; y: number };
 /** Two continuous, normalized acoustic features; these are not phonemes or words. */
 export type SoundShape = { openness: number; resonance: number };
@@ -49,6 +49,8 @@ export type PhysicalEffect = {
   foodIntake: number;
   exertion: number;
   resting: boolean;
+  /** 0.3.0: intake taken from a toxic food patch this tick (a share of foodIntake). Omitted or 0 for wholesome food. */
+  poison?: number;
   collision: number;
 };
 export type Score = { action: ActionKind; utility: number; terms: Record<string, number> };
