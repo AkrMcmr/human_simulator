@@ -23,7 +23,9 @@ test("the eating state pulls the voice toward the high corner only right after e
   const hungry = applyWithIntake(base, { ambientCold: .1, foodIntake: 0, exertion: 0, resting: false, collision: 0 });
   const fedSound = vocalSound(fed, EATING_VOICE.coupling), hungrySound = vocalSound(hungry, EATING_VOICE.coupling);
   assert.ok(fedSound.openness > hungrySound.openness + 0.3 && fedSound.resonance > hungrySound.resonance + 0.2, "eating voices separate from exploring voices");
-  assert.deepEqual(vocalSound(fed, 0), vocalSound(hungry, 0), "without eating coupling the voice ignores intake");
+  const fedWithoutRecord = { ...fed, lastIntake: 0 } as typeof fed;
+  assert.deepEqual(vocalSound(fed, 0), vocalSound(fedWithoutRecord, 0), "without eating coupling the intake record does not touch the voice");
+  assert.notDeepEqual(vocalSound(fed, EATING_VOICE.coupling), vocalSound(fedWithoutRecord, EATING_VOICE.coupling), "with eating coupling only the intake record changes the voice");
 });
 test("eating-voice candidates run in the referential world and seed rounds are fresh", () => {
   const r1 = [...seedsFor("development", v2, "1"), ...seedsFor("validation", v2, "1")];

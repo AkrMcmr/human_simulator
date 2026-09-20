@@ -1,4 +1,4 @@
-import { clamp, soundDistance } from "../../contracts/src/index.ts";
+import { clamp, magnitude, soundDistance } from "../../contracts/src/index.ts";
 import type { HeardSound, Observation, PhysicalEffect, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect } from "./index.ts";
 import type { Estimate, HumanState } from "./index.ts";
@@ -86,3 +86,64 @@ export const decideFoodCallOnly = (h: HumanState, o: Observation, r: RandomSourc
 export const decideForagerListener = (h: HumanState, o: Observation, r: RandomSource) => decideWithSenderOptions(h, o, r, { stateCoupling: VOICE_STATE.coupling, soundOrienting: true });
 /** Blind orienting alone on the default model: no coupling, no learning. */
 export const decideForagerListenerOnly = (h: HumanState, o: Observation, r: RandomSource) => decideWithSenderOptions(h, o, r, { sender: false, receiver: false, soundOrienting: true });
+
+/**
+ * 0.8.0-experimental.3: referent learning. Every heard sound is remembered with the place it came from. When the
+ * listener later passes within REFERENT.visitRadius of that place, the sound's category is credited if food is
+ * seen there and debited if not. Hungry listeners without a known food place follow sounds whose category has a
+ * favorable estimate. Learning happens on every visit, not only after deliberate following (research decision 0017).
+ */
+export const REFERENT_LEARNER_VERSION = "0.8.0-experimental.3";
+export const REFERENT = { visitRadius: 3, memoryTicks: 90, maxRecent: 12, exploreRate: 0.15, unknownFollowRate: 0.5 };
+type ReferentState = HumanState & { soundReferents?: Record<number, Estimate>; recentSounds?: { category: number; x: number; y: number; tick: number }[] };
+export function selectByReferent(human: HumanState, sounds: HeardSound[], random: RandomSource): HeardSound | null {
+  const state = human as ReferentState;
+  const scored = sounds.map(s => { const category = nearestHeardCategory(human, s); const e = category === null ? undefined : state.soundReferents?.[category]; return { sound: s, mean: e && e.samples > 0 ? e.mean : null }; });
+  const known = scored.filter(x => x.mean !== null) as { sound: HeardSound; mean: number }[];
+  if (known.length) {
+    const best = known.reduce((a, b) => b.mean > a.mean ? b : a);
+    return best.mean > 0 || random("referent-explore") < REFERENT.exploreRate ? best.sound : null;
+  }
+  return random("referent-unknown") < REFERENT.unknownFollowRate ? [...scored].sort((a, b) => b.sound.loudness - a.sound.loudness)[0].sound : null;
+}
+export function decideReferentLearner(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number, eatingCoupling?: number) {
+  const human: ReferentState = structuredClone(previous);
+  const self = observation.selfPosition;
+  const foodHere = observation.resources.filter(r => r.kind === "food" && r.strength > 0.01).map(r => ({ x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y }));
+  const kept: NonNullable<ReferentState["recentSounds"]> = [];
+  for (const m of human.recentSounds ?? []) {
+    if (observation.tick - m.tick > REFERENT.memoryTicks) continue;
+    if (magnitude({ x: m.x - self.x, y: m.y - self.y }) <= REFERENT.visitRadius) {
+      // Resolved by visiting the place the sound came from: was there food?
+      if (human.heardSounds.some(c => c.id === m.category) && human.parameters.learningRate > 0) {
+        human.soundReferents ??= {};
+        const e = human.soundReferents[m.category] ?? { mean: 0, variance: 1, samples: 0 };
+        const outcome = foodHere.some(f => magnitude({ x: f.x - m.x, y: f.y - m.y }) <= REFERENT.visitRadius) ? 1 : -1;
+        const rate = human.parameters.learningRate;
+        const residual = outcome - e.mean;
+        e.mean += rate * residual;
+        e.variance = Math.max(0, (1 - rate) * e.variance + rate * residual * residual);
+        e.samples++;
+        human.soundReferents[m.category] = e;
+      }
+      continue;
+    }
+    kept.push(m);
+  }
+  human.recentSounds = kept;
+  const result = decideWithSenderOptions(human, observation, random, { stateCoupling: VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectByReferent(h, sounds, r), satiationCall, eatingCoupling });
+  // Remember where each heard sound came from, classified with the categories updated by this decision.
+  const next = result.human as ReferentState;
+  next.recentSounds = [...(human.recentSounds ?? [])];
+  for (const s of observation.sounds) {
+    const category = nearestHeardCategory(next, s);
+    if (category === null) continue;
+    next.recentSounds.push({ category, x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y, tick: observation.tick });
+  }
+  if (next.recentSounds.length > REFERENT.maxRecent) next.recentSounds = next.recentSounds.slice(-REFERENT.maxRecent);
+  return result;
+}
+/** Referent learner on the eating-coupled voice with food calls. */
+export const decideEatingReferent = (h: HumanState, o: Observation, r: RandomSource) => decideReferentLearner(h, o, r, FOOD_CALL.utility, EATING_VOICE.coupling);
+/** Referent learner without eating coupling: voices at food are not acoustically distinct, so referents should not separate. */
+export const decideFoodCallReferent = (h: HumanState, o: Observation, r: RandomSource) => decideReferentLearner(h, o, r, FOOD_CALL.utility, undefined);

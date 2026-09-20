@@ -11,7 +11,9 @@
     "foodCallForager": "food-call-forager-0.8.0-experimental.1",
     "foodCallSelective": "food-call-selective-0.8.0-experimental.1",
     "eatingSelective": "eating-voice-selective-0.8.0-experimental.2",
-    "eatingBlind": "eating-voice-blind-0.8.0-experimental.2"
+    "eatingBlind": "eating-voice-blind-0.8.0-experimental.2",
+    "eatingReferent": "eating-voice-referent-0.8.0-experimental.3",
+    "foodCallReferent": "food-call-referent-0.8.0-experimental.3"
   },
   "pilotSeeds": [
     20101,
@@ -202,6 +204,29 @@
         23008
       ],
       "status": "reserved for the eating-coupled voice comparison (decision 0016); thresholds unchanged"
+    },
+    "3": {
+      "developmentSeeds": [
+        24001,
+        24002,
+        24003,
+        24004,
+        24005,
+        24006,
+        24007,
+        24008
+      ],
+      "validationSeeds": [
+        25001,
+        25002,
+        25003,
+        25004,
+        25005,
+        25006,
+        25007,
+        25008
+      ],
+      "status": "reserved for the referent-learning comparison (decision 0017); thresholds unchanged"
     }
   }
 }
