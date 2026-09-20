@@ -62,7 +62,7 @@
         59007,
         59008
       ],
-      "status": "reserved for the memory-credit candidate (decision 0031); gates unchanged"
+      "status": "observed 2026-09-20 (decision 0031): memory-credit candidate held the food side but the warmth side stayed below every gate (warmth convergence 0.129 / 0.129, specificity 0.175 / 0.193); the two-referent line is closed for this session"
     }
   },
   "developmentSeeds": [
