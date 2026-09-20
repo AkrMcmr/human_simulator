@@ -37,7 +37,7 @@
         37007,
         37008
       ],
-      "status": "reserved for the caller-cost comparison (decision 0021)"
+      "status": "observed 2026-09-20 (decision 0021): learned caller 0.274 / 0.255, below the 0.3 gate; fixed caller 0.146 / 0.133"
     }
   },
   "developmentSeeds": [
