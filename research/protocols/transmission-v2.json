@@ -38,7 +38,46 @@
         53007,
         53008
       ],
-      "status": "reserved for the proportion-based transmission comparison (decision 0029)"
+      "status": "observed 2026-09-20 (decision 0029): candidate passed all five gates in validation; in development adoption (0.551) and convergence passed while arbitrariness (0.080), newcomer benefit and newcomer type dependence failed"
+    },
+    "2": {
+      "developmentSeeds": [
+        54001,
+        54002,
+        54003,
+        54004,
+        54005,
+        54006,
+        54007,
+        54008,
+        54009,
+        54010,
+        54011,
+        54012,
+        54013,
+        54014,
+        54015,
+        54016
+      ],
+      "validationSeeds": [
+        55001,
+        55002,
+        55003,
+        55004,
+        55005,
+        55006,
+        55007,
+        55008,
+        55009,
+        55010,
+        55011,
+        55012,
+        55013,
+        55014,
+        55015,
+        55016
+      ],
+      "status": "reserved for the 16-seed replication (decision 0029, round 2); gates unchanged"
     }
   },
   "developmentSeeds": [
