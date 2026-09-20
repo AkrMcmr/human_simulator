@@ -150,8 +150,8 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "call-suppression": return (r.muted.foodCalls - r.sound.foodCalls) / Math.max(1, r.muted.foodCalls);
     // Food voices of different individuals are closer when they can hear each other (imitation) than when muted.
     case "convergence-gain": return r.muted.foodVoiceSpread - r.sound.foodVoiceSpread;
-    // Per seed: distance of this run's food-voice centroid from the across-seed mean centroid; filled in by assessSeeds.
-    case "arbitrariness": return Number.NaN;
+    // Per seed: distance of this run's food-voice centroid from the across-seed mean centroid. Needs the whole seed set, so assessSeeds computes it; alone it is 0.
+    case "arbitrariness": return 0;
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;
     default: throw new Error("Unknown check " + id);
   }
