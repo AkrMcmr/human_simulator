@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
-import { decideValence } from "../../packages/human/src/valence.ts";
+import { decideValence, decideValenceAversion, decideValencePrivate } from "../../packages/human/src/valence.ts";
 import { decideLexicon, decideLexiconTransient, decideLexiconMemory, decideLexiconSeparate, decideLexiconFine } from "../../packages/human/src/lexicon.ts";
 import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, decideConvention, decideConventionNoImitation, decideConventionContrast, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
 import { createHuman, decideHuman, decideLegacyHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
@@ -48,5 +48,7 @@ export const models: Record<string, ModelAdapter> = {
   "lexicon-0.11.0-experimental.3": { create: createHuman, decide: decideLexiconMemory, apply: applyWithIntake },
   "lexicon-0.11.0-experimental.4": { create: createHuman, decide: decideLexiconSeparate, apply: applyWithIntake },
   "lexicon-0.11.0-experimental.5": { create: createHuman, decide: decideLexiconFine, apply: applyWithIntake },
-  "valence-0.12.0-experimental.1": { create: createHuman, decide: decideValence, apply: applyWithIntake },
+  "valence-0.12.0-experimental.1": { create: createHuman, decide: (h, o, r) => decideValence(h, o, r), apply: applyWithIntake },
+  "valence-aversion-0.12.0-experimental.2": { create: createHuman, decide: decideValenceAversion, apply: applyWithIntake },
+  "valence-private-0.12.0-experimental.2": { create: createHuman, decide: decideValencePrivate, apply: applyWithIntake },
 };
