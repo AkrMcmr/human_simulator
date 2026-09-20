@@ -62,7 +62,7 @@
         41007,
         41008
       ],
-      "status": "reserved for the contrastive food-voice candidate (decision 0023); gates unchanged"
+      "status": "observed 2026-09-20 (decision 0023): contrast candidate passed all five gates in validation and four of five in development (forage-benefit -0.043); imitation alone reproduced convergence and arbitrariness in both groups"
     }
   },
   "developmentSeeds": [
