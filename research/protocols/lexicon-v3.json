@@ -1,113 +1,65 @@
 {
-  "id": "lexicon-v2",
+  "id": "lexicon-v3",
   "version": "1.0.0",
   "evidence": "free-world-two-referent-conventional-voices-diagnostics-not-language-or-human-validation",
-  "purpose": "M3: lexicon-v1と同じ2文脈の課題で、暖かい場所を食料と同じく希少で見つけにくいもの（1か所・半径2.5・周期300、環境寒度0.8）にし、暖かさについても情報の非対称を作る。判断0027",
+  "purpose": "M3: lexicon-v2（希少な暖かさ、機会が少ない）とlexicon-v1（豊富な暖かさ、非対称がない）の中間の世界。暖かい場所2か所・半径2.5・周期300・環境寒度0.8。暖まる機会と暖かさについての情報の非対称の両方を持たせ、分離の規則を持つ2文脈の候補を測る。判断0034",
   "models": {
     "baseline": "human-0.2.0",
     "oneSign": "convention-contrast-0.10.0-experimental.2",
-    "candidate": "lexicon-0.11.0-experimental.2",
-    "persistent": "lexicon-0.11.0-experimental.1",
     "memory": "lexicon-0.11.0-experimental.3",
     "separate": "lexicon-0.11.0-experimental.4"
   },
   "pilotSeeds": [
-    48101,
-    48102,
-    48103,
-    48104
+    64101,
+    64102,
+    64103,
+    64104
   ],
   "pilotUse": "尺度確認のみ（既定・1つの声の対照）。候補はパイロットで走らせない。閾値固定後にゲート判定へ使わない",
   "rounds": {
     "1": {
       "developmentSeeds": [
-        48001,
-        48002,
-        48003,
-        48004,
-        48005,
-        48006,
-        48007,
-        48008
+        64001,
+        64002,
+        64003,
+        64004,
+        64005,
+        64006,
+        64007,
+        64008
       ],
       "validationSeeds": [
-        49001,
-        49002,
-        49003,
-        49004,
-        49005,
-        49006,
-        49007,
-        49008
+        65001,
+        65002,
+        65003,
+        65004,
+        65005,
+        65006,
+        65007,
+        65008
       ],
-      "status": "observed 2026-09-20 (decision 0027): both lexicon candidates failed the warmth-side gates; food side held for the transient variant in development only"
-    },
-    "2": {
-      "developmentSeeds": [
-        58001,
-        58002,
-        58003,
-        58004,
-        58005,
-        58006,
-        58007,
-        58008
-      ],
-      "validationSeeds": [
-        59001,
-        59002,
-        59003,
-        59004,
-        59005,
-        59006,
-        59007,
-        59008
-      ],
-      "status": "observed 2026-09-20 (decision 0031): memory-credit candidate held the food side but the warmth side stayed below every gate (warmth convergence 0.129 / 0.129, specificity 0.175 / 0.193); the two-referent line is closed for this session"
-    },
-    "3": {
-      "developmentSeeds": [
-        62001,
-        62002,
-        62003,
-        62004,
-        62005,
-        62006,
-        62007,
-        62008
-      ],
-      "validationSeeds": [
-        63001,
-        63002,
-        63003,
-        63004,
-        63005,
-        63006,
-        63007,
-        63008
-      ],
-      "status": "observed 2026-09-20 (decision 0033): separation raised distinctness and specificity in development (0.253 / 0.263) but not in validation, where four seeds had too few sheltered calls; warmth gates unmet"
+      "status": "reserved for the mid-scarcity comparison (decision 0034)"
     }
   },
   "developmentSeeds": [
-    48001,
-    48002,
-    48003,
-    48004,
-    48005,
-    48006,
-    48007,
-    48008
+    64001,
+    64002,
+    64003,
+    64004,
+    64005,
+    64006,
+    64007,
+    64008
   ],
   "validationSeeds": [
-    49001,
-    49002,
-    49003,
-    49004,
-    49005,
-    49006,
-    49007,
-    49008
+    65001,
+    65002,
+    65003,
+    65004,
+    65005,
+    65006,
+    65007,
+    65008
   ],
   "horizon": 3000,
   "world": {
@@ -173,7 +125,7 @@
     "warmthCycle": {
       "lifetime": 300,
       "radius": 2.5,
-      "count": 1,
+      "count": 2,
       "positions": [
         {
           "x": 10,
@@ -273,6 +225,16 @@
       },
       "amount": 1,
       "radius": 2.5
+    },
+    {
+      "id": "warm-2",
+      "kind": "warmth",
+      "position": {
+        "x": 8,
+        "y": 20
+      },
+      "amount": 1,
+      "radius": 2.5
     }
   ],
   "conditions": [
@@ -355,7 +317,7 @@
     "contactTicks"
   ],
   "notAClaim": "音に意味・正解・成功ラベルを与えない。真似は「その文脈で聞いた声」と「出所に食料／暖かさがあった声」という本人の経験だけに基づく。食べている時・暖まっている時に声を出したくなる傾向（各+0.45）は生得の仮定として残す。語・文法・意図の再現ではない",
-  "thresholdBasis": "パイロット48101-48104（既定・1つの声の対照）: 寒さの平均は後ろ3分の1で0.55〜0.78と高く、暖かさは希少になった。1つの声の対照の暖かい場所での声は9〜71回（音あり）で、暖かさ側の帰無は収束0.046（最大0.089）、任意性0.186（声が少なく不安定）、区別0.218（最大0.389）、特異性0.147（最大0.200）、寒さの種類依存0.067（最大0.133）。閾値: 区別を0.40（帰無の最大の上）、寒さの種類依存を0.12（帰無の最大の上）に上げ、収束（暖かさ）0.25・特異性0.35・任意性（暖かさ）0.08・食料側と空腹側はlexicon-v1から据え置き。候補の結果は閾値固定前に見ていない",
+  "thresholdBasis": "暫定: lexicon-v2の閾値を引き継ぐ。パイロット64101-64104で既定と1つの声の対照の尺度（暖かさ側の帰無、暖かい場所での声の回数）を見てから固定する。候補の結果は閾値固定前に見ない",
   "establishedIf": "9項目を開発・確認の両群で達成した候補について「経験と真似だけで、2つの文脈に別々の任意の声が集団ごとに共有され、形成後に聞き手が両方を手掛かりに使う（語彙の最小形）」と呼ぶ。暖かさ側（収束・任意性・特異性・寒さの種類依存）が未達で食料側が達成なら、慣習的な合図は1つに留まる",
   "hungerWindow": "late"
 }

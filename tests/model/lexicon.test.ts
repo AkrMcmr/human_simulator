@@ -171,3 +171,14 @@ test("explicit separation displaces a context voice away from the other context'
   const earlier = [v2.pilotSeeds, ...["1", "2"].map(r => [...seedsFor("development", v2, r), ...seedsFor("validation", v2, r)])].flat();
   assert.ok(r3.every(s => !earlier.includes(s)) && new Set(r3).size === 16 && r3.every(s => s >= 62000));
 });
+test("lexicon-v3 sits between v1 and v2 in warmth supply and uses fresh seeds", async () => {
+  const { protocol: v3 } = await import("../../research/studies/lexicon-v3.ts");
+  const { protocol: v2 } = await import("../../research/studies/lexicon-v2.ts");
+  assert.deepEqual(v3.checks.map(c => c.id), v2.checks.map(c => c.id));
+  const w = v3.world as unknown as { ambientCold: number; warmthCycle: { lifetime: number; radius: number; count: number } };
+  assert.deepEqual([w.ambientCold, w.warmthCycle.lifetime, w.warmthCycle.radius, w.warmthCycle.count], [0.8, 300, 2.5, 2]);
+  assert.equal(v3.resources.filter(r => r.kind === "warmth").length, 2);
+  const all = [v3.pilotSeeds, seedsFor("development", v3, "1"), seedsFor("validation", v3, "1")].flat();
+  const used = [v2.pilotSeeds, ...["1", "2", "3"].map(r => [...seedsFor("development", v2, r), ...seedsFor("validation", v2, r)])].flat();
+  assert.ok(all.every(s => !used.includes(s)) && new Set(all).size === all.length && all.every(s => s >= 64000));
+});
