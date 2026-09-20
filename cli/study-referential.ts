@@ -9,6 +9,7 @@ import protocolV3 from "../research/protocols/referential-v3.json" with { type: 
 import protocolV4 from "../research/protocols/referential-v4.json" with { type: "json" };
 import protocolV5 from "../research/protocols/referential-v5.json" with { type: "json" };
 import protocolCaller from "../research/protocols/caller-cost-v1.json" with { type: "json" };
+import protocolConvention from "../research/protocols/convention-v1.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -23,7 +24,7 @@ for (let i = 0; i < args.length; i++) {
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
-const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol };
+const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol, convention: protocolConvention as unknown as ReferentialProtocol };
 if (!Object.hasOwn(protocols, protocolName)) throw new Error("--protocol must be one of " + Object.keys(protocols).join(", "));
 const protocol: ReferentialProtocol = protocols[protocolName];
 const split = options.get("--split") ?? "development";
@@ -42,7 +43,7 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "research/protocols/convention-v1.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
@@ -52,6 +53,7 @@ const output = { format: "human-world-lab/referential-study", schemaVersion: 1, 
 mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, JSON.stringify(output, null, 2) + "\n");
 const f = (x: number, d = 4) => x.toFixed(d);
 const spawn = (protocol.world as unknown as { foodSpawn?: { amount: number; positions: unknown[] } }).foodSpawn;
+const cen = (p: (typeof partitions)[number], k: "sound" | "muted" | "misdirected" | "scrambled") => { const cs = p.results.map(r => r[k].foodVoiceCentroid).filter((c): c is { openness: number; resonance: number } => c !== null); return cs.length ? `${f(avg(cs.map(c => c.openness)), 2)},${f(avg(cs.map(c => c.resonance)), 2)}` : "—"; };
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const lines = [`# 情報の非対称がある採餌課題（${protocol.id}）`, "", `- 条件群: ${split}（シード群ラウンド${round}）`, `- ソース: ${provenance.commit}`, `- 未コミット変更: ${provenance.dirty}`, `- モデルコードSHA256: ${provenance.modelHash}`, `- 評価器SHA256: ${provenance.evaluatorHash}`, `- 環境SHA256: ${provenance.environmentHash}`, `- シード: ${partitions[0].seeds.join(", ")}`, `- 実行: ${protocol.horizon}ステップ、視界${protocol.world.visionRadius}u、聴覚${protocol.world.hearingRadius}u、食料${protocol.resources.filter(r => r.kind === "food").length}か所（各${protocol.resources.find(r => r.kind === "food")?.amount}）${spawn ? `、尽きると次の場所に${spawn.amount}が現れる（${spawn.positions.length}か所の列、再生なし）` : ""}、初期空腹${protocol.body.hunger}、${Object.keys(protocol.agents).length}人全員が同じモデル。対照は音なし、方向をでたらめにする介入、音の特徴をでたらめにする介入`, "", "値はシードごとの差の平均 ± 標本SD。高いほど「声が食料の手掛かりとして働く」方向。人間の言語や意図の再現ではない。", ""];
 for (const p of partitions) {
@@ -68,6 +70,7 @@ for (const p of partitions) {
     `| 音を聞いた直後に音源の方へ動いた割合 | ${s("sound", r => r.towardSourceFraction)} | — | ${s("misdirected", r => r.towardSourceFraction)} | ${s("scrambled", r => r.towardSourceFraction)} |`,
     `| 初回摂食が聞いた直後（${protocol.hearWindow}ステップ以内）だった割合 | ${s("sound", r => r.foodAfterHearingFraction)} | — | ${s("misdirected", r => r.foodAfterHearingFraction)} | ${s("scrambled", r => r.foodAfterHearingFraction)} |`,
     `| 発声回数 / うち食後の呼び声 | ${s("sound", r => r.vocalizations, 0)} / ${s("sound", r => r.foodCalls, 0)} | ${s("muted", r => r.vocalizations, 0)} / ${s("muted", r => r.foodCalls, 0)} | ${s("misdirected", r => r.vocalizations, 0)} / ${s("misdirected", r => r.foodCalls, 0)} | ${s("scrambled", r => r.vocalizations, 0)} / ${s("scrambled", r => r.foodCalls, 0)} |`,
+    `| 食後の声の個体間の広がり / 重心（開き,共鳴） | ${s("sound", r => r.foodVoiceSpread, 2)} / ${cen(p, "sound")} | ${s("muted", r => r.foodVoiceSpread, 2)} / ${cen(p, "muted")} | ${s("misdirected", r => r.foodVoiceSpread, 2)} / ${cen(p, "misdirected")} | ${s("scrambled", r => r.foodVoiceSpread, 2)} / ${cen(p, "scrambled")} |`,
     `| 接触ステップ割合 | ${s("sound", r => r.contactTicks)} | ${s("muted", r => r.contactTicks)} | ${s("misdirected", r => r.contactTicks)} | ${s("scrambled", r => r.contactTicks)} |`,
     `| 4u未満の割合 | ${s("sound", r => r.closeFraction)} | ${s("muted", r => r.closeFraction)} | ${s("misdirected", r => r.closeFraction)} | ${s("scrambled", r => r.closeFraction)} |`,
     `| 最低健康 | ${s("sound", r => r.minimumHealth)} | ${s("muted", r => r.minimumHealth)} | ${s("misdirected", r => r.minimumHealth)} | ${s("scrambled", r => r.minimumHealth)} |`, "");

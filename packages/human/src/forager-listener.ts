@@ -1,7 +1,7 @@
 import { clamp, magnitude, soundDistance } from "../../contracts/src/index.ts";
 import type { HeardSound, Observation, PhysicalEffect, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect } from "./index.ts";
-import type { Estimate, HumanState } from "./index.ts";
+import type { Estimate, HumanState, SoundChoice } from "./index.ts";
 import { decideWithSenderOptions } from "./signal-sender.ts";
 import { VOICE_STATE } from "./voice-state.ts";
 
@@ -106,7 +106,7 @@ export function selectByReferent(human: HumanState, sounds: HeardSound[], random
   }
   return random("referent-unknown") < REFERENT.unknownFollowRate ? [...scored].sort((a, b) => b.sound.loudness - a.sound.loudness)[0].sound : null;
 }
-export function decideReferentLearner(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number, eatingCoupling?: number) {
+export function decideReferentLearner(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number, eatingCoupling?: number, extra: { stateCoupling?: number; chooseSound?: SoundChoice } = {}) {
   const human: ReferentState = structuredClone(previous);
   const self = observation.selfPosition;
   const foodHere = observation.resources.filter(r => r.kind === "food" && r.strength > 0.01).map(r => ({ x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y }));
@@ -131,7 +131,7 @@ export function decideReferentLearner(previous: HumanState, observation: Observa
     kept.push(m);
   }
   human.recentSounds = kept;
-  const result = decideWithSenderOptions(human, observation, random, { stateCoupling: VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectByReferent(h, sounds, r), satiationCall, eatingCoupling });
+  const result = decideWithSenderOptions(human, observation, random, { stateCoupling: extra.stateCoupling ?? VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectByReferent(h, sounds, r), satiationCall, eatingCoupling, chooseSound: extra.chooseSound });
   // Remember where each heard sound came from, classified with the categories updated by this decision.
   const next = result.human as ReferentState;
   next.recentSounds = [...(human.recentSounds ?? [])];
@@ -186,3 +186,40 @@ export function decideLearnedCaller(previous: HumanState, observation: Observati
   if (eating && !next.callPending) next.callPending = { called: result.action.kind === "vocalize", tick: observation.tick, hunger: human.body.hunger };
   return result;
 }
+
+/**
+ * 0.10.0-experimental.1: a conventional food voice (research decision 0022). No innate acoustic region marks
+ * eating. While eating, the speaker reproduces the heard-sound category that its own experience ties to food:
+ * the category with the best referent estimate (soundReferents, learned by visiting sound sources) plus the
+ * share of sounds heard while it was itself eating. State coupling is weak (0.2) so the region can be arbitrary.
+ * Listeners are the referent learners of 0.8.0-experimental.3. Nothing shared is given: each individual only
+ * imitates what it heard and credits what it saw.
+ */
+export const CONVENTION_VERSION = "0.10.0-experimental.1";
+export const CONVENTION = { stateCoupling: 0.2, heardWeight: 0.5, minimumScore: 0.05 };
+type ConventionState = ReferentState & { lastIntake?: number; eatingHeard?: Record<number, number> };
+/** Which heard category to reproduce while eating, or null to fall back to the default voice. */
+export function chooseImitatedFoodVoice(human: HumanState): { openness: number; resonance: number } | null {
+  const state = human as ConventionState;
+  if ((state.lastIntake ?? 0) <= 0 || !human.heardSounds.length) return null;
+  const heardTotal = Object.values(state.eatingHeard ?? {}).reduce((a, b) => a + b, 0);
+  let best: { shape: { openness: number; resonance: number }; score: number } | null = null;
+  for (const c of human.heardSounds) {
+    const e = state.soundReferents?.[c.id];
+    const score = (e && e.samples > 0 ? e.mean : 0) + CONVENTION.heardWeight * ((state.eatingHeard?.[c.id] ?? 0) / Math.max(1, heardTotal));
+    if (score > CONVENTION.minimumScore && (!best || score > best.score)) best = { shape: { ...c.shape }, score };
+  }
+  return best?.shape ?? null;
+}
+export function decideConvention(previous: HumanState, observation: Observation, random: RandomSource, imitate = true) {
+  const human: ConventionState = structuredClone(previous);
+  if ((human.lastIntake ?? 0) > 0) {
+    for (const s of observation.sounds) {
+      const category = nearestHeardCategory(human, s);
+      if (category !== null) { human.eatingHeard ??= {}; human.eatingHeard[category] = (human.eatingHeard[category] ?? 0) + 1; }
+    }
+  }
+  return decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, { stateCoupling: CONVENTION.stateCoupling, chooseSound: imitate ? (h) => chooseImitatedFoodVoice(h) : undefined });
+}
+/** Control: same weak coupling, same listener, no imitation, so food voices stay each speaker's own. */
+export const decideConventionNoImitation = (h: HumanState, o: Observation, r: RandomSource) => decideConvention(h, o, r, false);
