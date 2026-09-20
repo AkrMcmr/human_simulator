@@ -13,6 +13,7 @@ import protocolConvention from "../research/protocols/convention-v1.json" with {
 import protocolConvention2 from "../research/protocols/convention-v2.json" with { type: "json" };
 import protocolLexicon from "../research/protocols/lexicon-v1.json" with { type: "json" };
 import protocolLexicon2 from "../research/protocols/lexicon-v2.json" with { type: "json" };
+import protocolTransmission from "../research/protocols/transmission-v1.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -27,7 +28,7 @@ for (let i = 0; i < args.length; i++) {
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
-const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol, convention: protocolConvention as unknown as ReferentialProtocol, convention2: protocolConvention2 as unknown as ReferentialProtocol, lexicon: protocolLexicon as unknown as ReferentialProtocol, lexicon2: protocolLexicon2 as unknown as ReferentialProtocol };
+const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol, convention: protocolConvention as unknown as ReferentialProtocol, convention2: protocolConvention2 as unknown as ReferentialProtocol, lexicon: protocolLexicon as unknown as ReferentialProtocol, lexicon2: protocolLexicon2 as unknown as ReferentialProtocol, transmission: protocolTransmission as unknown as ReferentialProtocol };
 if (!Object.hasOwn(protocols, protocolName)) throw new Error("--protocol must be one of " + Object.keys(protocols).join(", "));
 const protocol: ReferentialProtocol = protocols[protocolName];
 const split = options.get("--split") ?? "development";
@@ -46,7 +47,7 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "research/protocols/convention-v1.json", "research/protocols/convention-v2.json", "research/protocols/lexicon-v1.json", "research/protocols/lexicon-v2.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "research/protocols/convention-v1.json", "research/protocols/convention-v2.json", "research/protocols/lexicon-v1.json", "research/protocols/lexicon-v2.json", "research/protocols/transmission-v1.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
@@ -79,6 +80,7 @@ for (const p of partitions) {
     `| 食後の声の個体間の広がり / 重心（開き,共鳴） | ${s("sound", r => r.foodVoiceSpread, 2)} / ${cen(p, "sound")} | ${s("muted", r => r.foodVoiceSpread, 2)} / ${cen(p, "muted")} | ${s("misdirected", r => r.foodVoiceSpread, 2)} / ${cen(p, "misdirected")} | ${s("scrambled", r => r.foodVoiceSpread, 2)} / ${cen(p, "scrambled")} |`,
     `| 暖かい場所での声の散らばり / 重心 / 回数 | ${s("sound", r => r.warmthVoiceDispersion, 3)} / ${wcen(p, "sound")} / ${s("sound", r => r.warmthCalls, 0)} | ${s("muted", r => r.warmthVoiceDispersion, 3)} / ${wcen(p, "muted")} / ${s("muted", r => r.warmthCalls, 0)} | ${s("misdirected", r => r.warmthVoiceDispersion, 3)} / ${wcen(p, "misdirected")} / ${s("misdirected", r => r.warmthCalls, 0)} | ${s("scrambled", r => r.warmthVoiceDispersion, 3)} / ${wcen(p, "scrambled")} / ${s("scrambled", r => r.warmthCalls, 0)} |`,
     `| 寒さの平均（後ろ3分の1） | ${s("sound", r => r.lateMeanCold)} | ${s("muted", r => r.lateMeanCold)} | ${s("misdirected", r => r.lateMeanCold)} | ${s("scrambled", r => r.lateMeanCold)} |`,
+    `| 新参者の声の距離 / 新参者の空腹（後ろ3分の1） | ${s("sound", r => r.newcomerDistance, 3)} / ${s("sound", r => r.newcomerLateHunger)} | ${s("muted", r => r.newcomerDistance, 3)} / ${s("muted", r => r.newcomerLateHunger)} | ${s("misdirected", r => r.newcomerDistance, 3)} / ${s("misdirected", r => r.newcomerLateHunger)} | ${s("scrambled", r => r.newcomerDistance, 3)} / ${s("scrambled", r => r.newcomerLateHunger)} |`,
     `| 接触ステップ割合 | ${s("sound", r => r.contactTicks)} | ${s("muted", r => r.contactTicks)} | ${s("misdirected", r => r.contactTicks)} | ${s("scrambled", r => r.contactTicks)} |`,
     `| 4u未満の割合 | ${s("sound", r => r.closeFraction)} | ${s("muted", r => r.closeFraction)} | ${s("misdirected", r => r.closeFraction)} | ${s("scrambled", r => r.closeFraction)} |`,
     `| 最低健康 | ${s("sound", r => r.minimumHealth)} | ${s("muted", r => r.minimumHealth)} | ${s("misdirected", r => r.minimumHealth)} | ${s("scrambled", r => r.minimumHealth)} |`, "");

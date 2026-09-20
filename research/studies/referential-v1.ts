@@ -32,6 +32,8 @@ export type RunResult = {
   warmthVoiceDispersion: number; warmthVoiceCentroid: { openness: number; resonance: number } | null; warmthCalls: number;
   /** lexicon-v1: late calls made in neither context (not eating, not sheltered), pooled. A second voice used for everything outside food would coincide with the warmth voice; a warmth-specific voice would not. */
   otherVoiceCentroid: { openness: number; resonance: number } | null; otherCalls: number;
+  /** transmission-v1: with a newcomer replaced mid-run, the distance between its late food voice and the incumbents' pooled late food voice (1 when either is missing), and its own late hunger. */
+  newcomerDistance: number; newcomerLateHunger: number;
   /** Mean distance of every food call in the last third (all individuals pooled) to the pooled centroid; low when the group's food calls concentrate on one voice. 1 when fewer than 5 calls. */
   foodVoiceDispersion: number;
 };
@@ -66,7 +68,16 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   let warmthCalls = 0;
   const heardBeforeFood: Record<string, boolean> = {};
   const pendingDirections: Record<string, { x: number; y: number } | null> = {};
+  const newcomer = (protocol as unknown as { newcomer?: { id: string; tick: number } }).newcomer;
+  const config = referentialConfig(seed, modelId, condition !== "muted", protocol);
+  const newcomerLate: number[] = [];
+  const incomerCalls: { openness: number; resonance: number }[] = [];
   for (let tick = 0; tick < protocol.horizon; tick++) {
+    if (newcomer && tick === newcomer.tick) {
+      // Cultural transmission probe: one individual is replaced by a naive one at the same place. Observer-side intervention, no human learns of it.
+      const initial = config.agents.find(a => a.id === newcomer.id)!;
+      state = { ...state, humans: state.humans.map(h => h.id === newcomer.id ? model.create(newcomer.id, initial.parameters, initial.body) : h) };
+    }
     const actions: Record<string, ActionIntent> = {}, traces: Record<string, DecisionTrace> = {};
     const before = new Map(state.world.animals.map(a => [a.id, { ...a.position }]));
     const humans = [...state.humans].sort((a, b) => a.id.localeCompare(b.id)).map(h => {
@@ -93,7 +104,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         }
         if (((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) {
           foodCalls++;
-          if (tick >= protocol.horizon * 2 / 3 && result.action.sound) { const v = foodVoiceSums[h.id] ??= { openness: 0, resonance: 0, count: 0 }; v.openness += result.action.sound.openness; v.resonance += result.action.sound.resonance; v.count++; lateFoodCalls.push({ ...result.action.sound }); }
+          if (tick >= protocol.horizon * 2 / 3 && result.action.sound) { const v = foodVoiceSums[h.id] ??= { openness: 0, resonance: 0, count: 0 }; v.openness += result.action.sound.openness; v.resonance += result.action.sound.resonance; v.count++; if (newcomer && h.id === newcomer.id) incomerCalls.push({ ...result.action.sound }); else lateFoodCalls.push({ ...result.action.sound }); }
         }
       }
       actions[h.id] = result.action; traces[h.id] = result.trace;
@@ -118,7 +129,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       const patch = advanced.world.resources.find(r => r.kind === "food" && Math.hypot(r.position.x - eater.position.x, r.position.y - eater.position.y) <= r.radius);
       if (patch) { patchArrivals[patch.id] ??= {}; patchArrivals[patch.id][e.actorId] ??= tick + 1; }
     }
-    for (const h of state.humans) { hungers.push(h.body.hunger); if (tick >= protocol.horizon * 2 / 3) { lateHungers.push(h.body.hunger); lateColds.push(h.body.cold); } minimumHealth = Math.min(minimumHealth, h.body.health); }
+    for (const h of state.humans) { hungers.push(h.body.hunger); if (tick >= protocol.horizon * 2 / 3) { lateHungers.push(h.body.hunger); lateColds.push(h.body.cold); if (newcomer && h.id === newcomer.id) newcomerLate.push(h.body.hunger); } minimumHealth = Math.min(minimumHealth, h.body.health); }
     if (advanced.events.some(e => e.kind === "contact")) contactTicks++;
     const animals = state.world.animals;
     if (animals.some((a, i) => animals.slice(i + 1).some(b => Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y) < 4))) closeTicks++;
@@ -146,13 +157,16 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     const centroid = calls.length >= 5 ? { openness: mean(calls.map(c => c.openness)), resonance: mean(calls.map(c => c.resonance)) } : null;
     return { centroid, dispersion: centroid ? mean(calls.map(c => Math.hypot(c.openness - centroid.openness, c.resonance - centroid.resonance))) : 1 };
   };
-  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls), otherPool = pool(lateOtherCalls);
+  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls), otherPool = pool(lateOtherCalls), incomerPool = pool(incomerCalls);
+  // Without a newcomer, lateFoodCalls holds everyone; with one, it holds the incumbents and incomerCalls the newcomer.
+  const newcomerDistance = newcomer && incomerPool.centroid && foodPool.centroid ? Math.hypot(incomerPool.centroid.openness - foodPool.centroid.openness, incomerPool.centroid.resonance - foodPool.centroid.resonance) : 1;
   const foodVoiceDispersion = foodPool.dispersion;
   return {
     condition, model: model.id, seed,
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
     otherVoiceCentroid: otherPool.centroid, otherCalls,
+    newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0,
     meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
@@ -165,7 +179,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "newcomer-benefit", "newcomer-shape", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -195,6 +209,10 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "distinctness": return r.sound.foodVoiceCentroid && r.sound.warmthVoiceCentroid ? Math.hypot(r.sound.foodVoiceCentroid.openness - r.sound.warmthVoiceCentroid.openness, r.sound.foodVoiceCentroid.resonance - r.sound.warmthVoiceCentroid.resonance) : 0;
     case "cold-benefit": return r.muted.lateMeanCold - r.sound.lateMeanCold;
     case "cold-shape-dependence": return r.scrambled.lateMeanCold - r.sound.lateMeanCold;
+    // transmission-v1: the newcomer's food voice lands nearer the incumbents' when it can hear them; and it fares no worse, and worse under scrambled shapes.
+    case "adoption-gain": return r.muted.newcomerDistance - r.sound.newcomerDistance;
+    case "newcomer-benefit": return r.muted.newcomerLateHunger - r.sound.newcomerLateHunger;
+    case "newcomer-shape": return r.scrambled.newcomerLateHunger - r.sound.newcomerLateHunger;
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;
     default: throw new Error("Unknown check " + id);
   }
