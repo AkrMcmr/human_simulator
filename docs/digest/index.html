@@ -66,9 +66,9 @@ table.sr{position:absolute;left:-9999px}
 <header>
 <p class="eyebrow">Human World Lab · 研究ダイジェスト · 2026-09-20</p>
 <h1>二人が出会い、痛みを学び、警戒をほどくまで。そして声が合図になるまで</h1>
-<p class="lede prose">言葉も約束も持たない二人、実験によっては四人の個体を、内部の計算規則だけで動かして観察する実験室で、ここまでに確かめた十の発見です。すべて同じ条件と乱数シードで何度も走らせて比べた結果で、人間の心の再現を主張するものではありません。</p>
+<p class="lede prose">言葉も約束も持たない二人、実験によっては四人の個体を、内部の計算規則だけで動かして観察する実験室で、ここまでに確かめた十二の発見です。すべて同じ条件と乱数シードで何度も走らせて比べた結果で、人間の心の再現を主張するものではありません。</p>
 <div class="facts">
-<div><small>紹介する発見</small><strong>10</strong><span>本ページで扱う発見1〜10</span></div>
+<div><small>紹介する発見</small><strong>12</strong><span>本ページで扱う発見1〜12</span></div>
 <div><small>実験の規模</small><strong>8 × 16</strong><span>通常worldの条件 × 未使用シード（M1）</span></div>
 <div><small>いまの既定モデル</small><strong>human 0.2.0</strong><span>距離の予測を行動の評価に使う版</span></div>
 </div>
@@ -239,6 +239,28 @@ table.sr{position:absolute;left:-9999px}
 <div class="limits"><h3>言えないこと</h3><p>候補モデルで、既定モデルではありません。音は1つ、指すものは食料だけ。語彙も文法もありません。人間の言語ができた過程を再現したという主張ではありません。数値は慣習が形成された後の期間に限った測定です。</p></div>
 </section>
 
+<section class="finding">
+<p class="eyebrow">M3 · 新入りへの慣習の伝達（判断記録0028〜0029）</p>
+<h2>発見11: 集団の「食料の声」は、何も知らない新入りに教えなくても伝わる</h2>
+<div class="prose">
+<p>慣習ができた集団で、途中の1500ステップ目に1人を、何も覚えていない新入りと入れ替えました。誰も教えません。それでも、声が聞こえる条件では、新入りが食べている時に出す声の6〜9割が、集団の「食料の声」の中に落ちました。聞こえない条件では1割ほど。生まれつき同じ声を持つ個体や、真似をしない個体では、この差は出ません。つまり新入りは、聞いて、真似て、集団の慣習を身につけています。</p>
+<p>この「声の採用」は、8シードと16シードの2ラウンド、開発用と確認用の4つのシード群すべてで基準を越えました（生まれつきの声や真似なしの個体では0付近）。新入りがそれで得をするか（空腹が減るか、声の特徴が崩れると損をするか）は、4群のうち2〜3群で基準を満たし、残りではわずかに届きませんでした。産出の伝達は確かで、理解面の利益は示唆に留まる、というのが現時点の判定です。</p>
+</div>
+<div class="insight"><h3>示唆</h3><p>慣習は、それを作った個体がいなくても新入りへ伝わります。教える能力も、教わる側の特別な仕組みも要りません。聞いて真似るだけで、集団の音は次の世代へ引き継がれます。</p></div>
+<div class="limits"><h3>言えないこと</h3><p>候補モデルです。声を「採用した」ことは4つのシード群すべてで確認できましたが、それが新入り本人の得になっているかは2〜3群でしか基準を満たさず、残りではわずかに届きませんでした。産出面の伝達と理解面の利益は分けて読む必要があります。</p></div>
+</section>
+
+<section class="finding">
+<p class="eyebrow">M3 · 世代交代後の慣習の存続と漂い（判断記録0030）</p>
+<h2>発見12: 作った人が全員いなくなっても「食料の声」は残る。ただし、少しずつ変わる</h2>
+<div class="prose">
+<p>集団の4人を、1200・1600・2000・2400ステップ目に順番に新入りと入れ替えました。2400ステップ以降、最初の4人は誰もいません。それでも、声が聞こえる集団では、食べている時の声は一つの音に集まったままでした。真似をしない個体の集団では集まりません。慣習は、それを作った個体より長生きしました。</p>
+<p>ただし、その音は最初の4人が作った音と同じ場所には留まりませんでした。新入りが入るたびに少しずつずれ、16のシードのうち同じ場所に残ったのは6つ。人間の言葉が世代を越えて受け継がれながら発音を変えていくのと似た「漂い」です。事前に決めた基準（元の音から0.15以内）では不成立ですが、漂いそのものが観察の対象になりました。</p>
+</div>
+<div class="insight"><h3>示唆</h3><p>慣習は個体の入れ替わりを越えて存続しますが、そのままの形では保存されません。作った人が全員いなくなったあとも音は集まり続けるが、少しずつ元の位置からずれていく——事前登録の継続性基準は満たしませんでしたが、「漂い」という現象そのものは観察されました。</p></div>
+<div class="limits"><h3>言えないこと</h3><p>候補モデルです。事前に決めた継続性の基準（元の音から0.15以内）は16シード中6シードでしか満たされず、この基準では不成立と判定します。慣習が「残る」ことと「同じ形で残る」ことは別で、後者は確認できていません。</p></div>
+</section>
+
 <div class="try">
 <h3>自分で試す</h3>
 <p class="prose" style="margin-bottom:6px">同じシードなら誰が実行しても同じ記録になります。違うシードや条件で何が変わり、何が変わらないかを見るのが、この実験室の楽しみ方です。</p>
@@ -246,7 +268,7 @@ table.sr{position:absolute;left:-9999px}
 npm run narrate -- --seed 42 --steps 400
 npm run narrate -- --seed 7 --layout separate --mute
 npm run dev   # 観察画面の「この記録を読む」「経験から判断へ」</pre>
-<p class="prose" style="margin:0;font-size:14px">発見の平易な説明は <a href="https://github.com/AkrMcmr/human_simulator/blob/claude/repository-model-evolution-m5s86u/docs/FINDINGS.md">docs/FINDINGS.md</a>、各数値の出典は <a href="https://github.com/AkrMcmr/human_simulator/tree/claude/repository-model-evolution-m5s86u/research/decisions">research/decisions</a> の判断記録0003〜0007（危険度と記憶）、0016〜0024（声と合図）にあります。</p>
+<p class="prose" style="margin:0;font-size:14px">発見の平易な説明は <a href="https://github.com/AkrMcmr/human_simulator/blob/claude/repository-model-evolution-m5s86u/docs/FINDINGS.md">docs/FINDINGS.md</a>、各数値の出典は <a href="https://github.com/AkrMcmr/human_simulator/tree/claude/repository-model-evolution-m5s86u/research/decisions">research/decisions</a> の判断記録0003〜0007（危険度と記憶）、0016〜0030（声と合図）にあります。</p>
 </div>
 <footer>数値は確認（validation）シード群の平均。標本のばらつきや個々の値は各結果JSONに記録されています。有意差検定や人間集団への推論は行っていません。実行時にLLMは使われていません。</footer>
 </div>
