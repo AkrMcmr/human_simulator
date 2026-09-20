@@ -114,9 +114,17 @@ export function assessSeeds(name: string, results: SeedResult[], protocol: Refer
   const gated = checks.filter(c => c.minimum !== null);
   return { checks, established: gated.length > 0 && gated.every(c => c.status === "pass") };
 }
-export function runReferentialPartition(name: "development" | "validation" | "pilot", modelId: string, protocol: ReferentialProtocol = protocolV1) {
+/** Seed rounds keep thresholds fixed while later candidates are judged on seeds nobody has observed. */
+export function seedsFor(name: "development" | "validation" | "pilot", protocol: ReferentialProtocol = protocolV1, round = "1"): number[] {
+  if (name === "pilot") return protocol.pilotSeeds;
+  const rounds = (protocol as unknown as { rounds?: Record<string, { developmentSeeds: number[]; validationSeeds: number[] }> }).rounds;
+  const r = rounds?.[round];
+  if (!r) throw new Error("Unknown seed round " + round + " for " + protocol.id);
+  return name === "development" ? r.developmentSeeds : r.validationSeeds;
+}
+export function runReferentialPartition(name: "development" | "validation" | "pilot", modelId: string, protocol: ReferentialProtocol = protocolV1, round = "1") {
   resolveModel(modelId);
-  const seeds = name === "development" ? protocol.developmentSeeds : name === "validation" ? protocol.validationSeeds : protocol.pilotSeeds;
+  const seeds = seedsFor(name, protocol, round);
   const results = seeds.map(seed => runSeed(modelId, seed, protocol));
-  return { name, protocol: protocol.id, seeds, model: modelId, results, ...assessSeeds(name + "/" + modelId, results, protocol) };
+  return { name, protocol: protocol.id, round, seeds, model: modelId, results, ...assessSeeds(name + "/" + round + "/" + modelId, results, protocol) };
 }

@@ -89,7 +89,9 @@ export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetti
   /** Candidate hook (0.7.0-experimental.*): when hungry with no remembered food, explore toward a heard sound. `true` picks the loudest (innate, category-blind); a function picks which sound to follow, or null for none. */
   soundOrienting?: boolean | ((human: HumanState, sounds: HeardSound[], random: RandomSource) => HeardSound | null);
   /** Candidate hook (0.8.0-experimental.*): extra vocalize utility right after eating (a "food call" tendency). Requires the candidate's apply to record lastIntake. */
-  satiationCall?: number };
+  satiationCall?: number;
+  /** Candidate hook (0.8.0-experimental.2): the eating state also leaks into the voice, pulling both features toward the high corner while the individual has just eaten. Requires lastIntake from the candidate's apply. */
+  eatingCoupling?: number };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -259,9 +261,11 @@ export function decideWithOptions(previous: HumanState, observation: Observation
       openness: random("voice-openness"), resonance: random("voice-resonance"),
     });
     const coupling = options.stateCoupling ?? 0;
-    const expressed = coupling > 0
+    let expressed = coupling > 0
       ? { openness: (1 - coupling) * base.openness + coupling * clamp(perceivedRisk * 2), resonance: (1 - coupling) * base.resonance + coupling * bodilyNeed }
       : base;
+    const eating = options.eatingCoupling ?? 0;
+    if (eating > 0 && ((human as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) expressed = { openness: (1 - eating) * expressed.openness + eating * 0.9, resonance: (1 - eating) * expressed.resonance + eating * 0.9 };
     action.sound = {
       openness: clamp(expressed.openness + (random("motor-noise-o") - 0.5) * 0.07),
       resonance: clamp(expressed.resonance + (random("motor-noise-r") - 0.5) * 0.07),

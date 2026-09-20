@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff, SOUND_ASSOCIATION_VERSION } from "../../human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff, SIGNAL_SENDER_VERSION } from "../../human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly, VOICE_STATE_VERSION } from "../../human/src/voice-state.ts";
-import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, applyWithIntake, FORAGER_LISTENER_VERSION, SELECTIVE_FORAGER_VERSION, FOOD_CALL_VERSION } from "../../human/src/forager-listener.ts";
+import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, applyWithIntake, FORAGER_LISTENER_VERSION, SELECTIVE_FORAGER_VERSION, FOOD_CALL_VERSION, EATING_VOICE_VERSION } from "../../human/src/forager-listener.ts";
 import type { Observation, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect, createHuman, decideHuman, decideLegacyHuman, HUMAN_VERSION, LEGACY_HUMAN_VERSION } from "../../human/src/index.ts";
 import { decidePredictive, PREDICTIVE_POLICY_VERSION } from "../../human/src/predictive-policy.ts";
@@ -44,6 +44,8 @@ export const HUMAN_MODELS: Readonly<Record<string, HumanModel>> = Object.freeze(
   "food-call-forager-0.8.0-experimental.1": { id: "food-call-forager-0.8.0-experimental.1", version: FOOD_CALL_VERSION, role: "candidate", label: "候補 食後の呼び声＋声の方向へ探索＋学習", create: createHuman, decide: decideFoodCallForager, apply: applyWithIntake },
   "food-call-selective-0.8.0-experimental.1": { id: "food-call-selective-0.8.0-experimental.1", version: FOOD_CALL_VERSION + "+selective", role: "candidate", label: "候補 食後の呼び声＋種類を選んで探索＋学習", create: createHuman, decide: decideFoodCallSelective, apply: applyWithIntake },
   "food-call-only-0.8.0-experimental.1": { id: "food-call-only-0.8.0-experimental.1", version: FOOD_CALL_VERSION + "+call-only", role: "control", label: "対照 食後の呼び声のみ（既定0.2.0に追加、追従なし）", create: createHuman, decide: decideFoodCallOnly, apply: applyWithIntake },
+  "eating-voice-selective-0.8.0-experimental.2": { id: "eating-voice-selective-0.8.0-experimental.2", version: EATING_VOICE_VERSION, role: "candidate", label: "候補 食べている状態が声に漏れる＋呼び声＋種類を選んで探索", create: createHuman, decide: decideEatingSelective, apply: applyWithIntake },
+  "eating-voice-blind-0.8.0-experimental.2": { id: "eating-voice-blind-0.8.0-experimental.2", version: EATING_VOICE_VERSION + "+blind", role: "control", label: "対照 食べている状態が声に漏れる＋呼び声＋盲目的な定位", create: createHuman, decide: decideEatingBlind, apply: applyWithIntake },
 });
 export const MODEL_IDS = Object.freeze(Object.keys(HUMAN_MODELS));
 export function resolveModel(id: string | undefined): HumanModel {

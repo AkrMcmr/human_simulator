@@ -15,7 +15,7 @@ const modelIds: string[] = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--check") { options.set("--check", "true"); continue; }
   if (args[i] === "--model") { if (!args[i + 1] || args[i + 1].startsWith("--")) throw new Error("Missing value for --model"); modelIds.push(args[++i]); continue; }
-  if (!["--split", "--out", "--protocol"].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith("--") || options.has(args[i])) throw new Error("Unknown/duplicate option or missing value: " + args[i]);
+  if (!["--split", "--out", "--protocol", "--round"].includes(args[i]) || !args[i + 1] || args[i + 1].startsWith("--") || options.has(args[i])) throw new Error("Unknown/duplicate option or missing value: " + args[i]);
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
@@ -41,12 +41,13 @@ const provenance = {
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
-const partitions = modelIds.map(id => runReferentialPartition(split, id, protocol));
-const output = { format: "human-world-lab/referential-study", schemaVersion: 1, protocol, provenance, seedUse: split === "pilot" ? "pilot seeds: scale check only, not a gate" : split, models: Object.fromEntries(modelIds.map(id => [id, versionsFor(id).human])), partitions, established: Object.fromEntries(partitions.map(p => [p.model, p.established])), decision: "diagnostics-of-registered-models-not-default-promotion" };
+const round = options.get("--round") ?? "1";
+const partitions = modelIds.map(id => runReferentialPartition(split, id, protocol, round));
+const output = { format: "human-world-lab/referential-study", schemaVersion: 1, protocol, provenance, round, seedUse: split === "pilot" ? "pilot seeds: scale check only, not a gate" : split, models: Object.fromEntries(modelIds.map(id => [id, versionsFor(id).human])), partitions, established: Object.fromEntries(partitions.map(p => [p.model, p.established])), decision: "diagnostics-of-registered-models-not-default-promotion" };
 mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, JSON.stringify(output, null, 2) + "\n");
 const f = (x: number, d = 4) => x.toFixed(d);
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-const lines = [`# 情報の非対称がある採餌課題（${protocol.id}）`, "", `- 条件群: ${split}`, `- ソース: ${provenance.commit}`, `- 未コミット変更: ${provenance.dirty}`, `- モデルコードSHA256: ${provenance.modelHash}`, `- 評価器SHA256: ${provenance.evaluatorHash}`, `- 環境SHA256: ${provenance.environmentHash}`, `- シード: ${partitions[0].seeds.join(", ")}`, `- 実行: ${protocol.horizon}ステップ、視界${protocol.world.visionRadius}u、聴覚${protocol.world.hearingRadius}u、食料${protocol.resources.filter(r => r.kind === "food").length}か所（各${protocol.resources.find(r => r.kind === "food")?.amount}）、初期空腹${protocol.body.hunger}、二人とも同じモデル。対照は音なし、方向をでたらめにする介入、音の特徴をでたらめにする介入`, "", "値はシードごとの差の平均 ± 標本SD。高いほど「声が食料の手掛かりとして働く」方向。人間の言語や意図の再現ではない。", ""];
+const lines = [`# 情報の非対称がある採餌課題（${protocol.id}）`, "", `- 条件群: ${split}（シード群ラウンド${round}）`, `- ソース: ${provenance.commit}`, `- 未コミット変更: ${provenance.dirty}`, `- モデルコードSHA256: ${provenance.modelHash}`, `- 評価器SHA256: ${provenance.evaluatorHash}`, `- 環境SHA256: ${provenance.environmentHash}`, `- シード: ${partitions[0].seeds.join(", ")}`, `- 実行: ${protocol.horizon}ステップ、視界${protocol.world.visionRadius}u、聴覚${protocol.world.hearingRadius}u、食料${protocol.resources.filter(r => r.kind === "food").length}か所（各${protocol.resources.find(r => r.kind === "food")?.amount}）、初期空腹${protocol.body.hunger}、二人とも同じモデル。対照は音なし、方向をでたらめにする介入、音の特徴をでたらめにする介入`, "", "値はシードごとの差の平均 ± 標本SD。高いほど「声が食料の手掛かりとして働く」方向。人間の言語や意図の再現ではない。", ""];
 for (const p of partitions) {
   lines.push(`## ${p.model}`, "", "| 項目 | 平均 ± SD | 閾値 | 判定 |", "| --- | ---: | ---: | --- |");
   for (const c of p.checks) lines.push(`| ${c.label ?? c.id} | ${f(c.summary.mean)} ± ${f(c.summary.sd)} | ${c.minimum ?? "報告のみ"} | ${c.status} |`);

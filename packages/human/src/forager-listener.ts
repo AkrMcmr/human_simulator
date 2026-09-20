@@ -22,6 +22,9 @@ export const SELECTIVE = { outcomeWindow: 30, exploreRate: 0.15, unknownFollowRa
  */
 export const FOOD_CALL_VERSION = "0.8.0-experimental.1";
 export const FOOD_CALL = { utility: 0.45 };
+/** 0.8.0-experimental.2: the eating state also leaks into the voice (research decision 0016). */
+export const EATING_VOICE_VERSION = "0.8.0-experimental.2";
+export const EATING_VOICE = { coupling: 0.7 };
 /** Candidate-only apply: remembers how much was eaten in the last step. The default apply does not record this. */
 export function applyWithIntake(previous: HumanState, effect: PhysicalEffect): HumanState {
   const next = applyPhysicalEffect(previous, effect) as HumanState & { lastIntake?: number };
@@ -49,7 +52,7 @@ export function selectSoundToFollow(human: HumanState, sounds: HeardSound[], ran
   if (choice && choice.category !== null && !state.orientPending) state.orientPending = { category: choice.category, tick, hunger: human.body.hunger };
   return choice?.sound ?? null;
 }
-export function decideSelectiveForager(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number) {
+export function decideSelectiveForager(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number, eatingCoupling?: number) {
   const human: ForagerState = structuredClone(previous);
   const pending = human.orientPending;
   if (pending && observation.tick - pending.tick >= SELECTIVE.outcomeWindow) {
@@ -67,8 +70,12 @@ export function decideSelectiveForager(previous: HumanState, observation: Observ
     }
     human.orientPending = null;
   }
-  return decideWithSenderOptions(human, observation, random, { stateCoupling: VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectSoundToFollow(h, sounds, r, observation.tick), satiationCall });
+  return decideWithSenderOptions(human, observation, random, { stateCoupling: VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectSoundToFollow(h, sounds, r, observation.tick), satiationCall, eatingCoupling });
 }
+/** Eating-coupled voice + food call + selective orienting on the full stack. */
+export const decideEatingSelective = (h: HumanState, o: Observation, r: RandomSource) => decideSelectiveForager(h, o, r, FOOD_CALL.utility, EATING_VOICE.coupling);
+/** Eating-coupled voice + food call + blind orienting: the sound type is available but not used. */
+export const decideEatingBlind = (h: HumanState, o: Observation, r: RandomSource) => decideWithSenderOptions(h, o, r, { stateCoupling: VOICE_STATE.coupling, soundOrienting: true, satiationCall: FOOD_CALL.utility, eatingCoupling: EATING_VOICE.coupling });
 /** Food call + blind orienting on the full stack. */
 export const decideFoodCallForager = (h: HumanState, o: Observation, r: RandomSource) => decideWithSenderOptions(h, o, r, { stateCoupling: VOICE_STATE.coupling, soundOrienting: true, satiationCall: FOOD_CALL.utility });
 /** Food call + selective orienting on the full stack. */
