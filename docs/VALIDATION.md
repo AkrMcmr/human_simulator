@@ -116,3 +116,7 @@ convention-v1第2ラウンド（40001–40008 / 41001–41008、[判断0023](../
 ## 2026-09-20: lexicon-v1/v2、transmission-v1/v2
 
 lexicon-v1（44001–/45001–、46001–/47001–）・lexicon-v2（48001–/49001–）: 2文脈の候補は暖かさ側のゲートを3ラウンドとも未達（[判断0025](../research/decisions/0025-lexicon.md)〜[0027](../research/decisions/0027-scarce-warmth.md)）。transmission-v1（50001–/51001–）は採用の指標に偏りを発見（[判断0028](../research/decisions/0028-transmission.md)）。transmission-v2（52001–/53001–、16シードの54001–/55001–）: 採用率の利得は4群すべてで閾値0.3を越え、5項目は確認群のみ達成（[判断0029](../research/decisions/0029-transmission-v2.md)）。今回の検証: `npm run test:model` 90/90、型検査・lint成功。
+
+## 2026-09-20: generations-v1
+
+generations-v1（56001–56008 / 57001–57008、[判断0030](../research/decisions/0030-generations.md)）: 候補は入れ替え後の収束と種類依存を両群達成、系統の連続（0.096 / 0.084）と任意性（0.075 / 0.071）は未達。今回の検証: `npm run test:model` 92/92（generations 2件を追加）、型検査・lint成功。

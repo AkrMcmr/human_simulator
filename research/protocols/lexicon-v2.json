@@ -7,7 +7,8 @@
     "baseline": "human-0.2.0",
     "oneSign": "convention-contrast-0.10.0-experimental.2",
     "candidate": "lexicon-0.11.0-experimental.2",
-    "persistent": "lexicon-0.11.0-experimental.1"
+    "persistent": "lexicon-0.11.0-experimental.1",
+    "memory": "lexicon-0.11.0-experimental.3"
   },
   "pilotSeeds": [
     48101,
@@ -39,6 +40,29 @@
         49008
       ],
       "status": "observed 2026-09-20 (decision 0027): both lexicon candidates failed the warmth-side gates; food side held for the transient variant in development only"
+    },
+    "2": {
+      "developmentSeeds": [
+        58001,
+        58002,
+        58003,
+        58004,
+        58005,
+        58006,
+        58007,
+        58008
+      ],
+      "validationSeeds": [
+        59001,
+        59002,
+        59003,
+        59004,
+        59005,
+        59006,
+        59007,
+        59008
+      ],
+      "status": "reserved for the memory-credit candidate (decision 0031); gates unchanged"
     }
   },
   "developmentSeeds": [

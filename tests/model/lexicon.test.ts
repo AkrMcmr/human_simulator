@@ -127,3 +127,27 @@ test("lexicon-v2 keeps the v1 checks and food, makes warmth scarce, and uses fre
   const state = createSimulation(referentialConfig(v2.pilotSeeds[0], "lexicon-0.11.0-experimental.2", true, v2));
   assert.equal(state.world.parameters.warmthCycle?.count, 1);
 });
+test("the memory-credit variant judges a visited source from recent place memory, learns warmth while sheltered even when warm, and speaks only while cold", async () => {
+  const { decideLexiconMemory, MEMORY_CREDIT } = await import("../../packages/human/src/lexicon.ts");
+  const h = createHuman("A", {}, { hunger: .5, cold: .5 }) as Lex;
+  h.heardSounds = [{ id: 1, shape: { openness: .2, resonance: .3 }, samples: 5 }];
+  const low = { visibleSourceId: null, shape: { openness: .2, resonance: .3 }, loudness: .5, relativePosition: { x: 5, y: 0 } };
+  const heard = decideLexiconMemory(h, { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [low] }, () => 0.5).human as Lex;
+  // The warm place at the source was seen 100 ticks ago and is no longer in view: memory still credits warmth.
+  heard.places = { w: { kind: "warmth", position: { x: 15.5, y: 14 }, strength: 1, seen: 0 } };
+  const visited = decideLexiconMemory(heard, { tick: 100, selfPosition: { x: 15, y: 14 }, animals: [], resources: [], sounds: [] }, () => 0.5).human as Lex;
+  assert.ok(visited.referents!.warmth[1].mean > 0 && visited.referents!.food[1].mean < 0, "remembered warmth at the source credits warmth");
+  const stale = structuredClone(heard); stale.places = { w: { kind: "warmth", position: { x: 15.5, y: 14 }, strength: 1, seen: -MEMORY_CREDIT.recentTicks - 1 } };
+  const visitedStale = decideLexiconMemory(stale, { tick: 100, selfPosition: { x: 15, y: 14 }, animals: [], resources: [], sounds: [] }, () => 0.5).human as Lex;
+  assert.ok(visitedStale.referents!.warmth[1].mean < 0, "a memory older than the credit window does not count");
+  const warmAndWarmed = { ...h, lastWarm: true, body: { ...h.body, cold: .1 } } as Lex;
+  const counted = decideLexiconMemory(warmAndWarmed, { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [low] }, () => 0.5).human as Lex;
+  assert.deepEqual(counted.contextHeard, { food: {}, warmth: { 1: 1 } }, "hearing while sheltered counts toward warmth even once warm");
+  const terms = decideLexiconMemory(warmAndWarmed, { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [] }, () => 0.5).trace.scores.find(s => s.action === "vocalize")!.terms;
+  assert.equal(terms.shelterCall ?? 0, 0, "no shelter call once warm");
+  assert.equal(HUMAN_MODELS["lexicon-0.11.0-experimental.3"].apply, applyWithIntake);
+  const { protocol: v2 } = await import("../../research/studies/lexicon-v2.ts");
+  const r2 = [...seedsFor("development", v2, "2"), ...seedsFor("validation", v2, "2")];
+  const r1 = [v2.pilotSeeds, seedsFor("development", v2, "1"), seedsFor("validation", v2, "1")].flat();
+  assert.ok(r2.every(s => !r1.includes(s)) && new Set(r2).size === 16 && r2.every(s => s >= 58000));
+});

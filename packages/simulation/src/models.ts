@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff, SOUND_ASSOCIATION_VERSION } from "../../human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff, SIGNAL_SENDER_VERSION } from "../../human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly, VOICE_STATE_VERSION } from "../../human/src/voice-state.ts";
-import { decideLexicon, decideLexiconTransient, LEXICON_VERSION } from "../../human/src/lexicon.ts";
+import { decideLexicon, decideLexiconTransient, decideLexiconMemory, LEXICON_VERSION } from "../../human/src/lexicon.ts";
 import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, decideConvention, decideConventionNoImitation, decideConventionContrast, applyWithIntake, FORAGER_LISTENER_VERSION, SELECTIVE_FORAGER_VERSION, FOOD_CALL_VERSION, EATING_VOICE_VERSION, REFERENT_LEARNER_VERSION, LEARNED_CALLER_VERSION, CONVENTION_VERSION } from "../../human/src/forager-listener.ts";
 import type { Observation, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect, createHuman, decideHuman, decideLegacyHuman, HUMAN_VERSION, LEGACY_HUMAN_VERSION } from "../../human/src/index.ts";
@@ -54,6 +54,7 @@ export const HUMAN_MODELS: Readonly<Record<string, HumanModel>> = Object.freeze(
   "convention-contrast-0.10.0-experimental.2": { id: "convention-contrast-0.10.0-experimental.2", version: "0.10.0-experimental.2", role: "candidate", label: "候補 食べている時は食料の声を真似、食べていない時はその声を避ける（対比）", create: createHuman, decide: decideConventionContrast, apply: applyWithIntake },
   "lexicon-0.11.0-experimental.1": { id: "lexicon-0.11.0-experimental.1", version: LEXICON_VERSION, role: "candidate", label: "候補 食料と暖かい場所の2つの文脈で、経験が結びつけた聞いた声を真似、外ではどちらも避ける", create: createHuman, decide: (h, o, r) => decideLexicon(h, o, r), apply: applyWithIntake },
   "lexicon-0.11.0-experimental.2": { id: "lexicon-0.11.0-experimental.2", version: "0.11.0-experimental.2", role: "candidate", label: "候補 2文脈の声。暖かさの文脈は「暖まっていてまだ寒い」一過性の状態に限る", create: createHuman, decide: decideLexiconTransient, apply: applyWithIntake },
+  "lexicon-0.11.0-experimental.3": { id: "lexicon-0.11.0-experimental.3", version: "0.11.0-experimental.3", role: "candidate", label: "候補 2文脈の声。出所の評価に自分の場所記憶を使い、暖まっている間は聞いて学び、声は寒いうちだけ出す", create: createHuman, decide: decideLexiconMemory, apply: applyWithIntake },
   "learned-caller-0.9.0-experimental.1": { id: "learned-caller-0.9.0-experimental.1", version: LEARNED_CALLER_VERSION, role: "candidate", label: "候補 出所評価＋食べる声に、食後の呼び声が自分の空腹に何をもたらしたかの学習を足す", create: createHuman, decide: decideLearnedCaller, apply: applyWithIntake },
 });
 export const MODEL_IDS = Object.freeze(Object.keys(HUMAN_MODELS));

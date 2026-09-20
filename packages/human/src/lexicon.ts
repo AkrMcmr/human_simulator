@@ -69,11 +69,24 @@ export function selectByEstimates(human: HumanState, sounds: HeardSound[], estim
   }
   return random(purpose + "-unknown") < REFERENT.unknownFollowRate ? [...scored].sort((a, b) => b.sound.loudness - a.sound.loudness)[0].sound : null;
 }
-export function decideLexicon(previous: HumanState, observation: Observation, random: RandomSource, transient = false) {
+export const MEMORY_CREDIT = { recentTicks: 300 };
+/**
+ * 0.11.0-experimental.3 (research decision 0031): three changes to the two-referent learner. (1) When a sound's
+ * source is visited, the referent is judged from the individual's own place memory (a food or warm place seen
+ * there within MEMORY_CREDIT.recentTicks), not only from what is in view this tick, so a warm place that went out
+ * between hearing and arriving still counts. (2) Hearing while sheltered is counted toward the warmth context
+ * whenever sheltered (persistent learning). (3) The shelter call and the warmth voice are produced only while
+ * still cold (transient calling), so the soundscape is not flooded.
+ */
+export type LexiconMode = "persistent" | "transient" | "memory";
+export function decideLexicon(previous: HumanState, observation: Observation, random: RandomSource, mode: LexiconMode | boolean = "persistent") {
+  const transient = mode === true || mode === "transient" || mode === "memory";
+  const memory = mode === "memory";
   const human: LexiconState = structuredClone(previous);
   const self = observation.selfPosition;
   const seen: Record<Referent, { x: number; y: number }[]> = { food: [], warmth: [] };
   for (const r of observation.resources) if (r.strength > 0.01) seen[r.kind].push({ x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y });
+  if (memory) for (const place of Object.values(human.places)) if (place.strength > 0.01 && observation.tick - place.seen <= MEMORY_CREDIT.recentTicks) seen[place.kind].push({ x: place.position.x, y: place.position.y });
   const kept: NonNullable<LexiconState["recentSounds"]> = [];
   for (const m of human.recentSounds ?? []) {
     if (observation.tick - m.tick > LEXICON.memoryTicks) continue;
@@ -96,7 +109,8 @@ export function decideLexicon(previous: HumanState, observation: Observation, ra
     kept.push(m);
   }
   human.recentSounds = kept;
-  const context = contextOf(human, transient);
+  // Learning context: with memory mode, hearing counts toward warmth whenever sheltered; the produced voice still follows the transient context.
+  const context = contextOf(human, memory ? false : transient);
   if (context) {
     for (const s of observation.sounds) {
       const category = nearestHeardCategory(human, s);
@@ -122,4 +136,6 @@ export function decideLexicon(previous: HumanState, observation: Observation, ra
   return result;
 }
 /** 0.11.0-experimental.2: the same lexicon with the warmth context limited to warming up while still cold. */
-export const decideLexiconTransient = (h: HumanState, o: Observation, r: RandomSource) => decideLexicon(h, o, r, true);
+export const decideLexiconTransient = (h: HumanState, o: Observation, r: RandomSource) => decideLexicon(h, o, r, "transient");
+/** 0.11.0-experimental.3: memory-based referent credit, persistent learning context, transient calling. */
+export const decideLexiconMemory = (h: HumanState, o: Observation, r: RandomSource) => decideLexicon(h, o, r, "memory");
