@@ -34,7 +34,7 @@
         43007,
         43008
       ],
-      "status": "reserved for the late-window evaluation of the contrastive speaker (decision 0024)"
+      "status": "observed 2026-09-20 (decision 0024): convention-contrast-0.10.0-experimental.2 passed all five gates in both groups; imitation alone failed late shape-dependence in validation; the innate voice failed the convention gates"
     }
   },
   "developmentSeeds": [
