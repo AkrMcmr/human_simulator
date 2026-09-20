@@ -133,12 +133,12 @@ test("the memory-credit variant judges a visited source from recent place memory
   h.heardSounds = [{ id: 1, shape: { openness: .2, resonance: .3 }, samples: 5 }];
   const low = { visibleSourceId: null, shape: { openness: .2, resonance: .3 }, loudness: .5, relativePosition: { x: 5, y: 0 } };
   const heard = decideLexiconMemory(h, { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [low] }, () => 0.5).human as Lex;
-  // The warm place at the source was seen 100 ticks ago and is no longer in view: memory still credits warmth.
+  // The warm place at the source was seen 80 ticks ago and is no longer in view: memory still credits warmth (the sound memory itself lasts 90 ticks).
   heard.places = { w: { kind: "warmth", position: { x: 15.5, y: 14 }, strength: 1, seen: 0 } };
-  const visited = decideLexiconMemory(heard, { tick: 100, selfPosition: { x: 15, y: 14 }, animals: [], resources: [], sounds: [] }, () => 0.5).human as Lex;
+  const visited = decideLexiconMemory(heard, { tick: 80, selfPosition: { x: 15, y: 14 }, animals: [], resources: [], sounds: [] }, () => 0.5).human as Lex;
   assert.ok(visited.referents!.warmth[1].mean > 0 && visited.referents!.food[1].mean < 0, "remembered warmth at the source credits warmth");
-  const stale = structuredClone(heard); stale.places = { w: { kind: "warmth", position: { x: 15.5, y: 14 }, strength: 1, seen: -MEMORY_CREDIT.recentTicks - 1 } };
-  const visitedStale = decideLexiconMemory(stale, { tick: 100, selfPosition: { x: 15, y: 14 }, animals: [], resources: [], sounds: [] }, () => 0.5).human as Lex;
+  const stale = structuredClone(heard); stale.places = { w: { kind: "warmth", position: { x: 15.5, y: 14 }, strength: 1, seen: 80 - MEMORY_CREDIT.recentTicks - 1 } };
+  const visitedStale = decideLexiconMemory(stale, { tick: 80, selfPosition: { x: 15, y: 14 }, animals: [], resources: [], sounds: [] }, () => 0.5).human as Lex;
   assert.ok(visitedStale.referents!.warmth[1].mean < 0, "a memory older than the credit window does not count");
   const warmAndWarmed = { ...h, lastWarm: true, body: { ...h.body, cold: .1 } } as Lex;
   const counted = decideLexiconMemory(warmAndWarmed, { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [low] }, () => 0.5).human as Lex;
