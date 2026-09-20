@@ -78,7 +78,9 @@ export const MEMORY_CREDIT = { recentTicks: 300 };
  * whenever sheltered (persistent learning). (3) The shelter call and the warmth voice are produced only while
  * still cold (transient calling), so the soundscape is not flooded.
  */
-export type LexiconMode = "persistent" | "transient" | "memory" | "separate";
+export type LexiconMode = "persistent" | "transient" | "memory" | "separate" | "fine";
+/** 0.11.0-experimental.5 (research decision 0036): the separating speaker with finer hearing, so voices 0.2 apart fall into different heard categories. */
+export const FINE_HEARING = { auditoryResolution: 0.09 };
 /**
  * 0.11.0-experimental.4 (research decision 0033): explicit separation. When the voice a speaker is about to imitate
  * for one context lies within SEPARATION.minimumGap of the voice it ties to the other context, it displaces its
@@ -96,9 +98,10 @@ export function separateFrom(voice: SoundShape, other: SoundShape): SoundShape {
   return { openness: clamp01(other.openness + ux * SEPARATION.minimumGap), resonance: clamp01(other.resonance + uy * SEPARATION.minimumGap) };
 }
 export function decideLexicon(previous: HumanState, observation: Observation, random: RandomSource, mode: LexiconMode | boolean = "persistent") {
-  const transient = mode === true || mode === "transient" || mode === "memory" || mode === "separate";
-  const memory = mode === "memory" || mode === "separate";
-  const separate = mode === "separate";
+  const transient = mode === true || mode === "transient" || mode === "memory" || mode === "separate" || mode === "fine";
+  const memory = mode === "memory" || mode === "separate" || mode === "fine";
+  const separate = mode === "separate" || mode === "fine";
+  const fine = mode === "fine";
   const human: LexiconState = structuredClone(previous);
   const self = observation.selfPosition;
   const seen: Record<Referent, { x: number; y: number }[]> = { food: [], warmth: [] };
@@ -139,6 +142,7 @@ export function decideLexicon(previous: HumanState, observation: Observation, ra
     // With transient contexts the shelter call is silenced once the body is warm; the core term only checks lastWarm.
     shelterCall: transient && human.body.cold <= TRANSIENT.coldAbove ? 0 : LEXICON.shelterCall,
     chooseSound: (h) => chooseLexiconVoice(h, transient, separate),
+    auditoryResolution: fine ? FINE_HEARING.auditoryResolution : undefined,
     soundOrienting: (h, sounds, r) => selectByEstimates(h, sounds, (h as LexiconState).referents?.food, r, "lexicon-food"),
     warmthOrienting: (h, sounds, r) => selectByEstimates(h, sounds, (h as LexiconState).referents?.warmth, r, "lexicon-warmth"),
   });
@@ -158,3 +162,5 @@ export const decideLexiconTransient = (h: HumanState, o: Observation, r: RandomS
 export const decideLexiconMemory = (h: HumanState, o: Observation, r: RandomSource) => decideLexicon(h, o, r, "memory");
 /** 0.11.0-experimental.4: memory credit plus explicit separation of the two context voices. */
 export const decideLexiconSeparate = (h: HumanState, o: Observation, r: RandomSource) => decideLexicon(h, o, r, "separate");
+/** 0.11.0-experimental.5: memory credit, explicit separation, and finer hearing (0.09). */
+export const decideLexiconFine = (h: HumanState, o: Observation, r: RandomSource) => decideLexicon(h, o, r, "fine");

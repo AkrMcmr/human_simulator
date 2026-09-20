@@ -12,7 +12,7 @@ import { decideWithSoundOptions } from "./sound-association.ts";
  */
 export const SIGNAL_SENDER_VERSION = "0.5.0-experimental.1";
 export const SENDER = { minimumSamples: 4, priorSamples: 8, temperature: 0.05, exploreNew: 0.2, gain: 4, cap: .2 };
-export type SenderOptions = { sender?: boolean; receiver?: boolean; stateCoupling?: number; soundOrienting?: DecideOptions["soundOrienting"]; warmthOrienting?: DecideOptions["warmthOrienting"]; satiationCall?: number; shelterCall?: number; eatingCoupling?: number; /** Replaces the learned risk-based choice (0.10.0 imitation candidates); the sender still records what followed. */ chooseSound?: SoundChoice };
+export type SenderOptions = { sender?: boolean; receiver?: boolean; stateCoupling?: number; soundOrienting?: DecideOptions["soundOrienting"]; warmthOrienting?: DecideOptions["warmthOrienting"]; satiationCall?: number; shelterCall?: number; eatingCoupling?: number; auditoryResolution?: number; /** Replaces the learned risk-based choice (0.10.0 imitation candidates); the sender still records what followed. */ chooseSound?: SoundChoice };
 type SenderState = HumanState & { voiceResponses?: Record<string, Record<number, Estimate>>; voicePending?: { peerId: string; category: number; distance: number } | null };
 
 function riskAt(human: HumanState, peerId: string, distance: number) {
@@ -63,7 +63,7 @@ export function decideWithSenderOptions(previous: HumanState, observation: Obser
     }
   }
   human.voicePending = null;
-  const result = decideWithSoundOptions(human, observation, random, { association: options.receiver !== false, chooseSound: options.sender === false ? undefined : (options.chooseSound ?? chooseSignalSound), stateCoupling: options.stateCoupling, soundOrienting: options.soundOrienting, warmthOrienting: options.warmthOrienting, satiationCall: options.satiationCall, shelterCall: options.shelterCall, eatingCoupling: options.eatingCoupling });
+  const result = decideWithSoundOptions(human, observation, random, { association: options.receiver !== false, chooseSound: options.sender === false ? undefined : (options.chooseSound ?? chooseSignalSound), stateCoupling: options.stateCoupling, soundOrienting: options.soundOrienting, warmthOrienting: options.warmthOrienting, satiationCall: options.satiationCall, shelterCall: options.shelterCall, eatingCoupling: options.eatingCoupling, auditoryResolution: options.auditoryResolution });
   if (options.sender !== false && result.action.kind === "vocalize" && result.action.sound && peer) {
     const produced = [...result.human.producedSounds].sort((a, b) => soundDistance(a.shape, result.action.sound!) - soundDistance(b.shape, result.action.sound!) || a.id - b.id)[0];
     if (produced && soundDistance(produced.shape, result.action.sound) < .14) (result.human as SenderState).voicePending = { peerId: peer.trackId, category: produced.id, distance: magnitude(peer.relativePosition) };

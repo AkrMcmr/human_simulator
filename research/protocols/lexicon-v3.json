@@ -7,7 +7,8 @@
     "baseline": "human-0.2.0",
     "oneSign": "convention-contrast-0.10.0-experimental.2",
     "memory": "lexicon-0.11.0-experimental.3",
-    "separate": "lexicon-0.11.0-experimental.4"
+    "separate": "lexicon-0.11.0-experimental.4",
+    "fine": "lexicon-0.11.0-experimental.5"
   },
   "pilotSeeds": [
     64101,
@@ -39,6 +40,29 @@
         65008
       ],
       "status": "observed 2026-09-20 (decision 0034): both lexicon candidates failed the warmth-side gates (warmth convergence at most 0.161, distinctness at most 0.229, specificity at most 0.204) although sheltered calls were abundant; the two-context line is closed for this session"
+    },
+    "2": {
+      "developmentSeeds": [
+        68001,
+        68002,
+        68003,
+        68004,
+        68005,
+        68006,
+        68007,
+        68008
+      ],
+      "validationSeeds": [
+        69001,
+        69002,
+        69003,
+        69004,
+        69005,
+        69006,
+        69007,
+        69008
+      ],
+      "status": "reserved for the fine-hearing candidate (decision 0036); gates unchanged"
     }
   },
   "developmentSeeds": [
