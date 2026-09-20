@@ -38,7 +38,7 @@
         51007,
         51008
       ],
-      "status": "reserved for the newcomer-transmission comparison (decision 0028); thresholds fixed after the pilot"
+      "status": "observed 2026-09-20 (decision 0028): candidate failed adoption-gain (-0.050 / -0.026) while its newcomer benefited from sound and from sound type in both groups; the adoption measure was found confounded"
     }
   },
   "developmentSeeds": [
