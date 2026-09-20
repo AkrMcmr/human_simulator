@@ -10,7 +10,7 @@
   - 反証: 候補の採用率の利得がどちらかの群で閾値未満。0028の生の値では16シード中9で新参者の声が在来の散らばりの内側にあったので、達成は不確実。
 - 開発条件・確認条件: 開発52001–52008、確認53001–53008。パイロット52101–52104。いずれも未使用。
 - 実行コマンド: `npm run study:referential -- --protocol transmission2 --split development --model human-0.2.0 --model eating-voice-referent-0.8.0-experimental.3 --model convention-no-imitation-0.10.0-experimental.1 --model convention-contrast-0.10.0-experimental.2 --out outputs/transmission-v2-development.json`（確認は`--split validation`）。
-- パイロットで見えたこと: 実行後に追記。
+- パイロットで見えたこと（52101–52104、候補は含めない。[結果](../results/transmission-v2-pilot.md) / [JSON](../results/transmission-v2-pilot.json)）: 収束の条件を付けない割合の指標では、真似なしの対照でも利得が0.29になった。在来の声が収束していないと重心が目録の平均に落ち、聞ける新参者の声がその付近に多く落ちるため。採用は慣習の存在を前提とするので、在来の散らばりが0.15を超えるシードでは利得を0とする条件を候補の実行前に加えた。同じパイロット結果に適用した帰無は生得の声−0.04〜0、真似なし0〜0.22。閾値0.3は据え置き。
 - 結果ファイル・ハッシュ: 実行後に追記。
 - 採否と判断者・理由: 実行後に追記。
 - 限界と次の問い: 新参者は1人、入れ替えは1回。半径0.15は聴覚分類の幅（0.14）に合わせた工学的な値。語・文法・意図の再現ではない。

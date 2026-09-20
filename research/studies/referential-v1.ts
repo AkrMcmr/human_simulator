@@ -216,8 +216,9 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "adoption-gain": return r.muted.newcomerDistance - r.sound.newcomerDistance;
     // transmission-v2: share of the newcomer's late food calls within ADOPTION_RADIUS of the incumbents' voice in the sound run, for the hearing newcomer minus the deaf (muted-run) newcomer judged against the same voice. 0 when the incumbents have no late voice.
     case "adoption-rate-gain": {
+      // Adoption presupposes a convention: when the incumbents' late voice is not itself concentrated (dispersion above the radius) there is nothing to adopt, and the value is 0.
       const voice = r.sound.foodVoiceCentroid;
-      if (!voice) return 0;
+      if (!voice || r.sound.foodVoiceDispersion > ADOPTION_RADIUS) return 0;
       const rate = (calls: { openness: number; resonance: number }[]) => calls.length ? calls.filter(c => Math.hypot(c.openness - voice.openness, c.resonance - voice.resonance) <= ADOPTION_RADIUS).length / calls.length : 0;
       return rate(r.sound.newcomerCalls ?? []) - rate(r.muted.newcomerCalls ?? []);
     }

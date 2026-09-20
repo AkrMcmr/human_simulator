@@ -37,7 +37,8 @@ test("transmission-v2 measures adoption as a proportion against the sound-run vo
   const r = runCondition("eating-voice-referent-0.8.0-experimental.3", tv2.pilotSeeds[0], "sound", short);
   assert.ok(Array.isArray(r.newcomerCalls));
   const near = { openness: .3, resonance: .3 }, far = { openness: .9, resonance: .9 };
-  const seed: SeedResult = { seed: 1, model: "m", sound: { ...r, foodVoiceCentroid: near, newcomerCalls: [near, near, { openness: .3 + ADOPTION_RADIUS / 2, resonance: .3 }, far] }, muted: { ...r, foodVoiceCentroid: null, newcomerCalls: [far, far, near, far] }, misdirected: r, scrambled: r };
+  const seed: SeedResult = { seed: 1, model: "m", sound: { ...r, foodVoiceCentroid: near, foodVoiceDispersion: 0.05, newcomerCalls: [near, near, { openness: .3 + ADOPTION_RADIUS / 2, resonance: .3 }, far] }, muted: { ...r, foodVoiceCentroid: null, newcomerCalls: [far, far, near, far] }, misdirected: r, scrambled: r };
   assert.ok(Math.abs(checkValue("adoption-rate-gain", seed, tv2) - 0.5) < 1e-9, "3/4 hearing vs 1/4 deaf, both judged against the sound-run voice");
   assert.equal(checkValue("adoption-rate-gain", { ...seed, sound: { ...seed.sound, foodVoiceCentroid: null } }, tv2), 0);
+  assert.equal(checkValue("adoption-rate-gain", { ...seed, sound: { ...seed.sound, foodVoiceDispersion: ADOPTION_RADIUS + 0.01 } }, tv2), 0, "no convention among the incumbents: nothing to adopt");
 });
