@@ -109,7 +109,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       if (observation.sounds.length) { const loudest = [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0]; pendingDirections[h.id] = { ...loudest.relativePosition }; }
       if (result.action.kind === "vocalize") {
         vocalizations++;
-        const poisoned = ((h as HumanState & { lastPoison?: number }).lastPoison ?? 0) > 0;
+        // valence-v4: a disgust call (experimental.3, lastDisgust set by the decision itself) counts as a bad-food voice like a poisoned one.
+        const poisoned = ((h as HumanState & { lastPoison?: number }).lastPoison ?? 0) > 0 || ((result.human as HumanState & { lastDisgust?: number }).lastDisgust ?? 0) > 0;
         if (poisoned) { badCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateBadCalls.push({ ...result.action.sound }); }
         if ((h as HumanState & { lastWarm?: boolean }).lastWarm && ((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) <= 0) {
           warmthCalls++;
@@ -199,7 +200,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "poison-benefit-units", "poison-shape-units", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -246,6 +247,9 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "valence-distinctness": return r.sound.foodVoiceCentroid && r.sound.badVoiceCentroid ? Math.hypot(r.sound.foodVoiceCentroid.openness - r.sound.badVoiceCentroid.openness, r.sound.foodVoiceCentroid.resonance - r.sound.badVoiceCentroid.resonance) : 0;
     case "poison-benefit": return (r.muted.latePoisonIntake - r.sound.latePoisonIntake) / Math.max(0.05, r.muted.latePoisonIntake);
     case "poison-shape": return (r.scrambled.latePoisonIntake - r.sound.latePoisonIntake) / Math.max(0.05, r.muted.latePoisonIntake);
+    // valence-v4: the same two contrasts in food units (late third), stable when the muted level is small (taste-aversion models).
+    case "poison-benefit-units": return r.muted.latePoisonIntake - r.sound.latePoisonIntake;
+    case "poison-shape-units": return r.scrambled.latePoisonIntake - r.sound.latePoisonIntake;
     case "lineage-continuity": {
       const early = r.sound.earlyVoiceCentroid, late = r.sound.foodVoiceCentroid;
       if (!early || !late || r.sound.foodVoiceDispersion > ADOPTION_RADIUS) return 0;

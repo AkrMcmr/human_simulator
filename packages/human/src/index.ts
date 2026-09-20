@@ -97,7 +97,9 @@ export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetti
   /** Candidate perception (0.11.0-experimental.5): distance below which a heard sound joins an existing heard category. Default 0.18 (the 0.1.0 value); smaller means finer hearing. */
   auditoryResolution?: number;
   /** Candidate hook (0.8.0-experimental.2): the eating state also leaks into the voice, pulling both features toward the high corner while the individual has just eaten. Requires lastIntake from the candidate's apply. */
-  eatingCoupling?: number };
+  eatingCoupling?: number;
+  /** Candidate term (0.12.0-experimental.3): extra vocalize utility the candidate computed for this tick from its own state (e.g. disgust at an aversive place in sight). */
+  callUrge?: number };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -239,6 +241,7 @@ export function decideWithOptions(previous: HumanState, observation: Observation
     fatigue: -human.body.fatigue * 0.1, cost: -0.07,
     ...(options.satiationCall ? { satiationCall: ((human as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0 ? options.satiationCall : 0 } : {}),
     ...(options.shelterCall ? { shelterCall: (human as HumanState & { lastWarm?: boolean }).lastWarm ? options.shelterCall : 0 } : {}),
+    ...(options.callUrge ? { callUrge: options.callUrge } : {}),
   });
   const ordered = [...scores].sort((a, b) => b.utility - a.utility || a.action.localeCompare(b.action));
   const exploratory = random("epsilon") < p.exploration;

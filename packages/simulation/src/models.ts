@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff, SOUND_ASSOCIATION_VERSION } from "../../human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff, SIGNAL_SENDER_VERSION } from "../../human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly, VOICE_STATE_VERSION } from "../../human/src/voice-state.ts";
-import { decideValence, decideValenceAversion, decideValencePrivate, VALENCE_VERSION, VALENCE_AVERSION_VERSION } from "../../human/src/valence.ts";
+import { decideValence, decideValenceAversion, decideValencePrivate, decideValenceDisgust, decideValenceDisgustPrivate, VALENCE_VERSION, VALENCE_AVERSION_VERSION, VALENCE_DISGUST_VERSION } from "../../human/src/valence.ts";
 import { decideLexicon, decideLexiconTransient, decideLexiconMemory, decideLexiconSeparate, decideLexiconFine, LEXICON_VERSION } from "../../human/src/lexicon.ts";
 import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, decideConvention, decideConventionNoImitation, decideConventionContrast, applyWithIntake, FORAGER_LISTENER_VERSION, SELECTIVE_FORAGER_VERSION, FOOD_CALL_VERSION, EATING_VOICE_VERSION, REFERENT_LEARNER_VERSION, LEARNED_CALLER_VERSION, CONVENTION_VERSION } from "../../human/src/forager-listener.ts";
 import type { Observation, RandomSource } from "../../contracts/src/index.ts";
@@ -61,6 +61,8 @@ export const HUMAN_MODELS: Readonly<Record<string, HumanModel>> = Object.freeze(
   "valence-0.12.0-experimental.1": { id: "valence-0.12.0-experimental.1", version: VALENCE_VERSION, role: "candidate", label: "候補 良い食料の声と悪い食料（毒）の声。食べた結果で聞いた声を評価し、真似と分離で2つの声を作る", create: createHuman, decide: decideValence, apply: applyWithIntake },
   "valence-aversion-0.12.0-experimental.2": { id: "valence-aversion-0.12.0-experimental.2", version: VALENCE_AVERSION_VERSION, role: "candidate", label: "候補 味覚嫌悪: 毒に当たった場所と悪い声の出所付近の食料は、見えていても600ステップ採らない（空腹0.95以上を除く）", create: createHuman, decide: decideValenceAversion, apply: applyWithIntake },
   "valence-private-0.12.0-experimental.2": { id: "valence-private-0.12.0-experimental.2", version: VALENCE_AVERSION_VERSION, role: "control", label: "対照 私的な味覚嫌悪のみ: 自分が毒に当たった場所は避けるが、聞いた悪い声は採餌に使わない（声は両方出す）", create: createHuman, decide: decideValencePrivate, apply: applyWithIntake },
+  "valence-disgust-0.12.0-experimental.3": { id: "valence-disgust-0.12.0-experimental.3", version: VALENCE_DISGUST_VERSION, role: "candidate", label: "候補 嫌悪の声: 嫌悪の場所の食料が見えると悪い声を出し、自分の悪い声と同じ分類を聞いたらその出所を避ける", create: createHuman, decide: decideValenceDisgust, apply: applyWithIntake },
+  "valence-disgust-private-0.12.0-experimental.3": { id: "valence-disgust-private-0.12.0-experimental.3", version: VALENCE_DISGUST_VERSION, role: "control", label: "対照 嫌悪の声を出すが、聞いた悪い声は採餌に使わない", create: createHuman, decide: decideValenceDisgustPrivate, apply: applyWithIntake },
   "learned-caller-0.9.0-experimental.1": { id: "learned-caller-0.9.0-experimental.1", version: LEARNED_CALLER_VERSION, role: "candidate", label: "候補 出所評価＋食べる声に、食後の呼び声が自分の空腹に何をもたらしたかの学習を足す", create: createHuman, decide: decideLearnedCaller, apply: applyWithIntake },
 });
 export const MODEL_IDS = Object.freeze(Object.keys(HUMAN_MODELS));

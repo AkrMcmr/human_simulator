@@ -28,35 +28,58 @@ export const VALENCE_VERSION = "0.12.0-experimental.1";
  * bad voice. Voice production, valence learning and imitation are unchanged from experimental.1.
  */
 export const VALENCE_AVERSION_VERSION = "0.12.0-experimental.2";
+/**
+ * 0.12.0-experimental.3 (research decision 0040): disgust. With taste aversion, poisoning becomes rare, so a voice
+ * tied to the poisoned state alone has too few occasions to be shared (valence-v3). Here the bad state also arises
+ * from perception: food in sight at an aversive place makes the individual disgusted (lastDisgust), which is a bad
+ * context for the voice (bad-voice imitation, an extra urge to vocalize equal to the food-call utility) exactly as
+ * being poisoned is. Comprehension mirrors production: a heard sound in the category this individual would itself
+ * use as its bad voice (and not as its good voice) marks the source as aversive, in addition to the learned
+ * estimate rule. "disgust-private" produces the same disgust calls but ignores heard bad voices as a listener.
+ */
+export const VALENCE_DISGUST_VERSION = "0.12.0-experimental.3";
 export const AVERSION = { ticks: 600, desperateAbove: 0.95 };
-export type ValenceMode = "drop" | "aversion" | "private";
+export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private";
 export const VALENCE = { visitRadius: 3, memoryTicks: REFERENT.memoryTicks, maxRecent: REFERENT.maxRecent, badCall: FOOD_CALL.utility, warnAbove: 0.3 };
 export type Valence = "good" | "bad";
 type ValenceState = HumanState & {
-  lastIntake?: number; lastPoison?: number;
+  lastIntake?: number; lastPoison?: number; lastDisgust?: number;
   recentSounds?: { category: number; x: number; y: number; tick: number }[];
   valenceReferents?: Record<Valence, Record<number, Estimate>>;
   valenceHeard?: Record<Valence, Record<number, number>>;
   aversions?: { x: number; y: number; tick: number }[];
 };
-export function valenceOf(human: HumanState): Valence | null {
+/** The valence of the last meal only (what eating did), used to judge remembered sound sources. */
+export function mealValenceOf(human: HumanState): Valence | null {
   const h = human as ValenceState;
   if ((h.lastPoison ?? 0) > 0) return "bad";
   if ((h.lastIntake ?? 0) > 0) return "good";
   return null;
 }
-export function valenceVoice(human: HumanState, kind: Valence): SoundShape | null {
+/** The valence context for the voice: poisoned or (experimental.3) disgusted is bad, eating well is good. */
+export function valenceOf(human: HumanState): Valence | null {
   const h = human as ValenceState;
-  if (!human.heardSounds.length) return null;
+  if ((h.lastPoison ?? 0) > 0 || (h.lastDisgust ?? 0) > 0) return "bad";
+  if ((h.lastIntake ?? 0) > 0) return "good";
+  return null;
+}
+/** The heard category this individual would imitate for a valence, or null when none scores above the minimum. */
+export function valenceCategory(human: HumanState, kind: Valence): number | null {
+  const h = human as ValenceState;
   const heard = h.valenceHeard?.[kind] ?? {};
   const total = Object.values(heard).reduce((a, b) => a + b, 0);
-  let best: { shape: SoundShape; score: number } | null = null;
+  let best: { id: number; score: number } | null = null;
   for (const c of human.heardSounds) {
     const e = h.valenceReferents?.[kind]?.[c.id];
     const score = (e && e.samples > 0 ? e.mean : 0) + CONVENTION.heardWeight * ((heard[c.id] ?? 0) / Math.max(1, total));
-    if (score > CONVENTION.minimumScore && (!best || score > best.score)) best = { shape: { ...c.shape }, score };
+    if (score > CONVENTION.minimumScore && (!best || score > best.score)) best = { id: c.id, score };
   }
-  return best?.shape ?? null;
+  return best?.id ?? null;
+}
+export function valenceVoice(human: HumanState, kind: Valence): SoundShape | null {
+  const id = valenceCategory(human, kind);
+  const c = id === null ? undefined : human.heardSounds.find(x => x.id === id);
+  return c ? { ...c.shape } : null;
 }
 export function chooseValenceVoice(human: HumanState): SoundShape | null {
   const context = valenceOf(human);
@@ -77,19 +100,27 @@ export function selectSafeFood(human: HumanState, sounds: HeardSound[], random: 
 export function decideValence(previous: HumanState, observation: Observation, random: RandomSource, mode: ValenceMode = "drop") {
   const human: ValenceState = structuredClone(previous);
   const self = observation.selfPosition;
-  const context = valenceOf(human);
+  const disgustMode = mode === "disgust" || mode === "disgust-private";
+  const listens = mode !== "private" && mode !== "disgust-private";
   const near = (a: { x: number; y: number }, b: { x: number; y: number }) => magnitude({ x: a.x - b.x, y: a.y - b.y }) <= VALENCE.visitRadius;
   const remember = (place: { x: number; y: number }) => { if (mode !== "drop") (human.aversions ??= []).push({ x: place.x, y: place.y, tick: observation.tick }); };
+  // experimental.3: food in sight at a place already known as aversive is disgusting — a bad context without eating.
+  if (disgustMode) {
+    const live = (human.aversions ?? []).filter(a => observation.tick - a.tick <= AVERSION.ticks);
+    human.lastDisgust = live.length && observation.resources.some(r => r.kind === "food" && live.some(a => near(a, { x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y }))) ? 1 : 0;
+  }
+  const context = valenceOf(human);
+  const meal = mealValenceOf(human);
   // Eating resolves remembered sound sources nearby: good or bad by what this meal did.
   const kept: NonNullable<ValenceState["recentSounds"]> = [];
   for (const m of human.recentSounds ?? []) {
     if (observation.tick - m.tick > VALENCE.memoryTicks) continue;
-    if (context && magnitude({ x: m.x - self.x, y: m.y - self.y }) <= VALENCE.visitRadius) {
+    if (meal && magnitude({ x: m.x - self.x, y: m.y - self.y }) <= VALENCE.visitRadius) {
       if (human.heardSounds.some(c => c.id === m.category) && human.parameters.learningRate > 0) {
         human.valenceReferents ??= { good: {}, bad: {} };
         for (const kind of ["good", "bad"] as Valence[]) {
           const e = human.valenceReferents[kind][m.category] ?? { mean: 0, variance: 1, samples: 0 };
-          const outcome = kind === context ? 1 : -1;
+          const outcome = kind === meal ? 1 : -1;
           const rate = human.parameters.learningRate;
           const residual = outcome - e.mean;
           e.mean += rate * residual;
@@ -104,7 +135,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   }
   human.recentSounds = kept;
   // A poisoned meal marks the place itself as no good in the eater's own memory.
-  if (context === "bad") {
+  if (meal === "bad") {
     for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, self)) { place.strength = 0; remember(place.position); }
     remember(self);
   }
@@ -114,11 +145,17 @@ export function decideValence(previous: HumanState, observation: Observation, ra
       if (category !== null) { human.valenceHeard ??= { good: {}, bad: {} }; human.valenceHeard[context][category] = (human.valenceHeard[context][category] ?? 0) + 1; }
     }
   }
-  // Hearing a bad-food voice from near a remembered food place drops that place as a target (not in the private variant).
-  if (mode !== "private") for (const s of observation.sounds) {
+  // Hearing a bad-food voice from near a remembered food place drops that place as a target (not in the private variants).
+  // experimental.3 also understands a heard sound in the category it would itself use as its bad voice (and not as its good voice).
+  // In experimental.3 a sound in the category of the individual's own good voice is never a warning (valence-v3 showed learned bad estimates leaking onto the good voice and breaking it).
+  const ownBad = disgustMode && listens ? valenceCategory(human, "bad") : null, ownGood = disgustMode && listens ? valenceCategory(human, "good") : null;
+  if (listens) for (const s of observation.sounds) {
     const category = nearestHeardCategory(human, s);
+    if (disgustMode && ownGood !== null && category === ownGood) continue;
     const e = category === null ? undefined : human.valenceReferents?.bad?.[category];
-    if (!e || e.samples === 0 || e.mean <= VALENCE.warnAbove) continue;
+    const learned = !!e && e.samples > 0 && e.mean > VALENCE.warnAbove;
+    const mirrored = ownBad !== null && category === ownBad;
+    if (!learned && !mirrored) continue;
     const source = { x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y };
     for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, source)) place.strength = 0;
     remember(source);
@@ -136,9 +173,11 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   const result = decideWithSenderOptions(human, perceived, random, {
     stateCoupling: CONVENTION.stateCoupling, satiationCall: FOOD_CALL.utility,
     chooseSound: (h) => chooseValenceVoice(h),
-    soundOrienting: mode === "private" ? (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food") : (h, sounds, r) => selectSafeFood(h, sounds, r),
+    soundOrienting: listens ? (h, sounds, r) => selectSafeFood(h, sounds, r) : (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food"),
+    ...(disgustMode && (human.lastDisgust ?? 0) > 0 ? { callUrge: VALENCE.badCall } : {}),
   });
   const next = result.human as ValenceState;
+  if (disgustMode) next.lastDisgust = human.lastDisgust ?? 0;
   next.recentSounds = [...(human.recentSounds ?? [])];
   for (const s of observation.sounds) {
     const category = nearestHeardCategory(next, s);
@@ -150,3 +189,5 @@ export function decideValence(previous: HumanState, observation: Observation, ra
 }
 export const decideValenceAversion = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "aversion");
 export const decideValencePrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "private");
+export const decideValenceDisgust = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "disgust");
+export const decideValenceDisgustPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "disgust-private");
