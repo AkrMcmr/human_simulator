@@ -53,6 +53,8 @@
 
 進捗（2026-09-16）: 制御課題の受信側診断（[判断0008](../research/decisions/0008-signal-readiness-m3.md)）と受信側候補（[0010](../research/decisions/0010-sound-association.md)）に続き、自由worldの評価器[`signal-world-v1`](../research/protocols/signal-world-v1.json)と発し手候補（[0011](../research/decisions/0011-signal-world-m3.md)、[0012](../research/decisions/0012-signal-sender.md)）を事前登録して実行。全モデルで合図は未成立。確認できた段階は「音の分類」「新奇音への注意」「制御課題での音と結果の関連学習と利用」まで。自由worldでは両側が学べる構造がなく、発し手の状態と音の連動を初期能力として認めるかが設計相談になった。
 
+進捗（2026-09-20）: 所有者が状態連動の声を初期能力として認め（[判断0013](../research/decisions/0013-voice-state.md)）、候補を第2ラウンドの未使用シードで測ったが未成立。原因は世界の側にあり、危険度も身体要求もほとんど変化せず、伝える価値のある状態差がない。次は情報の非対称がある課題（referential-v1）の設計。
+
 ## M4: 人間モデルとしての根拠と共同開発を一段進める
 
 M1〜M3と並行して進める。

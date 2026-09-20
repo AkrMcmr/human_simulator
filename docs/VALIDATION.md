@@ -80,3 +80,7 @@ Codexの`codex/m2-observation-history`（観察専用スナップショットと
 ## 2026-09-16: 自由worldの最小合図の診断と発し手候補（M3）
 
 Codexの受信側診断（0008）と受信側候補（0010）を取り込み、自由worldの評価器signal-world-v1と発し手候補0.5.0-experimental.1を事前登録して実行。既定・受信側候補・発し手候補・2対照のすべてで、開発14001–14008・確認15001–15008の両群で合図は未成立（聞き手の超過相互情報量は0付近、発し手候補は0.013 bitで閾値0.03未達）。副作用なし。相互情報量と並べ替え基準は人工データのテストで検証。今回の検証: `npm run test:model` 48/48（signal-world 5件を追加）、`npm run test:evaluation` 6/6、`npm run test:evolution` 5/5、`npm run test:observer` 7/7、型検査・lint（Codexコミットの2件も修正）・ビルド・画面テスト成功。既定モデルの計算は変更していません。
+
+## 2026-09-20: 状態連動の声（ユーザー指定の初期能力）
+
+所有者の判断で発声の状態連動を初期能力として採用し、候補0.6.0-experimental.1と対照3種をsignal-world-v1第2ラウンド（開発16001–16008・確認17001–17008）で測定。全モデルで合図は未成立、副作用なし（[判断0013](../research/decisions/0013-voice-state.md)）。診断スクリプトで危険度・身体要求・音区分の分布を確認し、状態差の不足を原因として記録。今回の検証: `npm run test:model` 51/51（voice-state 3件を追加）、`npm run test:evaluation` 6/6、`npm run test:evolution` 5/5、`npm run test:observer` 7/7、型検査・lint成功。既定モデルの計算は変更していません（連動は候補のみ）。

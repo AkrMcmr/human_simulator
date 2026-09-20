@@ -53,4 +53,8 @@
 
 ## 2026-09-16 更新
 
-M3: Codexの受信側診断・候補（[0008](../research/decisions/0008-signal-readiness-m3.md)、[0010](../research/decisions/0010-sound-association.md)）に続き、自由worldの合図評価器と発し手候補（[0011](../research/decisions/0011-signal-world-m3.md)、[0012](../research/decisions/0012-signal-sender.md)）を事前登録して実行。合図は未成立で、次は「状態連動の発声」を初期能力として認めるかの設計相談です。M2の観察画面も追加しました。次は相手の反応の途中変化とM3の最小合図protocolです。最新の完了範囲と未決事項は[STATUS](STATUS.md)を参照してください。
+M3: Codexの受信側診断・候補（[0008](../research/decisions/0008-signal-readiness-m3.md)、[0010](../research/decisions/0010-sound-association.md)）に続き、自由worldの合図評価器と発し手候補（[0011](../research/decisions/0011-signal-world-m3.md)、[0012](../research/decisions/0012-signal-sender.md)）を事前登録して実行。合図は未成立。
+
+## 2026-09-20 更新
+
+所有者の判断で「状態連動の声」を初期能力として採用（[判断0013](../research/decisions/0013-voice-state.md)）。第2ラウンドの未使用シードで測ったが未成立で、原因は世界に伝える価値のある状態差がないこと。次は情報の非対称がある課題（referential-v1）と模倣の設計へ。M2の観察画面も追加しました。次は相手の反応の途中変化とM3の最小合図protocolです。最新の完了範囲と未決事項は[STATUS](STATUS.md)を参照してください。
