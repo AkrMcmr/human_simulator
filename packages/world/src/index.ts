@@ -1,16 +1,22 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.2.0";
+export const WORLD_VERSION = "0.3.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
+  /** Food regrowth per tick (0.3.0; omitted means the 0.2.0 constant 0.003). */
+  foodRegeneration?: number;
+  /** 0.3.0: when a food patch falls to `depletedBelow` it is marked spent (still visible, never regrows) and a fresh patch appears at the next position of this fixed sequence. Omitted: no spawning (0.2.0 behavior). */
+  foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[] };
 };
 export type PhysicalAnimal = { id: string; position: Vec2; velocity: Vec2 };
-export type Resource = { id: string; kind: "food" | "warmth"; position: Vec2; amount: number; radius: number };
+export type Resource = { id: string; kind: "food" | "warmth"; position: Vec2; amount: number; radius: number; spent?: boolean };
 export type SoundEmission = { sourceId: string; position: Vec2; shape: SoundShape; tick: number };
-export type WorldEvent = { tick: number; kind: "sound" | "contact" | "food"; actorId: string; value: number };
+export type WorldEvent = { tick: number; kind: "sound" | "contact" | "food" | "spawn"; actorId: string; value: number };
 export type WorldState = {
   parameters: WorldParameters; animals: PhysicalAnimal[]; resources: Resource[]; sounds: SoundEmission[];
+  /** Number of food patches spawned so far (0.3.0, only with foodSpawn). */
+  spawned?: number;
 };
 export const DEFAULT_WORLD: WorldParameters = {
   width: 40, height: 28, visionRadius: 16, hearingRadius: 20,
@@ -125,7 +131,18 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
       effects[eater.id].foodIntake += portion;
       if (portion > 0) events.push({ tick: tick + 1, kind: "food", actorId: eater.id, value: portion });
     }
-    resource.amount = clamp(resource.amount - total + 0.003);
+    if (resource.spent) { resource.amount = 0; continue; }
+    // Patches above 1 (0.3.0 protocols) only shrink; patches within [0, 1] keep the 0.2.0 bound.
+    resource.amount = clamp(resource.amount - total + (p.foodRegeneration ?? 0.003), 0, Math.max(1, resource.amount));
+    if (p.foodSpawn && resource.amount <= p.foodSpawn.depletedBelow) {
+      // Spent patches stay visible with nothing left, so a remembered place is corrected by seeing it empty.
+      resource.spent = true; resource.amount = 0;
+      const n = world.spawned ?? 0;
+      const position = p.foodSpawn.positions[n % p.foodSpawn.positions.length];
+      world.resources.push({ id: "food-spawn-" + (n + 1), kind: "food", position: { ...position }, amount: p.foodSpawn.amount, radius: p.foodSpawn.radius });
+      world.spawned = n + 1;
+      events.push({ tick: tick + 1, kind: "spawn", actorId: "food-spawn-" + (n + 1), value: p.foodSpawn.amount });
+    }
   }
   return { world, effects, events };
 }

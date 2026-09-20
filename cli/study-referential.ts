@@ -5,6 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runReferentialPartition, protocol as protocolV1, type ReferentialProtocol } from "../research/studies/referential-v1.ts";
 import protocolV2 from "../research/protocols/referential-v2.json" with { type: "json" };
+import protocolV3 from "../research/protocols/referential-v3.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -19,8 +20,8 @@ for (let i = 0; i < args.length; i++) {
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
-if (protocolName !== "v1" && protocolName !== "v2") throw new Error("--protocol must be v1 or v2");
-const protocol: ReferentialProtocol = protocolName === "v2" ? (protocolV2 as unknown as ReferentialProtocol) : protocolV1;
+if (protocolName !== "v1" && protocolName !== "v2" && protocolName !== "v3") throw new Error("--protocol must be v1, v2, or v3");
+const protocol: ReferentialProtocol = protocolName === "v3" ? (protocolV3 as unknown as ReferentialProtocol) : protocolName === "v2" ? (protocolV2 as unknown as ReferentialProtocol) : protocolV1;
 const split = options.get("--split") ?? "development";
 if (split !== "development" && split !== "validation" && split !== "pilot") throw new Error("--split must be development, validation, or pilot");
 if (!modelIds.length) modelIds.push(protocol.models.baseline);
@@ -37,7 +38,7 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
@@ -46,8 +47,9 @@ const partitions = modelIds.map(id => runReferentialPartition(split, id, protoco
 const output = { format: "human-world-lab/referential-study", schemaVersion: 1, protocol, provenance, round, seedUse: split === "pilot" ? "pilot seeds: scale check only, not a gate" : split, models: Object.fromEntries(modelIds.map(id => [id, versionsFor(id).human])), partitions, established: Object.fromEntries(partitions.map(p => [p.model, p.established])), decision: "diagnostics-of-registered-models-not-default-promotion" };
 mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, JSON.stringify(output, null, 2) + "\n");
 const f = (x: number, d = 4) => x.toFixed(d);
+const spawn = (protocol.world as unknown as { foodSpawn?: { amount: number; positions: unknown[] } }).foodSpawn;
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-const lines = [`# 情報の非対称がある採餌課題（${protocol.id}）`, "", `- 条件群: ${split}（シード群ラウンド${round}）`, `- ソース: ${provenance.commit}`, `- 未コミット変更: ${provenance.dirty}`, `- モデルコードSHA256: ${provenance.modelHash}`, `- 評価器SHA256: ${provenance.evaluatorHash}`, `- 環境SHA256: ${provenance.environmentHash}`, `- シード: ${partitions[0].seeds.join(", ")}`, `- 実行: ${protocol.horizon}ステップ、視界${protocol.world.visionRadius}u、聴覚${protocol.world.hearingRadius}u、食料${protocol.resources.filter(r => r.kind === "food").length}か所（各${protocol.resources.find(r => r.kind === "food")?.amount}）、初期空腹${protocol.body.hunger}、二人とも同じモデル。対照は音なし、方向をでたらめにする介入、音の特徴をでたらめにする介入`, "", "値はシードごとの差の平均 ± 標本SD。高いほど「声が食料の手掛かりとして働く」方向。人間の言語や意図の再現ではない。", ""];
+const lines = [`# 情報の非対称がある採餌課題（${protocol.id}）`, "", `- 条件群: ${split}（シード群ラウンド${round}）`, `- ソース: ${provenance.commit}`, `- 未コミット変更: ${provenance.dirty}`, `- モデルコードSHA256: ${provenance.modelHash}`, `- 評価器SHA256: ${provenance.evaluatorHash}`, `- 環境SHA256: ${provenance.environmentHash}`, `- シード: ${partitions[0].seeds.join(", ")}`, `- 実行: ${protocol.horizon}ステップ、視界${protocol.world.visionRadius}u、聴覚${protocol.world.hearingRadius}u、食料${protocol.resources.filter(r => r.kind === "food").length}か所（各${protocol.resources.find(r => r.kind === "food")?.amount}）${spawn ? `、尽きると次の場所に${spawn.amount}が現れる（${spawn.positions.length}か所の列、再生なし）` : ""}、初期空腹${protocol.body.hunger}、二人とも同じモデル。対照は音なし、方向をでたらめにする介入、音の特徴をでたらめにする介入`, "", "値はシードごとの差の平均 ± 標本SD。高いほど「声が食料の手掛かりとして働く」方向。人間の言語や意図の再現ではない。", ""];
 for (const p of partitions) {
   lines.push(`## ${p.model}`, "", "| 項目 | 平均 ± SD | 閾値 | 判定 |", "| --- | ---: | ---: | --- |");
   for (const c of p.checks) lines.push(`| ${c.label ?? c.id} | ${f(c.summary.mean)} ± ${f(c.summary.sd)} | ${c.minimum ?? "報告のみ"} | ${c.status} |`);
@@ -55,6 +57,8 @@ for (const p of partitions) {
   lines.push("", `成立: ${p.established}`, "", "| 指標 | 音あり | 音なし | でたらめ方向 | でたらめ特徴 |", "| --- | ---: | ---: | ---: | ---: |",
     `| 空腹の平均 | ${s("sound", r => r.meanHunger)} | ${s("muted", r => r.meanHunger)} | ${s("misdirected", r => r.meanHunger)} | ${s("scrambled", r => r.meanHunger)} |`,
     `| 初回摂食までのステップ（平均） | ${s("sound", r => r.meanFirstFoodTick, 0)} | ${s("muted", r => r.meanFirstFoodTick, 0)} | ${s("misdirected", r => r.meanFirstFoodTick, 0)} | ${s("scrambled", r => r.meanFirstFoodTick, 0)} |`,
+    `| もう一人の到着遅れ（上限比） | ${s("sound", r => r.arrivalDelay)} | ${s("muted", r => r.arrivalDelay)} | ${s("misdirected", r => r.arrivalDelay)} | ${s("scrambled", r => r.arrivalDelay)} |`,
+    `| 見つかった食料 / 二人とも食べた食料 / 出現 | ${s("sound", r => r.patchesFound, 1)} / ${s("sound", r => r.patchesShared, 1)} / ${s("sound", r => r.spawns, 1)} | ${s("muted", r => r.patchesFound, 1)} / ${s("muted", r => r.patchesShared, 1)} / ${s("muted", r => r.spawns, 1)} | ${s("misdirected", r => r.patchesFound, 1)} / ${s("misdirected", r => r.patchesShared, 1)} / ${s("misdirected", r => r.spawns, 1)} | ${s("scrambled", r => r.patchesFound, 1)} / ${s("scrambled", r => r.patchesShared, 1)} / ${s("scrambled", r => r.spawns, 1)} |`,
     `| 摂食量の合計 | ${s("sound", r => r.foodIntake)} | ${s("muted", r => r.foodIntake)} | ${s("misdirected", r => r.foodIntake)} | ${s("scrambled", r => r.foodIntake)} |`,
     `| 聞いた回数 / 音源が見えなかった回数 | ${s("sound", r => r.heardEvents, 0)} / ${s("sound", r => r.unseenHeardEvents, 0)} | 0 / 0 | ${s("misdirected", r => r.heardEvents, 0)} / ${s("misdirected", r => r.unseenHeardEvents, 0)} | ${s("scrambled", r => r.heardEvents, 0)} / ${s("scrambled", r => r.unseenHeardEvents, 0)} |`,
     `| 音を聞いた直後に音源の方へ動いた割合 | ${s("sound", r => r.towardSourceFraction)} | — | ${s("misdirected", r => r.towardSourceFraction)} | ${s("scrambled", r => r.towardSourceFraction)} |`,
@@ -63,7 +67,7 @@ for (const p of partitions) {
     `| 4u未満の割合 | ${s("sound", r => r.closeFraction)} | ${s("muted", r => r.closeFraction)} | ${s("misdirected", r => r.closeFraction)} | ${s("scrambled", r => r.closeFraction)} |`,
     `| 最低健康 | ${s("sound", r => r.minimumHealth)} | ${s("muted", r => r.minimumHealth)} | ${s("misdirected", r => r.minimumHealth)} | ${s("scrambled", r => r.minimumHealth)} |`, "");
 }
-lines.push("## 解釈の範囲", "", "音に意味・正解・成功ラベルを与えない自由worldでの診断。方向への定位は生得の知覚と探索傾向。成立の判定は事前登録した4項目で、音の種類への依存（でたらめ特徴で利益が減る）がなければ「定位による手掛かり利用」に留まる。人間の言語や意図の再現ではない。", "");
+lines.push("## 解釈の範囲", "", `音に意味・正解・成功ラベルを与えない自由worldでの診断。方向への定位は生得の知覚と探索傾向。成立の判定は事前登録した${protocol.checks.length}項目で、音の種類への依存（でたらめ特徴で利益が減る）がなければ「定位による手掛かり利用」に留まる。人間の言語や意図の再現ではない。`, "");
 writeFileSync(target.replace(/\.json$/, ".md"), lines.join("\n"));
 console.log(JSON.stringify({ output: target, split, partitions: partitions.map(p => ({ model: p.model, established: p.established, checks: p.checks.map(c => ({ id: c.id, mean: c.summary.mean, status: c.status })) })) }, null, 2));
 if (options.has("--check") && !partitions.some(p => p.established)) process.exitCode = 1;

@@ -13,7 +13,10 @@ export type RunResult = {
   meanHunger: number; foodIntake: number; firstFoodTick: Record<string, number>; meanFirstFoodTick: number;
   heardEvents: number; unseenHeardEvents: number; towardSourceFraction: number; foodAfterHearingFraction: number;
   contactTicks: number; closeFraction: number; vocalizations: number; minimumHealth: number;
+  /** v3: per food patch, the second individual's first eating tick minus the finder's, capped (unseen arrivals count as the cap), as a fraction of the cap; averaged over patches found early enough for a full window. 1 when no patch qualifies. */
+  arrivalDelay: number; patchesFound: number; patchesShared: number; spawns: number;
 };
+const arrivalCapOf = (protocol: ReferentialProtocol) => (protocol as unknown as { arrivalCap?: number }).arrivalCap ?? 300;
 export function referentialConfig(seed: number, modelId: string, soundEnabled: boolean, protocol: ReferentialProtocol = protocolV1): ExperimentConfig {
   return {
     name: "referential-v1", seed, horizon: protocol.horizon, model: modelId,
@@ -32,6 +35,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const firstFoodTick: Record<string, number> = {};
   let foodIntake = 0, heardEvents = 0, unseenHeardEvents = 0, towardChecks = 0, towardHits = 0, contactTicks = 0, closeTicks = 0, vocalizations = 0, minimumHealth = 1;
   const lastHeard: Record<string, number> = {};
+  const patchArrivals: Record<string, Record<string, number>> = {};
+  let spawns = 0;
   const heardBeforeFood: Record<string, boolean> = {};
   const pendingDirections: Record<string, { x: number; y: number } | null> = {};
   for (let tick = 0; tick < protocol.horizon; tick++) {
@@ -64,9 +69,14 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         if (Math.hypot(dx, dy) > 1e-9) { towardChecks++; if (dx * direction.x + dy * direction.y > 0) towardHits++; }
       }
     }
-    for (const e of advanced.events) if (e.kind === "food") {
+    for (const e of advanced.events) {
+      if (e.kind === "spawn") spawns++;
+      if (e.kind !== "food") continue;
       foodIntake += e.value;
       if (!(e.actorId in firstFoodTick)) { firstFoodTick[e.actorId] = tick + 1; heardBeforeFood[e.actorId] = e.actorId in lastHeard && tick + 1 - lastHeard[e.actorId] <= protocol.hearWindow; }
+      const eater = advanced.world.animals.find(a => a.id === e.actorId)!;
+      const patch = advanced.world.resources.find(r => r.kind === "food" && Math.hypot(r.position.x - eater.position.x, r.position.y - eater.position.y) <= r.radius);
+      if (patch) { patchArrivals[patch.id] ??= {}; patchArrivals[patch.id][e.actorId] ??= tick + 1; }
     }
     for (const h of state.humans) { hungers.push(h.body.hunger); minimumHealth = Math.min(minimumHealth, h.body.health); }
     if (advanced.events.some(e => e.kind === "contact")) contactTicks++;
@@ -75,20 +85,30 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   }
   for (const id of ids) if (!(id in firstFoodTick)) firstFoodTick[id] = protocol.horizon;
   const fed = ids.filter(id => firstFoodTick[id] < protocol.horizon);
+  const cap = arrivalCapOf(protocol);
+  const delays: number[] = [];
+  let patchesShared = 0;
+  for (const arrivals of Object.values(patchArrivals)) {
+    const ticks = Object.values(arrivals).sort((a, b) => a - b);
+    if (ticks.length > 1) patchesShared++;
+    if (ticks[0] > protocol.horizon - cap) continue;
+    delays.push(Math.min(cap, ticks.length > 1 ? ticks[1] - ticks[0] : cap) / cap);
+  }
   return {
     condition, model: model.id, seed,
     meanHunger: mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
     contactTicks: contactTicks / protocol.horizon, closeFraction: closeTicks / protocol.horizon, vocalizations, minimumHealth,
+    arrivalDelay: delays.length ? mean(delays) : 1, patchesFound: Object.keys(patchArrivals).length, patchesShared, spawns,
   };
 }
 export type SeedResult = { seed: number; model: string } & Record<Condition, RunResult>;
 export function runSeed(modelId: string, seed: number, protocol: ReferentialProtocol = protocolV1): SeedResult {
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
-/** All values oriented so that higher supports the hypothesis that heard sounds guide foraging by their direction. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "contact-side-effect"] as const;
+/** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   switch (id) {
@@ -98,6 +118,9 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "latency-benefit": return (r.muted.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
     case "latency-direction": return (r.misdirected.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
     case "latency-shape": return (r.scrambled.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
+    case "arrival-benefit": return r.muted.arrivalDelay - r.sound.arrivalDelay;
+    case "arrival-direction": return r.misdirected.arrivalDelay - r.sound.arrivalDelay;
+    case "arrival-shape": return r.scrambled.arrivalDelay - r.sound.arrivalDelay;
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;
     default: throw new Error("Unknown check " + id);
   }

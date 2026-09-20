@@ -64,6 +64,14 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
     if (value.world[key] !== undefined && (!finite(value.world[key]) || (value.world[key] as number) < 0 || (value.world[key] as number) > 400)) throw new Error("知覚範囲が不正です。");
   }
   if (value.world.soundEnabled !== undefined && typeof value.world.soundEnabled !== "boolean") throw new Error("音の伝達設定が不正です。");
+  if (value.world.foodRegeneration !== undefined && !unit(value.world.foodRegeneration)) throw new Error("食料の再生率が範囲外です。");
+  const inBounds = (q: unknown) => object(q) && finite(q.x) && finite(q.y) && (q.x as number) >= 0 && (q.x as number) <= width && (q.y as number) >= 0 && (q.y as number) <= height;
+  const foodAmount = (v: unknown) => finite(v) && (v as number) >= 0 && (v as number) <= 20;
+  if (value.world.foodSpawn !== undefined) {
+    const sp = value.world.foodSpawn;
+    if (!object(sp) || !foodAmount(sp.amount) || !finite(sp.radius) || (sp.radius as number) <= 0 || (sp.radius as number) > 100 || !unit(sp.depletedBelow)
+        || !Array.isArray(sp.positions) || sp.positions.length < 1 || sp.positions.length > 64 || !sp.positions.every(inBounds)) throw new Error("食料の出現設定が不正です。");
+  }
   const ids = new Set<string>();
   for (const a of value.agents) {
     if (!object(a) || typeof a.id !== "string" || !/^[A-Za-z0-9_-]{1,32}$/.test(a.id) || ["__proto__", "constructor", "prototype"].includes(a.id) || ids.has(a.id)
@@ -85,7 +93,7 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
       if (!object(r) || typeof r.id !== "string" || !/^[A-Za-z0-9_-]{1,32}$/.test(r.id) || ["__proto__", "constructor", "prototype"].includes(r.id) || resourceIds.has(r.id)
         || !["food", "warmth"].includes(r.kind as string) || !object(r.position)
         || !finite(r.position.x) || !finite(r.position.y) || r.position.x < 0 || r.position.x > width || r.position.y < 0 || r.position.y > height
-        || !unit(r.amount) || !finite(r.radius) || r.radius <= 0 || r.radius > 100) throw new Error("資源設定が不正です。");
+        || !foodAmount(r.amount) || !finite(r.radius) || r.radius <= 0 || r.radius > 100) throw new Error("資源設定が不正です。");
       resourceIds.add(r.id);
     }
   }
