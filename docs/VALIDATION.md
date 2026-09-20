@@ -104,3 +104,7 @@ referential-v2の第2ラウンド（22001–22008 / 23001–23008、[判断0016]
 ## 2026-09-20: referential-v5 第2・第3ラウンド
 
 第2ラウンド（32001–32008 / 33001–33008）は開発群のみ4項目達成。第3ラウンド（16シード、34001–34016 / 35001–35016）で候補`eating-voice-referent-0.8.0-experimental.3`が両群4項目を達成し成立（[判断0020](../research/decisions/0020-referential-v5.md)）。対照は未達。今回の検証: `npm run test:model` 75/75（caller-cost 3件を追加）、型検査・lint成功。
+
+## 2026-09-20: caller-cost-v1 / convention-v1
+
+caller-cost-v1（36001–36008 / 37001–37008、[判断0021](../research/decisions/0021-caller-cost.md)）: 費用を学ぶ発し手の呼び声の抑制0.27 / 0.26で閾値0.3未達。convention-v1（38001–38008 / 39001–39008、[判断0022](../research/decisions/0022-convention.md)）: 真似の候補が収束と任意性を両群達成、聞き手の利用3項目は開発群のみ。今回の検証: `npm run test:model` 78/78（convention 3件を追加）、型検査・lint成功。

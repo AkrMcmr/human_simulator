@@ -38,7 +38,30 @@
         39007,
         39008
       ],
-      "status": "reserved for the conventional food-voice comparison (decision 0022)"
+      "status": "observed 2026-09-20 (decision 0022): candidate passed convergence and arbitrariness in both groups; listener-use gates passed in development only"
+    },
+    "2": {
+      "developmentSeeds": [
+        40001,
+        40002,
+        40003,
+        40004,
+        40005,
+        40006,
+        40007,
+        40008
+      ],
+      "validationSeeds": [
+        41001,
+        41002,
+        41003,
+        41004,
+        41005,
+        41006,
+        41007,
+        41008
+      ],
+      "status": "reserved for the contrastive food-voice candidate (decision 0023); gates unchanged"
     }
   },
   "developmentSeeds": [
