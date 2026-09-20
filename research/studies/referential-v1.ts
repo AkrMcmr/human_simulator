@@ -26,6 +26,10 @@ export type RunResult = {
   foodVoiceCentroid: { openness: number; resonance: number } | null;
   /** Mean hunger over the last third of the run (convention-v2 measures function after the convention has formed). */
   lateMeanHunger: number;
+  /** Mean cold over the last third of the run (lexicon-v1). */
+  lateMeanCold: number;
+  /** lexicon-v1: late calls made while sheltered (lastWarm), pooled over individuals: dispersion around their centroid and the centroid itself. */
+  warmthVoiceDispersion: number; warmthVoiceCentroid: { openness: number; resonance: number } | null; warmthCalls: number;
   /** Mean distance of every food call in the last third (all individuals pooled) to the pooled centroid; low when the group's food calls concentrate on one voice. 1 when fewer than 5 calls. */
   foodVoiceDispersion: number;
 };
@@ -53,6 +57,9 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   let spawns = 0;
   const foodVoiceSums: Record<string, { openness: number; resonance: number; count: number }> = {};
   const lateFoodCalls: { openness: number; resonance: number }[] = [];
+  const lateWarmthCalls: { openness: number; resonance: number }[] = [];
+  const lateColds: number[] = [];
+  let warmthCalls = 0;
   const heardBeforeFood: Record<string, boolean> = {};
   const pendingDirections: Record<string, { x: number; y: number } | null> = {};
   for (let tick = 0; tick < protocol.horizon; tick++) {
@@ -73,6 +80,10 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       if (observation.sounds.length) { const loudest = [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0]; pendingDirections[h.id] = { ...loudest.relativePosition }; }
       if (result.action.kind === "vocalize") {
         vocalizations++;
+        if ((h as HumanState & { lastWarm?: boolean }).lastWarm && ((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) <= 0) {
+          warmthCalls++;
+          if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateWarmthCalls.push({ ...result.action.sound });
+        }
         if (((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) {
           foodCalls++;
           if (tick >= protocol.horizon * 2 / 3 && result.action.sound) { const v = foodVoiceSums[h.id] ??= { openness: 0, resonance: 0, count: 0 }; v.openness += result.action.sound.openness; v.resonance += result.action.sound.resonance; v.count++; lateFoodCalls.push({ ...result.action.sound }); }
@@ -100,7 +111,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       const patch = advanced.world.resources.find(r => r.kind === "food" && Math.hypot(r.position.x - eater.position.x, r.position.y - eater.position.y) <= r.radius);
       if (patch) { patchArrivals[patch.id] ??= {}; patchArrivals[patch.id][e.actorId] ??= tick + 1; }
     }
-    for (const h of state.humans) { hungers.push(h.body.hunger); if (tick >= protocol.horizon * 2 / 3) lateHungers.push(h.body.hunger); minimumHealth = Math.min(minimumHealth, h.body.health); }
+    for (const h of state.humans) { hungers.push(h.body.hunger); if (tick >= protocol.horizon * 2 / 3) { lateHungers.push(h.body.hunger); lateColds.push(h.body.cold); } minimumHealth = Math.min(minimumHealth, h.body.health); }
     if (advanced.events.some(e => e.kind === "contact")) contactTicks++;
     const animals = state.world.animals;
     if (animals.some((a, i) => animals.slice(i + 1).some(b => Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y) < 4))) closeTicks++;
@@ -124,11 +135,16 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const pairs: number[] = [];
   for (let i = 0; i < qualifying.length; i++) for (let j = i + 1; j < qualifying.length; j++) pairs.push(Math.hypot(qualifying[i].openness - qualifying[j].openness, qualifying[i].resonance - qualifying[j].resonance));
   const foodVoiceCentroid = qualifying.length ? { openness: mean(qualifying.map(v => v.openness)), resonance: mean(qualifying.map(v => v.resonance)) } : null;
-  const pooled = lateFoodCalls.length >= 5 ? { openness: mean(lateFoodCalls.map(c => c.openness)), resonance: mean(lateFoodCalls.map(c => c.resonance)) } : null;
-  const foodVoiceDispersion = pooled ? mean(lateFoodCalls.map(c => Math.hypot(c.openness - pooled.openness, c.resonance - pooled.resonance))) : 1;
+  const pool = (calls: { openness: number; resonance: number }[]) => {
+    const centroid = calls.length >= 5 ? { openness: mean(calls.map(c => c.openness)), resonance: mean(calls.map(c => c.resonance)) } : null;
+    return { centroid, dispersion: centroid ? mean(calls.map(c => Math.hypot(c.openness - centroid.openness, c.resonance - centroid.resonance))) : 1 };
+  };
+  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls);
+  const foodVoiceDispersion = foodPool.dispersion;
   return {
     condition, model: model.id, seed,
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
+    lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
     meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
@@ -141,7 +157,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "cold-benefit", "cold-shape-dependence", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -162,6 +178,12 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "convergence-gain": return r.muted.foodVoiceDispersion - r.sound.foodVoiceDispersion;
     // Per seed: distance of this run's food-voice centroid from the across-seed mean centroid. Needs the whole seed set, so assessSeeds computes it; alone it is 0.
     case "arbitrariness": return 0;
+    // lexicon-v1: the same two convention measures for calls made while sheltered, the distance between the two shared voices, and cold-based function.
+    case "convergence-warmth": return r.muted.warmthVoiceDispersion - r.sound.warmthVoiceDispersion;
+    case "arbitrariness-warmth": return 0;
+    case "distinctness": return r.sound.foodVoiceCentroid && r.sound.warmthVoiceCentroid ? Math.hypot(r.sound.foodVoiceCentroid.openness - r.sound.warmthVoiceCentroid.openness, r.sound.foodVoiceCentroid.resonance - r.sound.warmthVoiceCentroid.resonance) : 0;
+    case "cold-benefit": return r.muted.lateMeanCold - r.sound.lateMeanCold;
+    case "cold-shape-dependence": return r.scrambled.lateMeanCold - r.sound.lateMeanCold;
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;
     default: throw new Error("Unknown check " + id);
   }
@@ -169,11 +191,14 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
 export type Check = { id: string; label?: string; minimum: number | null; values: number[]; summary: Summary; status: "pass" | "fail" | "reported" };
 export function assessSeeds(name: string, results: SeedResult[], protocol: ReferentialProtocol = protocolV1) {
   const registered = new Map((protocol.checks as { id: string; label: string; minimum: number }[]).map(c => [c.id, c]));
-  const centroids = results.map(r => r.sound.foodVoiceCentroid).filter((c): c is { openness: number; resonance: number } => c !== null);
-  const grand = centroids.length ? { openness: mean(centroids.map(c => c.openness)), resonance: mean(centroids.map(c => c.resonance)) } : null;
+  const spreadAcrossSeeds = (pick: (r: SeedResult) => { openness: number; resonance: number } | null) => {
+    const centroids = results.map(pick).filter((c): c is { openness: number; resonance: number } => c !== null);
+    const grand = centroids.length ? { openness: mean(centroids.map(c => c.openness)), resonance: mean(centroids.map(c => c.resonance)) } : null;
+    return results.map(r => { const c = pick(r); return c && grand ? Math.hypot(c.openness - grand.openness, c.resonance - grand.resonance) : 0; });
+  };
   const checks: Check[] = MEASURES.map(id => {
-    const values = id === "arbitrariness"
-      ? results.map(r => r.sound.foodVoiceCentroid && grand ? Math.hypot(r.sound.foodVoiceCentroid.openness - grand.openness, r.sound.foodVoiceCentroid.resonance - grand.resonance) : 0)
+    const values = id === "arbitrariness" ? spreadAcrossSeeds(r => r.sound.foodVoiceCentroid)
+      : id === "arbitrariness-warmth" ? spreadAcrossSeeds(r => r.sound.warmthVoiceCentroid)
       : results.map(r => checkValue(id, r, protocol));
     const summary = summarizeSamples(values, protocol.id + "/" + name + "/" + id);
     const c = registered.get(id);

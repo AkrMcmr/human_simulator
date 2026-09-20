@@ -27,8 +27,10 @@ export const EATING_VOICE_VERSION = "0.8.0-experimental.2";
 export const EATING_VOICE = { coupling: 0.7 };
 /** Candidate-only apply: remembers how much was eaten in the last step. The default apply does not record this. */
 export function applyWithIntake(previous: HumanState, effect: PhysicalEffect): HumanState {
-  const next = applyPhysicalEffect(previous, effect) as HumanState & { lastIntake?: number };
+  const next = applyPhysicalEffect(previous, effect) as HumanState & { lastIntake?: number; lastWarm?: boolean };
   next.lastIntake = effect.foodIntake;
+  // 0.11.0 candidates also need to know whether the body was just sheltered (ambient cold near the shelter value).
+  next.lastWarm = effect.ambientCold < 0.05;
   return next;
 }
 type ForagerState = HumanState & { orientOutcomes?: Record<number, Estimate>; orientPending?: { category: number; tick: number; hunger: number } | null };

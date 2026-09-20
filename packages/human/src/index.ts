@@ -88,8 +88,12 @@ export type SoundChoice = (human: HumanState, peerId: string | null, peerDistanc
 export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus; chooseSound?: SoundChoice; stateCoupling?: number;
   /** Candidate hook (0.7.0-experimental.*): when hungry with no remembered food, explore toward a heard sound. `true` picks the loudest (innate, category-blind); a function picks which sound to follow, or null for none. */
   soundOrienting?: boolean | ((human: HumanState, sounds: HeardSound[], random: RandomSource) => HeardSound | null);
+  /** Candidate hook (0.11.0-experimental.*): when cold (>0.4) with no remembered warm place, and not already orienting for food, explore toward a heard sound; same shape as soundOrienting. */
+  warmthOrienting?: boolean | ((human: HumanState, sounds: HeardSound[], random: RandomSource) => HeardSound | null);
   /** Candidate hook (0.8.0-experimental.*): extra vocalize utility right after eating (a "food call" tendency). Requires the candidate's apply to record lastIntake. */
   satiationCall?: number;
+  /** Candidate term (0.11.0-experimental.*): extra utility of vocalizing on the tick after being sheltered (lastWarm), the warmth counterpart of satiationCall. */
+  shelterCall?: number;
   /** Candidate hook (0.8.0-experimental.2): the eating state also leaks into the voice, pulling both features toward the high corner while the individual has just eaten. Requires lastIntake from the candidate's apply. */
   eatingCoupling?: number };
 
@@ -200,11 +204,13 @@ export function decideWithOptions(previous: HumanState, observation: Observation
       y: observation.selfPosition.y + Math.sin(angle) * 6,
     };
   }
-  if (options.soundOrienting && !food && human.body.hunger > 0.4 && observation.sounds.length > 0) {
-    const target = typeof options.soundOrienting === "function" ? options.soundOrienting(human, observation.sounds, random) : [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0];
+  const orientToward = (hook: DecideOptions["soundOrienting"]) => {
+    const target = typeof hook === "function" ? hook(human, observation.sounds, random) : [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0];
     const length = target ? magnitude(target.relativePosition) : 0;
     if (target && length > 0) human.explorationTarget = { x: observation.selfPosition.x + target.relativePosition.x / length * 6, y: observation.selfPosition.y + target.relativePosition.y / length * 6 };
-  }
+  };
+  if (options.soundOrienting && !food && human.body.hunger > 0.4 && observation.sounds.length > 0) orientToward(options.soundOrienting);
+  else if (options.warmthOrienting && !warmth && human.body.cold > 0.4 && observation.sounds.length > 0) orientToward(options.warmthOrienting);
   const scores: Score[] = [];
   const addScore = (action: ActionKind, terms: Record<string, number>) => {
     if (outcomeBonus) terms = { ...terms, predictedSafety: outcomeBonus(action, human, peerDistance, peer?.trackId ?? null) };
@@ -230,6 +236,7 @@ export function decideWithOptions(previous: HumanState, observation: Observation
     danger: -perceivedRisk * p.caution * 0.22,
     fatigue: -human.body.fatigue * 0.1, cost: -0.07,
     ...(options.satiationCall ? { satiationCall: ((human as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0 ? options.satiationCall : 0 } : {}),
+    ...(options.shelterCall ? { shelterCall: (human as HumanState & { lastWarm?: boolean }).lastWarm ? options.shelterCall : 0 } : {}),
   });
   const ordered = [...scores].sort((a, b) => b.utility - a.utility || a.action.localeCompare(b.action));
   const exploratory = random("epsilon") < p.exploration;

@@ -67,6 +67,11 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
   if (value.world.foodRegeneration !== undefined && !unit(value.world.foodRegeneration)) throw new Error("食料の再生率が範囲外です。");
   const inBounds = (q: unknown) => object(q) && finite(q.x) && finite(q.y) && (q.x as number) >= 0 && (q.x as number) <= width && (q.y as number) >= 0 && (q.y as number) <= height;
   const foodAmount = (v: unknown) => finite(v) && (v as number) >= 0 && (v as number) <= 20;
+  if (value.world.warmthCycle !== undefined) {
+    const wc = value.world.warmthCycle;
+    if (!object(wc) || !Number.isInteger(wc.lifetime) || (wc.lifetime as number) < 10 || (wc.lifetime as number) > 10000 || !finite(wc.radius) || (wc.radius as number) <= 0 || (wc.radius as number) > 100
+        || !Array.isArray(wc.positions) || wc.positions.length < 1 || wc.positions.length > 64 || !wc.positions.every(inBounds)) throw new Error("暖かい場所の移り変わりの設定が不正です。");
+  }
   if (value.world.foodSpawn !== undefined) {
     const sp = value.world.foodSpawn;
     if (!object(sp) || !foodAmount(sp.amount) || !finite(sp.radius) || (sp.radius as number) <= 0 || (sp.radius as number) > 100 || !unit(sp.depletedBelow)

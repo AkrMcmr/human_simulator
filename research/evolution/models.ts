@@ -1,6 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
+import { decideLexicon } from "../../packages/human/src/lexicon.ts";
 import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, decideConvention, decideConventionNoImitation, decideConventionContrast, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
 import { createHuman, decideHuman, decideLegacyHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
 import { decidePredictive } from "../../packages/human/src/predictive-policy.ts";
@@ -41,4 +42,5 @@ export const models: Record<string, ModelAdapter> = {
   "convention-0.10.0-experimental.1": { create: createHuman, decide: (h, o, r) => decideConvention(h, o, r), apply: applyWithIntake },
   "convention-no-imitation-0.10.0-experimental.1": { create: createHuman, decide: decideConventionNoImitation, apply: applyWithIntake },
   "convention-contrast-0.10.0-experimental.2": { create: createHuman, decide: decideConventionContrast, apply: applyWithIntake },
+  "lexicon-0.11.0-experimental.1": { create: createHuman, decide: decideLexicon, apply: applyWithIntake },
 };

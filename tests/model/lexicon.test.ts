@@ -1,0 +1,97 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createHuman, decideWithOptions, predictedSafety } from "../../packages/human/src/index.ts";
+import { advanceWorld, createWorld } from "../../packages/world/src/index.ts";
+import { applyWithIntake } from "../../packages/human/src/forager-listener.ts";
+import { contextOf, voiceFor, chooseLexiconVoice, decideLexicon, selectByEstimates } from "../../packages/human/src/lexicon.ts";
+import { protocol as lexicon } from "../../research/studies/lexicon-v1.ts";
+import { protocol as conv2 } from "../../research/studies/convention-v2.ts";
+import { seedsFor, runCondition, assessSeeds, referentialConfig, checkValue, type SeedResult } from "../../research/studies/referential-v1.ts";
+import { HUMAN_MODELS, runExperiment, createSimulation } from "../../packages/simulation/src/index.ts";
+
+type Lex = ReturnType<typeof createHuman> & { lastIntake?: number; lastWarm?: boolean; referents?: { food: Record<number, { mean: number; variance: number; samples: number }>; warmth: Record<number, { mean: number; variance: number; samples: number }> }; contextHeard?: { food: Record<number, number>; warmth: Record<number, number> }; recentSounds?: unknown[] };
+const effect = (foodIntake: number, ambientCold: number) => ({ ambientCold, foodIntake, exertion: 0, resting: false, collision: 0 });
+function speaker(): Lex {
+  const h = createHuman("A", { curiosity: 1 }, { hunger: .5, fatigue: 0, cold: .5 }) as Lex;
+  h.heardSounds = [{ id: 1, shape: { openness: .2, resonance: .3 }, samples: 5 }, { id: 2, shape: { openness: .7, resonance: .6 }, samples: 5 }, { id: 3, shape: { openness: .5, resonance: .9 }, samples: 5 }];
+  h.producedSounds = [{ id: 1, shape: { openness: .2, resonance: .3 }, samples: 3 }, { id: 2, shape: { openness: .7, resonance: .6 }, samples: 3 }, { id: 3, shape: { openness: .9, resonance: .1 }, samples: 3 }];
+  h.referents = { food: { 1: { mean: .7, variance: .1, samples: 4 } }, warmth: { 2: { mean: .6, variance: .1, samples: 4 } } };
+  return h;
+}
+test("world 0.4.0: the warm place goes out and reappears on schedule, a spent place gives no warmth, and defaults are unchanged", () => {
+  const animals = [{ id: "A", position: { x: 20, y: 14 } }];
+  const plain = createWorld(animals, {}, [{ id: "warm-c", kind: "warmth", position: { x: 20, y: 14 }, amount: 1, radius: 3 }]);
+  const p = advanceWorld(plain, { A: { kind: "rest" } }, 99);
+  assert.equal(p.world.resources.length, 1); assert.equal(p.effects.A.ambientCold, 0.02);
+  const cycling = createWorld(animals, { warmthCycle: { lifetime: 100, radius: 3, positions: [{ x: 5, y: 5 }, { x: 35, y: 20 }] } }, [{ id: "warm-c", kind: "warmth", position: { x: 20, y: 14 }, amount: 1, radius: 3 }]);
+  const before = advanceWorld(cycling, { A: { kind: "rest" } }, 98);
+  assert.equal(before.world.resources.length, 1); assert.equal(before.effects.A.ambientCold, 0.02);
+  const at = advanceWorld(before.world, { A: { kind: "rest" } }, 99);
+  assert.equal(at.world.resources.length, 2);
+  assert.ok(at.world.resources[0].spent && at.world.resources[0].amount === 0);
+  assert.deepEqual([at.world.resources[1].id, at.world.resources[1].position], ["warm-cycle-1", { x: 5, y: 5 }]);
+  assert.ok(at.events.some(e => e.kind === "spawn" && e.actorId === "warm-cycle-1"));
+  const after = advanceWorld(at.world, { A: { kind: "rest" } }, 100);
+  assert.ok(after.effects.A.ambientCold > 0.3, "standing on a spent place no longer shelters");
+  const second = advanceWorld({ ...after.world }, { A: { kind: "rest" } }, 199);
+  assert.deepEqual(second.world.resources.at(-1)!.position, { x: 35, y: 20 });
+});
+test("applyWithIntake records shelter, context follows intake then shelter, and the warmth-orienting hook fires only when cold with no known warm place", () => {
+  const base = createHuman("A", {}, { hunger: .2, cold: .6 });
+  const warmed = applyWithIntake(base, effect(0, 0.02)) as Lex; const cold = applyWithIntake(base, effect(0, 0.6)) as Lex; const fed = applyWithIntake(base, effect(0.04, 0.02)) as Lex;
+  assert.equal(warmed.lastWarm, true); assert.equal(cold.lastWarm, false);
+  assert.equal(contextOf(warmed), "warmth"); assert.equal(contextOf(fed), "food"); assert.equal(contextOf(cold), null);
+  const observation = { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [{ visibleSourceId: null, shape: { openness: .5, resonance: .5 }, loudness: .6, relativePosition: { x: 0, y: 8 } }] };
+  const oriented = decideWithOptions(cold, observation, () => 0.5, { outcomeBonus: predictedSafety, warmthOrienting: true });
+  assert.ok(oriented.human.explorationTarget!.y > 14 + 5.9, "cold with no warm place: toward the sound");
+  const notCold = decideWithOptions(applyWithIntake(createHuman("A", {}, { hunger: .2, cold: .1 }), effect(0, 0.6)), observation, () => 0.5, { outcomeBonus: predictedSafety, warmthOrienting: true });
+  assert.notDeepEqual(notCold.human.explorationTarget, oriented.human.explorationTarget);
+  const hungryToo = applyWithIntake(createHuman("A", {}, { hunger: .7, cold: .6 }), effect(0, 0.6));
+  const declinedFood = decideWithOptions(hungryToo, observation, () => 0.5, { outcomeBonus: predictedSafety, soundOrienting: () => null, warmthOrienting: true });
+  assert.notDeepEqual(declinedFood.human.explorationTarget, oriented.human.explorationTarget, "food orienting takes precedence when hungry; declining it does not fall through to warmth");
+});
+test("the lexicon speaker imitates the food voice while eating, the warmth voice while sheltered, and avoids both otherwise", () => {
+  const h = speaker();
+  assert.deepEqual(voiceFor(h, "food"), { openness: .2, resonance: .3 }); assert.deepEqual(voiceFor(h, "warmth"), { openness: .7, resonance: .6 });
+  assert.deepEqual(chooseLexiconVoice({ ...h, lastIntake: .04 } as Lex), { openness: .2, resonance: .3 });
+  assert.deepEqual(chooseLexiconVoice({ ...h, lastIntake: 0, lastWarm: true } as Lex), { openness: .7, resonance: .6 });
+  assert.deepEqual(chooseLexiconVoice({ ...h, lastIntake: 0, lastWarm: false } as Lex), { openness: .9, resonance: .1 }, "outside both contexts: the own category farthest from both voices");
+  const sounds = [{ visibleSourceId: null, shape: { openness: .2, resonance: .3 }, loudness: .4, relativePosition: { x: 5, y: 0 } }, { visibleSourceId: null, shape: { openness: .7, resonance: .6 }, loudness: .9, relativePosition: { x: -5, y: 0 } }];
+  assert.equal(selectByEstimates(h, sounds, h.referents!.food, () => 0.9, "t"), sounds[0], "the food estimate picks the quieter food voice");
+  assert.equal(selectByEstimates(h, sounds, h.referents!.warmth, () => 0.9, "t"), sounds[1]);
+});
+test("visiting a sound's source credits food and warmth separately, context-heard counts accrue, and the model is registered", () => {
+  const h = createHuman("A", {}, { hunger: .5, cold: .5 }) as Lex;
+  h.heardSounds = [{ id: 1, shape: { openness: .2, resonance: .3 }, samples: 5 }];
+  const low = { visibleSourceId: null, shape: { openness: .2, resonance: .3 }, loudness: .5, relativePosition: { x: 5, y: 0 } };
+  const heard = decideLexicon(h, { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [low] }, () => 0.5).human as Lex;
+  assert.equal((heard.recentSounds ?? []).length, 1);
+  const visited = decideLexicon(heard, { tick: 20, selfPosition: { x: 15, y: 14 }, animals: [], resources: [{ id: "w", kind: "warmth", strength: 1, relativePosition: { x: 1, y: 0 } }], sounds: [] }, () => 0.5).human as Lex;
+  assert.ok(visited.referents!.warmth[1].mean > 0 && visited.referents!.food[1].mean < 0, "warmth seen at the source: warmth credited, food debited");
+  const sheltered = { ...h, lastWarm: true } as Lex;
+  const counted = decideLexicon(sheltered, { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [low] }, () => 0.5).human as Lex;
+  assert.deepEqual(counted.contextHeard, { food: {}, warmth: { 1: 1 } });
+  assert.equal(HUMAN_MODELS["lexicon-0.11.0-experimental.1"].apply, applyWithIntake);
+});
+test("lexicon-v1 uses the v2 world plus a moving warm place and colder ambient, fresh seeds, and the two-referent measures compute", () => {
+  assert.deepEqual(lexicon.resources, conv2.resources); assert.equal((lexicon.world as { ambientCold: number }).ambientCold, 0.6);
+  assert.equal((lexicon.world as unknown as { warmthCycle: { positions: unknown[] } }).warmthCycle.positions.length, 6);
+  const all = [lexicon.pilotSeeds, seedsFor("development", lexicon, "1"), seedsFor("validation", lexicon, "1")].flat();
+  assert.equal(new Set(all).size, all.length); assert.ok(all.every(s => s >= 44000));
+  assert.deepEqual(lexicon.checks.map(c => c.id), ["convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "shape-dependence", "cold-shape-dependence", "forage-benefit"]);
+  const state = createSimulation(referentialConfig(lexicon.pilotSeeds[0], "lexicon-0.11.0-experimental.1", true, lexicon));
+  assert.equal(state.world.parameters.warmthCycle?.lifetime, 500);
+  const run = runExperiment({ ...referentialConfig(lexicon.pilotSeeds[0], "lexicon-0.11.0-experimental.1", true, lexicon), horizon: 60 });
+  assert.equal(run.frames.length, 61);
+  const short = { ...lexicon, horizon: 600 } as typeof lexicon;
+  const r = runCondition("human-0.2.0", lexicon.pilotSeeds[1], "sound", short);
+  assert.ok(Number.isFinite(r.lateMeanCold) && r.warmthVoiceDispersion >= 0 && r.warmthVoiceDispersion <= 1.5);
+  const seed = (fc: { openness: number; resonance: number } | null, wc: { openness: number; resonance: number } | null, wd: number): SeedResult => ({ seed: 1, model: "m", sound: { ...r, foodVoiceCentroid: fc, warmthVoiceCentroid: wc, warmthVoiceDispersion: wd, lateMeanCold: 0.3 }, muted: { ...r, warmthVoiceDispersion: 0.5, lateMeanCold: 0.4 }, misdirected: r, scrambled: { ...r, lateMeanCold: 0.45 } });
+  const one = seed({ openness: .2, resonance: .2 }, { openness: .6, resonance: .5 }, 0.1);
+  assert.ok(Math.abs(checkValue("distinctness", one, lexicon) - 0.5) < 1e-9);
+  assert.ok(Math.abs(checkValue("convergence-warmth", one, lexicon) - 0.4) < 1e-9);
+  assert.ok(Math.abs(checkValue("cold-benefit", one, lexicon) - 0.1) < 1e-9 && Math.abs(checkValue("cold-shape-dependence", one, lexicon) - 0.15) < 1e-9);
+  assert.equal(checkValue("distinctness", seed({ openness: .2, resonance: .2 }, null, 1), lexicon), 0);
+  const a = assessSeeds("t", [one, seed({ openness: .2, resonance: .2 }, { openness: .1, resonance: .9 }, 0.1)], lexicon);
+  assert.ok(a.checks.find(c => c.id === "arbitrariness-warmth")!.summary.mean > 0.3 && a.checks.find(c => c.id === "arbitrariness")!.summary.mean === 0);
+});

@@ -7,7 +7,7 @@ import { protocol as v1, referentialConfig, runCondition, runSeed, checkValue, s
 import { createSimulation, runExperiment } from "../../packages/simulation/src/index.ts";
 
 test("world 0.3.0: without foodSpawn the 0.2.0 food economy is unchanged; with it a spent patch stays visible and the next patch appears in sequence", () => {
-  assert.equal(WORLD_VERSION, "0.3.0");
+  assert.equal(WORLD_VERSION, "0.4.0");
   const animals = [{ id: "A", position: { x: 7, y: 5 } }, { id: "B", position: { x: 30, y: 20 } }];
   const legacy = createWorld(animals, {}, [{ id: "f", kind: "food", position: { x: 7, y: 5 }, amount: 0.05, radius: 2 }]);
   let w = legacy;

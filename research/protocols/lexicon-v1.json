@@ -1,0 +1,297 @@
+{
+  "id": "lexicon-v1",
+  "version": "1.0.0",
+  "evidence": "free-world-two-referent-conventional-voices-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 4人・食料と暖かい場所がともに移り変わる世界（世界0.4.0）で、食べている時と暖まっている時の2つの文脈に、経験と真似だけで別々の任意の声が集団ごとに共有され（2組の対応＝語彙の最小形）、形成後に聞き手が両方を手掛かりに使うかを測る。判断0025",
+  "models": {
+    "baseline": "human-0.2.0",
+    "oneSign": "convention-contrast-0.10.0-experimental.2",
+    "candidate": "lexicon-0.11.0-experimental.1"
+  },
+  "pilotSeeds": [
+    44101,
+    44102,
+    44103,
+    44104
+  ],
+  "pilotUse": "尺度確認のみ（既定・1つの声の候補0.10.0-experimental.2。後者は暖かい場所の文脈を持たないので暖かさ側の指標の帰無になる）。候補lexiconはパイロットで走らせない。閾値固定後にゲート判定へ使わない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        44001,
+        44002,
+        44003,
+        44004,
+        44005,
+        44006,
+        44007,
+        44008
+      ],
+      "validationSeeds": [
+        45001,
+        45002,
+        45003,
+        45004,
+        45005,
+        45006,
+        45007,
+        45008
+      ],
+      "status": "reserved for the two-referent comparison (decision 0025)"
+    }
+  },
+  "developmentSeeds": [
+    44001,
+    44002,
+    44003,
+    44004,
+    44005,
+    44006,
+    44007,
+    44008
+  ],
+  "validationSeeds": [
+    45001,
+    45002,
+    45003,
+    45004,
+    45005,
+    45006,
+    45007,
+    45008
+  ],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.6,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 4,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ]
+    },
+    "warmthCycle": {
+      "lifetime": 500,
+      "radius": 3,
+      "positions": [
+        {
+          "x": 10,
+          "y": 22
+        },
+        {
+          "x": 30,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 14
+        },
+        {
+          "x": 6,
+          "y": 8
+        },
+        {
+          "x": 34,
+          "y": 20
+        },
+        {
+          "x": 20,
+          "y": 4
+        }
+      ]
+    }
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。食後の声＝実行の後ろ3分の1に食べている状態で出した声。散らばり＝全員の食後の声を合わせた重心からの平均距離（5回未満なら1）。収束の利得＝音なしの散らばり − 音ありの散らばり。任意性＝各シードの音あり重心（5回以上の個体の重心の平均）の、全シード平均重心からの距離（assessSeedsで計算）。個体ごとの重心と個体間の広がりは報告のみ。空腹・到着はreferential-v5と同じ。v2では空腹の平均を実行の後ろ3分の1（2000〜3000ステップ）で取る。暖かい場所での声＝直前のステップに暖まっていて食べていない状態で出した声（後ろ3分の1）。区別＝音ありでの食料の声の重心と暖かい場所の声の重心の距離。寒さの平均は後ろ3分の1",
+  "checks": [
+    {
+      "id": "convergence-gain",
+      "label": "聞き合えると食料の声が一つに集まる（音なし − 音あり の散らばり）",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "arbitrariness",
+      "label": "食料の声の収束先がシードごとに異なる",
+      "minimum": 0.08,
+      "unit": "sound distance"
+    },
+    {
+      "id": "convergence-warmth",
+      "label": "聞き合えると暖かい場所の声が一つに集まる（音なし − 音あり の散らばり）",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "arbitrariness-warmth",
+      "label": "暖かい場所の声の収束先がシードごとに異なる",
+      "minimum": 0.08,
+      "unit": "sound distance"
+    },
+    {
+      "id": "distinctness",
+      "label": "食料の声と暖かい場所の声が別の音（重心間の距離）",
+      "minimum": 0.25,
+      "unit": "sound distance"
+    },
+    {
+      "id": "shape-dependence",
+      "label": "音の特徴をでたらめにすると空腹が悪化する（後ろ3分の1）",
+      "minimum": 0.03,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "cold-shape-dependence",
+      "label": "音の特徴をでたらめにすると寒さが悪化する（後ろ3分の1）",
+      "minimum": 0.03,
+      "unit": "mean cold difference"
+    },
+    {
+      "id": "forage-benefit",
+      "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    }
+  ],
+  "reported": [
+    "cold-benefit",
+    "arrival-benefit",
+    "arrival-direction",
+    "foodVoiceDispersion",
+    "warmthVoiceDispersion",
+    "foodVoiceCentroid",
+    "warmthVoiceCentroid",
+    "foodCalls",
+    "warmthCalls",
+    "lateMeanHunger",
+    "lateMeanCold",
+    "contactTicks"
+  ],
+  "notAClaim": "音に意味・正解・成功ラベルを与えない。真似は「その文脈で聞いた声」と「出所に食料／暖かさがあった声」という本人の経験だけに基づく。食べている時・暖まっている時に声を出したくなる傾向（各+0.45）は生得の仮定として残す。語・文法・意図の再現ではない",
+  "thresholdBasis": "暫定: 食料側の4項目と空腹の2項目はconvention-v2から据え置き。暖かさ側の収束・任意性は食料側と同じ値を暫定とし、区別0.25は産出目録の分類幅（0.14）の約2倍、寒さの種類依存0.03は空腹と同じ値を暫定とする。パイロット44101-44104で既定と1つの声の候補（暖かさ側の帰無）を見てから固定する。候補の結果は閾値固定前に見ない",
+  "establishedIf": "8項目を開発・確認の両群で達成した候補について「経験と真似だけで、2つの文脈に別々の任意の声が集団ごとに共有され、形成後に聞き手が両方を手掛かりに使う（語彙の最小形）」と呼ぶ。暖かさ側の3項目が未達で食料側が達成なら、慣習的な合図は1つに留まる",
+  "hungerWindow": "late"
+}
