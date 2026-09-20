@@ -34,9 +34,12 @@ export type RunResult = {
   otherVoiceCentroid: { openness: number; resonance: number } | null; otherCalls: number;
   /** transmission-v1: with a newcomer replaced mid-run, the distance between its late food voice and the incumbents' pooled late food voice (1 when either is missing), and its own late hunger. */
   newcomerDistance: number; newcomerLateHunger: number;
+  /** transmission-v2: the newcomer's late food calls themselves, so adoption can be judged against the incumbents' voice of another condition. */
+  newcomerCalls: { openness: number; resonance: number }[];
   /** Mean distance of every food call in the last third (all individuals pooled) to the pooled centroid; low when the group's food calls concentrate on one voice. 1 when fewer than 5 calls. */
   foodVoiceDispersion: number;
 };
+export const ADOPTION_RADIUS = 0.15;
 const arrivalCapOf = (protocol: ReferentialProtocol) => (protocol as unknown as { arrivalCap?: number }).arrivalCap ?? 300;
 export function referentialConfig(seed: number, modelId: string, soundEnabled: boolean, protocol: ReferentialProtocol = protocolV1): ExperimentConfig {
   return {
@@ -166,7 +169,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
     otherVoiceCentroid: otherPool.centroid, otherCalls,
-    newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0,
+    newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0, newcomerCalls: incomerCalls,
     meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
@@ -179,7 +182,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "newcomer-benefit", "newcomer-shape", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -211,6 +214,13 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "cold-shape-dependence": return r.scrambled.lateMeanCold - r.sound.lateMeanCold;
     // transmission-v1: the newcomer's food voice lands nearer the incumbents' when it can hear them; and it fares no worse, and worse under scrambled shapes.
     case "adoption-gain": return r.muted.newcomerDistance - r.sound.newcomerDistance;
+    // transmission-v2: share of the newcomer's late food calls within ADOPTION_RADIUS of the incumbents' voice in the sound run, for the hearing newcomer minus the deaf (muted-run) newcomer judged against the same voice. 0 when the incumbents have no late voice.
+    case "adoption-rate-gain": {
+      const voice = r.sound.foodVoiceCentroid;
+      if (!voice) return 0;
+      const rate = (calls: { openness: number; resonance: number }[]) => calls.length ? calls.filter(c => Math.hypot(c.openness - voice.openness, c.resonance - voice.resonance) <= ADOPTION_RADIUS).length / calls.length : 0;
+      return rate(r.sound.newcomerCalls ?? []) - rate(r.muted.newcomerCalls ?? []);
+    }
     case "newcomer-benefit": return r.muted.newcomerLateHunger - r.sound.newcomerLateHunger;
     case "newcomer-shape": return r.scrambled.newcomerLateHunger - r.sound.newcomerLateHunger;
     case "contact-side-effect": return r.muted.contactTicks - r.sound.contactTicks;

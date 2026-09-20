@@ -25,3 +25,19 @@ test("without a newcomer the transmission measures are inert and earlier protoco
   const r = runCondition("human-0.2.0", 50101, "sound", short);
   assert.equal(r.newcomerDistance, 1); assert.equal(r.newcomerLateHunger, 0);
 });
+test("transmission-v2 measures adoption as a proportion against the sound-run voice, with fresh seeds", async () => {
+  const { protocol: tv2 } = await import("../../research/studies/transmission-v2.ts");
+  const { ADOPTION_RADIUS } = await import("../../research/studies/referential-v1.ts");
+  assert.deepEqual(tv2.world, tv1.world); assert.deepEqual((tv2 as unknown as { newcomer: unknown }).newcomer, { id: "D", tick: 1500 });
+  assert.deepEqual(tv2.checks.map(c => c.id), ["convergence-gain", "arbitrariness", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape"]);
+  const all = [tv2.pilotSeeds, seedsFor("development", tv2, "1"), seedsFor("validation", tv2, "1")].flat();
+  const used = [tv1.pilotSeeds, seedsFor("development", tv1, "1"), seedsFor("validation", tv1, "1")].flat();
+  assert.ok(all.every(s => !used.includes(s)) && new Set(all).size === all.length && all.every(s => s >= 52000));
+  const short = { ...tv2, horizon: 60, newcomer: { id: "D", tick: 30 } } as unknown as typeof tv2;
+  const r = runCondition("eating-voice-referent-0.8.0-experimental.3", tv2.pilotSeeds[0], "sound", short);
+  assert.ok(Array.isArray(r.newcomerCalls));
+  const near = { openness: .3, resonance: .3 }, far = { openness: .9, resonance: .9 };
+  const seed: SeedResult = { seed: 1, model: "m", sound: { ...r, foodVoiceCentroid: near, newcomerCalls: [near, near, { openness: .3 + ADOPTION_RADIUS / 2, resonance: .3 }, far] }, muted: { ...r, foodVoiceCentroid: null, newcomerCalls: [far, far, near, far] }, misdirected: r, scrambled: r };
+  assert.ok(Math.abs(checkValue("adoption-rate-gain", seed, tv2) - 0.5) < 1e-9, "3/4 hearing vs 1/4 deaf, both judged against the sound-run voice");
+  assert.equal(checkValue("adoption-rate-gain", { ...seed, sound: { ...seed.sound, foodVoiceCentroid: null } }, tv2), 0);
+});

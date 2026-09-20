@@ -1,0 +1,249 @@
+{
+  "id": "transmission-v2",
+  "version": "1.0.0",
+  "evidence": "free-world-cultural-transmission-of-a-conventional-voice-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 成立した慣習的な合図（judgement 0024）が新参者に伝わるかを測る。convention-v2の世界で、1500ステップ目に個体Dを何も知らない個体に入れ替える。新参者の後ろ3分の1の食料の声が、聞き合える条件では在来の3人の声に近づき（採用）、その新参者が声を聞ける条件で空腹で損をせず、声の特徴をでたらめにされると損をするかを測る。判断0028。v2: 採用を「在来の（音あり条件の）声の重心から0.15以内にある新参者の食後の声の割合」で測り、聞ける新参者と聞けない新参者（音なし条件）を同じ基準で比べる（判断0029）。v1の距離差は音なし条件で重心が中央に潰れて偏っていた",
+  "models": {
+    "baseline": "human-0.2.0",
+    "innateVoice": "eating-voice-referent-0.8.0-experimental.3",
+    "noImitation": "convention-no-imitation-0.10.0-experimental.1",
+    "candidate": "convention-contrast-0.10.0-experimental.2"
+  },
+  "pilotSeeds": [
+    52101,
+    52102,
+    52103,
+    52104
+  ],
+  "pilotUse": "尺度確認のみ（既定・生得の声・真似なし）。候補convention-contrastはパイロットで走らせない。閾値固定後にゲート判定へ使わない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        52001,
+        52002,
+        52003,
+        52004,
+        52005,
+        52006,
+        52007,
+        52008
+      ],
+      "validationSeeds": [
+        53001,
+        53002,
+        53003,
+        53004,
+        53005,
+        53006,
+        53007,
+        53008
+      ],
+      "status": "reserved for the proportion-based transmission comparison (decision 0029)"
+    }
+  },
+  "developmentSeeds": [
+    52001,
+    52002,
+    52003,
+    52004,
+    52005,
+    52006,
+    52007,
+    52008
+  ],
+  "validationSeeds": [
+    53001,
+    53002,
+    53003,
+    53004,
+    53005,
+    53006,
+    53007,
+    53008
+  ],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 4,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ]
+    }
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。食後の声＝実行の後ろ3分の1に食べている状態で出した声。散らばり＝全員の食後の声を合わせた重心からの平均距離（5回未満なら1）。収束の利得＝音なしの散らばり − 音ありの散らばり。任意性＝各シードの音あり重心（5回以上の個体の重心の平均）の、全シード平均重心からの距離（assessSeedsで計算）。個体ごとの重心と個体間の広がりは報告のみ。空腹・到着はreferential-v5と同じ。v2では空腹の平均を実行の後ろ3分の1（2000〜3000ステップ）で取る。新参者の距離＝後ろ3分の1の新参者の食料の声の重心と、在来3人の食料の声の重心の距離（どちらか5回未満なら1）。採用の利得＝音なしの距離 − 音ありの距離。新参者の空腹は後ろ3分の1の新参者だけの平均。在来3人の収束・任意性は在来の声で計算する。採用率＝新参者の後ろ3分の1の食料の声のうち、音あり条件の在来3人の声の重心から0.15以内の割合。採用率の利得＝音ありの新参者の採用率 − 音なしの新参者（同じ重心を基準）の採用率",
+  "checks": [
+    {
+      "id": "convergence-gain",
+      "label": "在来の3人の食料の声は聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "arbitrariness",
+      "label": "在来の声の収束先はシードごとに異なる",
+      "minimum": 0.08,
+      "unit": "sound distance"
+    },
+    {
+      "id": "adoption-rate-gain",
+      "label": "聞ける新参者の食料の声は、聞けない新参者より在来の声の中に落ちる（採用率の差）",
+      "minimum": 0.3,
+      "unit": "fraction of newcomer food calls"
+    },
+    {
+      "id": "newcomer-benefit",
+      "label": "新参者は声を聞けることで空腹が悪化しない（後ろ3分の1）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "newcomer-shape",
+      "label": "声の特徴をでたらめにすると新参者の空腹が悪化する（後ろ3分の1）",
+      "minimum": 0.03,
+      "unit": "mean hunger difference"
+    }
+  ],
+  "reported": [
+    "adoption-gain",
+    "newcomerDistance",
+    "newcomerLateHunger",
+    "foodVoiceDispersion",
+    "foodVoiceCentroid",
+    "forage-benefit",
+    "shape-dependence"
+  ],
+  "notAClaim": "新参者は入れ替え前の個体の何も受け継がない。誰も教えない。採用は本人が聞いて真似た結果。語・文法・意図の再現ではない",
+  "thresholdBasis": "暫定: 採用率の利得0.3。パイロット52101-52104で既定・生得の声（新参者も同じ声なので採用率は両条件とも高く差は0付近）・真似なし（差は0付近）の尺度を見てから固定する。他はtransmission-v1から据え置き。候補の結果は閾値固定前に見ない",
+  "establishedIf": "5項目を開発・確認の両群で達成した候補について「集団の任意の食料の声は、何も知らない新参者に、教えなくても経験と真似だけで伝わり、新参者はそれで得をする（慣習的な合図の伝達）」と呼ぶ",
+  "hungerWindow": "late",
+  "newcomer": {
+    "id": "D",
+    "tick": 1500
+  }
+}
