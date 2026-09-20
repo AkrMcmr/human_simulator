@@ -1,6 +1,6 @@
 # 0035 / 慣習的な合図の成立を16シードで再現する（convention-v2 第2ラウンド）
 
-- 状態: 登録（prospective）。第2ラウンドのシードをコミットしてから、ゲート不変で測る。パイロットは行わない。
+- 状態: 実行済み・**再現**。候補は16シード×2群で5項目すべてを達成した: 収束の利得0.189 / 0.191、任意性0.138 / 0.125、形成後の種類依存0.045 / 0.060、到着の短縮0.542 / 0.464、形成後の副作用+0.056 / +0.031。真似なしの対照は収束0.041 / 0.031・任意性0.038 / 0.025で慣習の2項目を落とす。[判断0024](0024-convention-v2.md)の成立は、観察していない32シードで再現した。コミットbcac174で固定してから実行した。
 - 背景: [判断0024](0024-convention-v2.md)は8シード×2群の1回の実行で成立した。その後の系統（伝達・世代）では、空腹系の指標が8〜16シードで揺れることが分かった（[0029](0029-transmission-v2.md)・[0030](0030-generations.md)）。中核の成立を、観察していない16シード×2群で再現できるかを確かめる。
 - 変更: なし（世界・モデル・評価器・閾値はconvention-v2のまま）。
 - 候補と対照: `convention-contrast-0.10.0-experimental.2`（候補）、`convention-no-imitation-0.10.0-experimental.1`（真似なし）、`human-0.2.0`。
@@ -9,5 +9,5 @@
   - 反証: どちらかの群でどれかが未達。その場合、0024の成立に「8シードの1回」という限定を明記し、未達の項目を示唆に格下げする。
 - 開発条件・確認条件: 第2ラウンド、開発66001–66016、確認67001–67016。いずれも未使用。
 - 実行コマンド: `npm run study:referential -- --protocol convention2 --round 2 --split development --model human-0.2.0 --model convention-no-imitation-0.10.0-experimental.1 --model convention-contrast-0.10.0-experimental.2 --out outputs/convention-v2-round2-development.json`（確認は`--split validation`）。
-- 結果ファイル・ハッシュ: 実行後に追記。
-- 採否と判断者・理由: 実行後に追記。
+- 結果ファイル・ハッシュ: [開発](../results/convention-v2-round2-development.md) / [JSON](../results/convention-v2-round2-development.json)、[確認](../results/convention-v2-round2-validation.md) / [JSON](../results/convention-v2-round2-validation.json)。ソースbcac174（未コミット変更なし）。開発66001–66016・確認67001–67016は観察済み。
+- 採否と判断者・理由: 判断者はこのセッションのLLM（Claude）。0024の成立を16シードで再現（成立の記述に「8シード1回」の限定は付けない）。候補は候補のまま。慣習が形成された後の空腹は、音あり0.379 / 0.365 vs 音なし0.435 / 0.396 vs でたらめ特徴0.425 / 0.425。

@@ -73,7 +73,7 @@
         67015,
         67016
       ],
-      "status": "reserved for the 16-seed replication of decision 0024 (decision 0035); gates unchanged"
+      "status": "observed 2026-09-20 (decision 0035): the contrastive candidate passed all five gates in both 16-seed groups; the no-imitation control failed the convention gates"
     }
   },
   "developmentSeeds": [
