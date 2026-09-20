@@ -1,0 +1,150 @@
+{
+  "id": "referential-v1",
+  "version": "1.0.0",
+  "evidence": "free-world-information-asymmetry-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 聞き手が知らない食料の在処について、声が手掛かりとして働くかを、視界を狭めて食料を散らした自由worldで測る。音あり・音なし・方向をでたらめにする・音の特徴をでたらめにする、の4条件",
+  "models": {
+    "baseline": "human-0.2.0",
+    "voiceState": "voice-state-0.6.0-experimental.1",
+    "orientingOnly": "forager-listener-only-0.7.0-experimental.1",
+    "candidate": "forager-listener-0.7.0-experimental.1",
+    "selective": "selective-forager-0.7.0-experimental.2"
+  },
+  "pilotSeeds": [
+    18101,
+    18102,
+    18103,
+    18104
+  ],
+  "pilotUse": "尺度確認のみ。閾値固定後にゲート判定へ使わない",
+  "developmentSeeds": [
+    18001,
+    18002,
+    18003,
+    18004,
+    18005,
+    18006,
+    18007,
+    18008
+  ],
+  "validationSeeds": [
+    19001,
+    19002,
+    19003,
+    19004,
+    19005,
+    19006,
+    19007,
+    19008
+  ],
+  "horizon": 900,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-nw",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 0.6,
+      "radius": 1.5
+    },
+    {
+      "id": "food-se",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 0.6,
+      "radius": 1.5
+    },
+    {
+      "id": "food-n",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 0.6,
+      "radius": 1.5
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "unit": "シードごとの差。空腹は二人の全ステップ平均。初回摂食は各個体が初めて食料を得たステップ（未達は実行長）",
+  "checks": [
+    {
+      "id": "forage-benefit",
+      "label": "音があると空腹の平均が下がる（音なし − 音あり）",
+      "minimum": 0.02,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "direction-dependence",
+      "label": "方向をでたらめにすると利益が消える（でたらめ方向 − 音あり）",
+      "minimum": 0.02,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "shape-dependence",
+      "label": "音の特徴をでたらめにすると利益が減る（でたらめ特徴 − 音あり）。種類を使う候補だけに期待",
+      "minimum": 0.01,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "contact-side-effect",
+      "label": "音があることで接触が増えない（音なし − 音あり）",
+      "minimum": -0.01,
+      "unit": "fraction of ticks with contact"
+    }
+  ],
+  "reported": [
+    "meanHunger",
+    "foodIntake",
+    "firstFoodTick",
+    "heardEvents (source not visible)",
+    "towardSourceFraction",
+    "foodAfterHearingFraction",
+    "contactTicks",
+    "closeFraction"
+  ],
+  "notAClaim": "音に意味・正解・成功ラベルを与えない。方向への定位は生得の知覚と探索傾向で、音の種類の理解ではない",
+  "thresholdBasis": "パイロット18101-18104で既定・状態連動・盲目的な定位（blind）候補の尺度を確認してから固定。既定と状態連動は全項目0付近、盲目的な定位は空腹を平均0.09悪化させ、方向依存は符号が一定しなかった。選択的な定位候補（0.7.0-experimental.2）の結果は閾値固定前に見ていない",
+  "establishedIf": "4項目を開発・確認の両群で達成したモデルについて「声の種類を手掛かりに食料へ向かう受け手側の合図利用が成立」と呼ぶ。方向だけの利益（shape-dependence未達）は「定位による手掛かり利用」であって種類の利用ではない"
+}

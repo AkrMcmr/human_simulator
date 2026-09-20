@@ -1,5 +1,5 @@
 import { add, clamp, magnitude, soundDistance } from "../../contracts/src/index.ts";
-import type { ActionIntent, ActionKind, Body, DecisionTrace, HumanParameters, Observation, PhysicalEffect, RandomSource, Score, SoundShape, Vec2 } from "../../contracts/src/index.ts";
+import type { ActionIntent, ActionKind, Body, DecisionTrace, HeardSound, HumanParameters, Observation, PhysicalEffect, RandomSource, Score, SoundShape, Vec2 } from "../../contracts/src/index.ts";
 
 /** Default model. 0.2.0 adds the predicted-safety utility term to every action; 0.1.0 remains callable as decideLegacyHuman. */
 export const HUMAN_VERSION = "0.2.0";
@@ -85,7 +85,9 @@ export type SoundChoice = (human: HumanState, peerId: string | null, peerDistanc
  * features leaks the speaker's current state. Openness follows perceived risk, resonance follows the strongest
  * bodily need. No meaning is attached; this only makes the sound carry information the individual did not choose to send.
  */
-export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus; chooseSound?: SoundChoice; stateCoupling?: number };
+export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetting; auditoryClassification?: boolean; auditoryAttention?: boolean; signalBonus?: OutcomeBonus; chooseSound?: SoundChoice; stateCoupling?: number;
+  /** Candidate hook (0.7.0-experimental.*): when hungry with no remembered food, explore toward a heard sound. `true` picks the loudest (innate, category-blind); a function picks which sound to follow, or null for none. */
+  soundOrienting?: boolean | ((human: HumanState, sounds: HeardSound[], random: RandomSource) => HeardSound | null) };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -193,6 +195,11 @@ export function decideWithOptions(previous: HumanState, observation: Observation
       x: observation.selfPosition.x + Math.cos(angle) * 6,
       y: observation.selfPosition.y + Math.sin(angle) * 6,
     };
+  }
+  if (options.soundOrienting && !food && human.body.hunger > 0.4 && observation.sounds.length > 0) {
+    const target = typeof options.soundOrienting === "function" ? options.soundOrienting(human, observation.sounds, random) : [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0];
+    const length = target ? magnitude(target.relativePosition) : 0;
+    if (target && length > 0) human.explorationTarget = { x: observation.selfPosition.x + target.relativePosition.x / length * 6, y: observation.selfPosition.y + target.relativePosition.y / length * 6 };
   }
   const scores: Score[] = [];
   const addScore = (action: ActionKind, terms: Record<string, number>) => {

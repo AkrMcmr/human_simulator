@@ -1,6 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff, SOUND_ASSOCIATION_VERSION } from "../../human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff, SIGNAL_SENDER_VERSION } from "../../human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly, VOICE_STATE_VERSION } from "../../human/src/voice-state.ts";
+import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, FORAGER_LISTENER_VERSION, SELECTIVE_FORAGER_VERSION } from "../../human/src/forager-listener.ts";
 import type { Observation, RandomSource } from "../../contracts/src/index.ts";
 import { applyPhysicalEffect, createHuman, decideHuman, decideLegacyHuman, HUMAN_VERSION, LEGACY_HUMAN_VERSION } from "../../human/src/index.ts";
 import { decidePredictive, PREDICTIVE_POLICY_VERSION } from "../../human/src/predictive-policy.ts";
@@ -37,6 +38,9 @@ export const HUMAN_MODELS: Readonly<Record<string, HumanModel>> = Object.freeze(
   "voice-state-0.6.0-experimental.1": { id: "voice-state-0.6.0-experimental.1", version: VOICE_STATE_VERSION, role: "candidate", label: "候補 状態連動の声＋発し手学習＋受信側学習", create: createHuman, decide: decideVoiceState, apply: applyPhysicalEffect },
   "voice-state-receiver-0.6.0-experimental.1": { id: "voice-state-receiver-0.6.0-experimental.1", version: VOICE_STATE_VERSION + "+sender-off", role: "control", label: "対照 状態連動の声＋受信側学習のみ", create: createHuman, decide: decideVoiceStateReceiver, apply: applyPhysicalEffect },
   "voice-state-only-0.6.0-experimental.1": { id: "voice-state-only-0.6.0-experimental.1", version: VOICE_STATE_VERSION + "+learning-off", role: "control", label: "対照 状態連動の声のみ（学習なし）", create: createHuman, decide: decideVoiceStateOnly, apply: applyPhysicalEffect },
+  "forager-listener-0.7.0-experimental.1": { id: "forager-listener-0.7.0-experimental.1", version: FORAGER_LISTENER_VERSION, role: "candidate", label: "候補 声の方向へ探索＋状態連動の声＋学習", create: createHuman, decide: decideForagerListener, apply: applyPhysicalEffect },
+  "forager-listener-only-0.7.0-experimental.1": { id: "forager-listener-only-0.7.0-experimental.1", version: FORAGER_LISTENER_VERSION + "+orienting-only", role: "control", label: "対照 声の方向へ探索のみ（既定0.2.0に追加）", create: createHuman, decide: decideForagerListenerOnly, apply: applyPhysicalEffect },
+  "selective-forager-0.7.0-experimental.2": { id: "selective-forager-0.7.0-experimental.2", version: SELECTIVE_FORAGER_VERSION, role: "candidate", label: "候補 結果を学んで声の種類を選んで探索", create: createHuman, decide: decideSelectiveForager, apply: applyPhysicalEffect },
 });
 export const MODEL_IDS = Object.freeze(Object.keys(HUMAN_MODELS));
 export function resolveModel(id: string | undefined): HumanModel {

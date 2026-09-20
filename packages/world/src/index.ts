@@ -1,6 +1,6 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.1.0";
+export const WORLD_VERSION = "0.2.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
@@ -52,6 +52,7 @@ export function senseWorld(world: WorldState, id: string, tick: number, random: 
       .map((s) => ({
         visibleSourceId: visible.some((a) => a.id === s.sourceId) ? s.sourceId : null,
         loudness: 1 - distance(s.position, self.position) / world.parameters.hearingRadius,
+        relativePosition: { x: s.position.x - self.position.x, y: s.position.y - self.position.y },
         shape: {
           openness: clamp(s.shape.openness + (random("sound-" + s.sourceId, 0) - 0.5) * world.parameters.acousticNoise),
           resonance: clamp(s.shape.resonance + (random("sound-" + s.sourceId, 1) - 0.5) * world.parameters.acousticNoise),

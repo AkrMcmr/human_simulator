@@ -1,5 +1,5 @@
 /** Public signals shared by human, world, and runner. Never put a peer's mind here. */
-export const CONTRACT_VERSION = "0.1.0";
+export const CONTRACT_VERSION = "0.2.0";
 export type Vec2 = { x: number; y: number };
 /** Two continuous, normalized acoustic features; these are not phonemes or words. */
 export type SoundShape = { openness: number; resonance: number };
@@ -29,6 +29,8 @@ export type HeardSound = {
   visibleSourceId: string | null;
   shape: SoundShape;
   loudness: number;
+  /** Direction and distance to the source (sound localization, contracts 0.2.0). An engineering assumption: exact, no localization error. */
+  relativePosition: Vec2;
 };
 export type Observation = {
   tick: number;

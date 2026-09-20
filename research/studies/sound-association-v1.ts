@@ -7,7 +7,7 @@ export { protocol };
 export type Split = 'development' | 'validation';
 export type Condition = 'paired' | 'shuffled' | 'muted' | 'reversed';
 export function associationInput(tick: number, distance: number, shape: SoundShape | null): Observation {
-  return {tick,selfPosition:{x:10,y:14},animals:[{trackId:'B',morphologySimilarity:.98,relativePosition:{x:distance,y:0},relativeVelocity:{x:0,y:0}}],resources:[],sounds:shape?[{visibleSourceId:'B',shape:{...shape},loudness:protocol.loudness}]:[]};
+  return {tick,selfPosition:{x:10,y:14},animals:[{trackId:'B',morphologySimilarity:.98,relativePosition:{x:distance,y:0},relativeVelocity:{x:0,y:0}}],resources:[],sounds:shape?[{visibleSourceId:'B',shape:{...shape},loudness:protocol.loudness,relativePosition:{x:distance,y:0}}]:[]};
 }
 export function runAssociationSeed(seed: number, split: Split, modelId: string, condition: Condition) {
   const model=resolveModel(modelId);

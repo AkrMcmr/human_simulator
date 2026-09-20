@@ -14,7 +14,7 @@ export function schedule(seed: number, condition: Condition) {
   return sounds;
 }
 function input(tick: number, distance: number, shape: SoundShape | null): Observation {
-  return { tick, selfPosition: {x:10,y:14}, animals:[{trackId:"B",morphologySimilarity:0.98,relativePosition:{x:distance,y:0},relativeVelocity:{x:0,y:0}}], resources:[], sounds:shape ? [{visibleSourceId:"B",shape:{...shape},loudness:protocol.loudness}] : [] };
+  return { tick, selfPosition: {x:10,y:14}, animals:[{trackId:"B",morphologySimilarity:0.98,relativePosition:{x:distance,y:0},relativeVelocity:{x:0,y:0}}], resources:[], sounds:shape ? [{visibleSourceId:"B",shape:{...shape},loudness:protocol.loudness,relativePosition:{x:distance,y:0}}] : [] };
 }
 export function runSignalSeed(seed: number, condition: Condition) {
   const model = resolveModel(protocol.model);

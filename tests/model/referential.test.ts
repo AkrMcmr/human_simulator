@@ -1,0 +1,81 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { referentialConfig, runCondition, runSeed, checkValue, assessSeeds, MEASURES, protocol } from "../../research/studies/referential-v1.ts";
+import { createHuman, decideWithOptions, predictedSafety } from "../../packages/human/src/index.ts";
+import { selectSoundToFollow, decideSelectiveForager, nearestHeardCategory, SELECTIVE } from "../../packages/human/src/forager-listener.ts";
+import { createWorld, senseWorld } from "../../packages/world/src/index.ts";
+import { runExperiment, createSimulation, VERSIONS } from "../../packages/simulation/src/index.ts";
+import { keyedRandom } from "../../packages/simulation/src/random.ts";
+
+const used = [42, 43, 44, 45, 46, 47, 48, 49, 101, 102, 103, 104, 105, 106, 107, 108, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 5001, 5002, 5003, 5004, 5005, 5006, 5007, 5008, 6001, 6002, 6003, 6004, 6005, 6006, 6007, 6008, 6101, 6102, 6103, 6104, 7001, 7002, 7003, 7004, 7005, 7006, 7007, 7008, 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8101, 8102, 8103, 8104, 9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 11001, 11002, 11003, 11004, 11005, 11006, 11007, 11008, 12001, 12002, 12003, 12004, 12005, 12006, 12007, 12008, 13001, 13002, 13003, 13004, 13005, 13006, 13007, 13008, 14001, 14002, 14003, 14004, 14005, 14006, 14007, 14008, 14101, 14102, 14103, 14104, 15001, 15002, 15003, 15004, 15005, 15006, 15007, 15008, 16001, 16002, 16003, 16004, 16005, 16006, 16007, 16008, 17001, 17002, 17003, 17004, 17005, 17006, 17007, 17008];
+
+test("heard sounds carry a direction, the sensor boundary keeps the speaker identity rule, and versions moved", () => {
+  const w = createWorld([{ id: "A", position: { x: 5, y: 5 } }, { id: "B", position: { x: 15, y: 5 } }], { visionRadius: 4, hearingRadius: 20 });
+  w.sounds.push({ sourceId: "B", position: { x: 15, y: 5 }, shape: { openness: .4, resonance: .7 }, tick: 1 });
+  const obs = senseWorld(w, "A", 1, keyedRandom(1, "t", 1));
+  assert.equal(obs.sounds.length, 1);
+  assert.equal(obs.sounds[0].visibleSourceId, null, "out of sight: no identity even with a direction");
+  assert.deepEqual(obs.sounds[0].relativePosition, { x: 10, y: 0 });
+  assert.equal(VERSIONS.contracts, "0.2.0"); assert.equal(VERSIONS.world, "0.2.0");
+});
+test("referential-v1 seeds are fresh and its configuration validates with narrow vision and scattered food", () => {
+  const all = [protocol.pilotSeeds, protocol.developmentSeeds, protocol.validationSeeds].flat();
+  assert.equal(new Set(all).size, all.length);
+  assert.ok(all.every(s => !used.includes(s)));
+  const config = referentialConfig(protocol.pilotSeeds[0], "human-0.2.0", true);
+  const state = createSimulation(config);
+  assert.equal(state.world.parameters.visionRadius, protocol.world.visionRadius);
+  assert.equal(state.world.resources.filter(r => r.kind === "food").length, 3);
+  assert.ok(state.humans.every(h => h.body.hunger === protocol.body.hunger));
+});
+test("sound orienting redirects exploration only when hungry with no remembered food, and a selector can decline", () => {
+  const observation = { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [{ visibleSourceId: null, shape: { openness: .5, resonance: .5 }, loudness: .6, relativePosition: { x: 0, y: 8 } }] };
+  const hungry = createHuman("A", {}, { hunger: .7 });
+  const blind = decideWithOptions(hungry, observation, () => 0.5, { outcomeBonus: predictedSafety, soundOrienting: true });
+  assert.ok(blind.human.explorationTarget!.y > 14 + 5.9 && Math.abs(blind.human.explorationTarget!.x - 10) < 1e-9, "target points 6u toward the sound");
+  const fed = createHuman("A", {}, { hunger: .1 });
+  const notHungry = decideWithOptions(fed, observation, () => 0.5, { outcomeBonus: predictedSafety, soundOrienting: true });
+  assert.notDeepEqual(notHungry.human.explorationTarget, blind.human.explorationTarget);
+  const declined = decideWithOptions(hungry, observation, () => 0.5, { outcomeBonus: predictedSafety, soundOrienting: () => null });
+  assert.deepEqual(declined.human.explorationTarget, decideWithOptions(hungry, observation, () => 0.5, { outcomeBonus: predictedSafety }).human.explorationTarget);
+});
+test("the selective forager follows unknown sounds by chance, prefers categories with positive outcomes, and learns from hunger change", () => {
+  const human = createHuman("A", {}, { hunger: .7 }) as ReturnType<typeof createHuman> & { orientOutcomes?: Record<number, { mean: number; variance: number; samples: number }>; orientPending?: { category: number; tick: number; hunger: number } | null };
+  human.heardSounds = [{ id: 1, shape: { openness: .2, resonance: .2 }, samples: 5 }, { id: 2, shape: { openness: .8, resonance: .8 }, samples: 5 }];
+  const low = { visibleSourceId: null, shape: { openness: .2, resonance: .2 }, loudness: .5, relativePosition: { x: 5, y: 0 } };
+  const high = { visibleSourceId: null, shape: { openness: .8, resonance: .8 }, loudness: .9, relativePosition: { x: -5, y: 0 } };
+  assert.equal(nearestHeardCategory(human, low), 1);
+  assert.equal(nearestHeardCategory(human, { ...low, shape: { openness: .5, resonance: .5 } }), null);
+  assert.equal(selectSoundToFollow(structuredClone(human), [low, high], () => 0.9, 0), null, "unknown categories: declined above the follow rate");
+  const followed = structuredClone(human);
+  assert.equal(selectSoundToFollow(followed, [low, high], () => 0.1, 0), high, "unknown categories: the loudest is followed below the follow rate");
+  assert.deepEqual(followed.orientPending, { category: 2, tick: 0, hunger: .7 });
+  const learned = structuredClone(human); learned.orientOutcomes = { 1: { mean: .5, variance: .1, samples: 5 }, 2: { mean: -.4, variance: .1, samples: 5 } };
+  assert.equal(selectSoundToFollow(structuredClone(learned), [low, high], () => 0.9, 0), low, "the category with the better outcome wins even when quieter");
+  const negative = structuredClone(human); negative.orientOutcomes = { 1: { mean: -.5, variance: .1, samples: 5 } };
+  assert.equal(selectSoundToFollow(structuredClone(negative), [low], () => 0.9, 0), null, "a bad category is not followed unless exploring");
+  assert.equal(selectSoundToFollow(structuredClone(negative), [low], () => 0.05, 0), low);
+  const pending = structuredClone(human); pending.orientPending = { category: 1, tick: 0, hunger: .7 }; pending.body.hunger = .4;
+  const observation = { tick: SELECTIVE.outcomeWindow, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [] };
+  const after = decideSelectiveForager(pending, observation, () => 0.5).human as typeof pending;
+  assert.ok(after.orientOutcomes![1].samples === 1 && after.orientOutcomes![1].mean > 0, "hunger relief after following counts as a positive outcome");
+  assert.equal(after.orientPending ?? null, null);
+});
+test("referential runs are reproducible, muting silences hearing, interventions keep counts, and measures are oriented", () => {
+  const seed = protocol.pilotSeeds[0];
+  const sound = runCondition("human-0.2.0", seed, "sound");
+  assert.deepEqual(runCondition("human-0.2.0", seed, "sound"), sound);
+  assert.equal(runCondition("human-0.2.0", seed, "muted").heardEvents, 0);
+  assert.ok(runCondition("human-0.2.0", seed, "misdirected").heardEvents > 0);
+  const r = runSeed("human-0.2.0", protocol.pilotSeeds[1]);
+  for (const id of MEASURES) assert.ok(Number.isFinite(checkValue(id, r)), id);
+  const better = structuredClone(r); better.sound.meanHunger -= 0.1;
+  assert.ok(checkValue("forage-benefit", better) > checkValue("forage-benefit", r));
+  assert.ok(checkValue("direction-dependence", better) > checkValue("direction-dependence", r));
+  assert.ok(checkValue("shape-dependence", better) > checkValue("shape-dependence", r));
+  const a = assessSeeds("test", [r]);
+  assert.equal(a.checks.filter(c => c.minimum !== null).length, protocol.checks.length);
+  assert.ok(a.checks.some(c => c.status === "reported"));
+  const candidate = runExperiment({ ...referentialConfig(seed, "selective-forager-0.7.0-experimental.2", true) });
+  assert.ok(candidate.frames.length === protocol.horizon + 1);
+});
