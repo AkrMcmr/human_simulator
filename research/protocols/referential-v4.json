@@ -53,11 +53,10 @@
     { "id": "arrival-benefit", "label": "音があると、見つけた個体以外の到着が早まる（音なし − 音あり、上限比）", "minimum": 0.1, "unit": "normalized arrival delay difference" },
     { "id": "arrival-direction", "label": "方向をでたらめにすると早まりが消える（でたらめ方向 − 音あり）", "minimum": 0.1, "unit": "normalized arrival delay difference" },
     { "id": "arrival-shape", "label": "音の特徴をでたらめにすると早まりが減る（でたらめ特徴 − 音あり）。種類を使う候補だけに期待", "minimum": 0.05, "unit": "normalized arrival delay difference" },
-    { "id": "forage-benefit", "label": "音があることで空腹の平均が悪化しない（音なし − 音あり）", "minimum": -0.02, "unit": "mean hunger difference" },
-    { "id": "contact-side-effect", "label": "音があることで接触が増えない（音なし − 音あり）", "minimum": -0.01, "unit": "fraction of ticks with contact" }
+    { "id": "forage-benefit", "label": "音があることで空腹の平均が悪化しない（音なし − 音あり）", "minimum": -0.02, "unit": "mean hunger difference" }
   ],
   "reported": ["meanHunger", "foodIntake", "firstFoodTick", "arrivalDelay", "patchesFound", "patchesShared", "spawns", "heardEvents (source not visible)", "towardSourceFraction", "contactTicks", "closeFraction"],
   "notAClaim": "音に意味・正解・成功ラベルを与えない。方向への定位は生得の知覚と探索傾向で、音の種類の理解ではない。食料の出現位置は実験者が固定した列で、世界の生態の再現ではない",
-  "thresholdBasis": "暫定: referential-v3の閾値を引き継ぐ。食料は3か所（1か所・2か所では餓死者が出て到着遅れが死者で埋まった。判断0019）。パイロット28101-28104で既定・盲目的な定位・連動なしの出所評価の尺度を確認してから固定し、変更があればここに記す。候補の結果は閾値固定前に見ない。食料の量4は4人分（v3の量2は2人分）",
+  "thresholdBasis": "パイロット28101-28104（3か所始まり）で既定・盲目的な定位（eating-voice-blind）・連動なしの出所評価（food-call-referent）を測った。既定は到着の指標が0付近。定位のある2モデルは到着の短縮0.63〜0.65・方向依存0.67と二人の世界より大きい。種類依存は盲目−0.008（SD 0.25）、**連動なしの出所評価0.176（4シードすべて正、0.09〜0.27）**。この対照は食後の声の連動を持たないが、状態連動の声（判断0013、空腹→共鳴）だけで食料にいる個体と探索中の個体の声が分かれるため、4人の世界では種類を使えると解釈し、仮説H2を実行前に改めた（判断0019）。到着の3閾値0.10/0.10/0.05と空腹の副作用−0.02はv3から据え置き。接触の副作用は4人が半径2uの食料を分け合えば必ず触れる（定位のある2モデルとも−0.06〜−0.11）ので、v4ではゲートから外して報告のみとし、副作用のゲートは空腹の平均に任せる。候補eating-voice-referentの結果は閾値固定前に見ていない。食料は3か所（1か所・2か所では餓死者が出て到着遅れが死者で埋まった）",
   "establishedIf": "5項目を開発・確認の両群で達成したモデルについて「声の種類を手掛かりに食料へ向かう受け手側の合図利用が成立」と呼ぶ。arrival-shape未達で他が達成なら「定位による手掛かり利用」に留まる"
 }

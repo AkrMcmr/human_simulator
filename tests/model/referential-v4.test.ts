@@ -26,5 +26,5 @@ test("referential-v4 seeds are fresh and four individuals run in the spawning wo
   assert.deepEqual(runCondition("food-call-referent-0.8.0-experimental.3", v4.pilotSeeds[0], "sound", v4), sound);
   assert.equal(Object.keys(sound.firstFoodTick).length, 4);
   assert.ok(sound.arrivalDelay >= 0 && sound.arrivalDelay <= 1 && sound.closeFraction >= 0 && sound.closeFraction <= 1);
-  assert.deepEqual(v4.checks.map(c => c.id), v3.checks.map(c => c.id));
+  assert.deepEqual(v4.checks.map(c => c.id), ["arrival-benefit", "arrival-direction", "arrival-shape", "forage-benefit"], "contact is reported, not gated, with four foragers");
 });
