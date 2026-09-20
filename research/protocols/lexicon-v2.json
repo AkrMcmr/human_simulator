@@ -8,7 +8,8 @@
     "oneSign": "convention-contrast-0.10.0-experimental.2",
     "candidate": "lexicon-0.11.0-experimental.2",
     "persistent": "lexicon-0.11.0-experimental.1",
-    "memory": "lexicon-0.11.0-experimental.3"
+    "memory": "lexicon-0.11.0-experimental.3",
+    "separate": "lexicon-0.11.0-experimental.4"
   },
   "pilotSeeds": [
     48101,
@@ -63,6 +64,29 @@
         59008
       ],
       "status": "observed 2026-09-20 (decision 0031): memory-credit candidate held the food side but the warmth side stayed below every gate (warmth convergence 0.129 / 0.129, specificity 0.175 / 0.193); the two-referent line is closed for this session"
+    },
+    "3": {
+      "developmentSeeds": [
+        62001,
+        62002,
+        62003,
+        62004,
+        62005,
+        62006,
+        62007,
+        62008
+      ],
+      "validationSeeds": [
+        63001,
+        63002,
+        63003,
+        63004,
+        63005,
+        63006,
+        63007,
+        63008
+      ],
+      "status": "reserved for the explicit-separation candidate (decision 0033); gates unchanged"
     }
   },
   "developmentSeeds": [

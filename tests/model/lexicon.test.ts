@@ -151,3 +151,23 @@ test("the memory-credit variant judges a visited source from recent place memory
   const r1 = [v2.pilotSeeds, seedsFor("development", v2, "1"), seedsFor("validation", v2, "1")].flat();
   assert.ok(r2.every(s => !r1.includes(s)) && new Set(r2).size === 16 && r2.every(s => s >= 58000));
 });
+test("explicit separation displaces a context voice away from the other context's voice until the gap is met", async () => {
+  const { separateFrom, SEPARATION, chooseLexiconVoice: choose, decideLexiconSeparate } = await import("../../packages/human/src/lexicon.ts");
+  const far = separateFrom({ openness: .2, resonance: .3 }, { openness: .7, resonance: .6 });
+  assert.deepEqual(far, { openness: .2, resonance: .3 }, "already far apart: unchanged");
+  const near = separateFrom({ openness: .42, resonance: .5 }, { openness: .4, resonance: .5 });
+  assert.ok(Math.abs(Math.hypot(near.openness - .4, near.resonance - .5) - SEPARATION.minimumGap) < 1e-9 && near.openness > .4, "pushed along the line to the minimum gap");
+  const same = separateFrom({ openness: .4, resonance: .5 }, { openness: .4, resonance: .5 });
+  assert.ok(Math.abs(same.openness - (.4 + SEPARATION.minimumGap)) < 1e-9 && same.resonance === .5, "coincident voices: pushed along openness");
+  const h = speaker(); h.referents = { food: { 1: { mean: .7, variance: .1, samples: 4 } }, warmth: { 1: { mean: .6, variance: .1, samples: 4 } } };
+  assert.deepEqual(choose({ ...h, lastIntake: .04 } as Lex, true, false), { openness: .2, resonance: .3 }, "without separation both contexts would use the same category");
+  const sepFood = choose({ ...h, lastIntake: .04 } as Lex, true, true)!;
+  assert.ok(Math.abs(Math.hypot(sepFood.openness - .2, sepFood.resonance - .3) - SEPARATION.minimumGap) < 1e-9, "with separation the food voice is displaced from the shared voice");
+  assert.equal(HUMAN_MODELS["lexicon-0.11.0-experimental.4"].apply, applyWithIntake);
+  const observation = { tick: 0, selfPosition: { x: 10, y: 14 }, animals: [], resources: [], sounds: [] };
+  assert.ok(decideLexiconSeparate(h, observation, () => 0.5).trace.scores.length > 0);
+  const { protocol: v2 } = await import("../../research/studies/lexicon-v2.ts");
+  const r3 = [...seedsFor("development", v2, "3"), ...seedsFor("validation", v2, "3")];
+  const earlier = [v2.pilotSeeds, ...["1", "2"].map(r => [...seedsFor("development", v2, r), ...seedsFor("validation", v2, r)])].flat();
+  assert.ok(r3.every(s => !earlier.includes(s)) && new Set(r3).size === 16 && r3.every(s => s >= 62000));
+});
