@@ -24,6 +24,8 @@ export type RunResult = {
   foodVoiceSpread: number;
   /** Mean of the qualifying centroids, or null. */
   foodVoiceCentroid: { openness: number; resonance: number } | null;
+  /** Mean hunger over the last third of the run (convention-v2 measures function after the convention has formed). */
+  lateMeanHunger: number;
   /** Mean distance of every food call in the last third (all individuals pooled) to the pooled centroid; low when the group's food calls concentrate on one voice. 1 when fewer than 5 calls. */
   foodVoiceDispersion: number;
 };
@@ -43,6 +45,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const ids = state.humans.map(h => h.id);
   const intervene = keyedRandom(seed, "referential/intervene", 0);
   const hungers: number[] = [];
+  const lateHungers: number[] = [];
   const firstFoodTick: Record<string, number> = {};
   let foodIntake = 0, heardEvents = 0, unseenHeardEvents = 0, towardChecks = 0, towardHits = 0, contactTicks = 0, closeTicks = 0, vocalizations = 0, minimumHealth = 1, foodCalls = 0;
   const lastHeard: Record<string, number> = {};
@@ -97,7 +100,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       const patch = advanced.world.resources.find(r => r.kind === "food" && Math.hypot(r.position.x - eater.position.x, r.position.y - eater.position.y) <= r.radius);
       if (patch) { patchArrivals[patch.id] ??= {}; patchArrivals[patch.id][e.actorId] ??= tick + 1; }
     }
-    for (const h of state.humans) { hungers.push(h.body.hunger); minimumHealth = Math.min(minimumHealth, h.body.health); }
+    for (const h of state.humans) { hungers.push(h.body.hunger); if (tick >= protocol.horizon * 2 / 3) lateHungers.push(h.body.hunger); minimumHealth = Math.min(minimumHealth, h.body.health); }
     if (advanced.events.some(e => e.kind === "contact")) contactTicks++;
     const animals = state.world.animals;
     if (animals.some((a, i) => animals.slice(i + 1).some(b => Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y) < 4))) closeTicks++;
@@ -126,7 +129,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   return {
     condition, model: model.id, seed,
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
-    meanHunger: mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
+    meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
     foodAfterHearingFraction: fed.length ? fed.filter(id => heardBeforeFood[id]).length / fed.length : 0,
     contactTicks: contactTicks / protocol.horizon, closeFraction: closeTicks / protocol.horizon, vocalizations, minimumHealth,
@@ -141,10 +144,12 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
 export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
+  // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
+  const hunger = (x: RunResult) => (protocol as unknown as { hungerWindow?: string }).hungerWindow === "late" ? x.lateMeanHunger : x.meanHunger;
   switch (id) {
-    case "forage-benefit": return r.muted.meanHunger - r.sound.meanHunger;
-    case "direction-dependence": return r.misdirected.meanHunger - r.sound.meanHunger;
-    case "shape-dependence": return r.scrambled.meanHunger - r.sound.meanHunger;
+    case "forage-benefit": return hunger(r.muted) - hunger(r.sound);
+    case "direction-dependence": return hunger(r.misdirected) - hunger(r.sound);
+    case "shape-dependence": return hunger(r.scrambled) - hunger(r.sound);
     case "latency-benefit": return (r.muted.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
     case "latency-direction": return (r.misdirected.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;
     case "latency-shape": return (r.scrambled.meanFirstFoodTick - r.sound.meanFirstFoodTick) / h;

@@ -10,6 +10,7 @@ import protocolV4 from "../research/protocols/referential-v4.json" with { type: 
 import protocolV5 from "../research/protocols/referential-v5.json" with { type: "json" };
 import protocolCaller from "../research/protocols/caller-cost-v1.json" with { type: "json" };
 import protocolConvention from "../research/protocols/convention-v1.json" with { type: "json" };
+import protocolConvention2 from "../research/protocols/convention-v2.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -24,7 +25,7 @@ for (let i = 0; i < args.length; i++) {
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
-const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol, convention: protocolConvention as unknown as ReferentialProtocol };
+const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol, convention: protocolConvention as unknown as ReferentialProtocol, convention2: protocolConvention2 as unknown as ReferentialProtocol };
 if (!Object.hasOwn(protocols, protocolName)) throw new Error("--protocol must be one of " + Object.keys(protocols).join(", "));
 const protocol: ReferentialProtocol = protocols[protocolName];
 const split = options.get("--split") ?? "development";
@@ -43,7 +44,7 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "research/protocols/convention-v1.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "research/protocols/convention-v1.json", "research/protocols/convention-v2.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
@@ -61,6 +62,7 @@ for (const p of partitions) {
   for (const c of p.checks) lines.push(`| ${c.label ?? c.id} | ${f(c.summary.mean)} ± ${f(c.summary.sd)} | ${c.minimum ?? "報告のみ"} | ${c.status} |`);
   const s = (k: "sound" | "muted" | "misdirected" | "scrambled", pick: (r: (typeof p.results)[number]["sound"]) => number, d = 3) => f(avg(p.results.map(r => pick(r[k]))), d);
   lines.push("", `成立: ${p.established}`, "", "| 指標 | 音あり | 音なし | でたらめ方向 | でたらめ特徴 |", "| --- | ---: | ---: | ---: | ---: |",
+    `| 空腹の平均（後ろ3分の1） | ${s("sound", r => r.lateMeanHunger)} | ${s("muted", r => r.lateMeanHunger)} | ${s("misdirected", r => r.lateMeanHunger)} | ${s("scrambled", r => r.lateMeanHunger)} |`,
     `| 空腹の平均 | ${s("sound", r => r.meanHunger)} | ${s("muted", r => r.meanHunger)} | ${s("misdirected", r => r.meanHunger)} | ${s("scrambled", r => r.meanHunger)} |`,
     `| 初回摂食までのステップ（平均） | ${s("sound", r => r.meanFirstFoodTick, 0)} | ${s("muted", r => r.meanFirstFoodTick, 0)} | ${s("misdirected", r => r.meanFirstFoodTick, 0)} | ${s("scrambled", r => r.meanFirstFoodTick, 0)} |`,
     `| 見つけた個体以外の到着遅れ（上限比） | ${s("sound", r => r.arrivalDelay)} | ${s("muted", r => r.arrivalDelay)} | ${s("misdirected", r => r.arrivalDelay)} | ${s("scrambled", r => r.arrivalDelay)} |`,
