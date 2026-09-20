@@ -1,0 +1,261 @@
+{
+  "id": "generations-v2",
+  "version": "1.0.0",
+  "evidence": "free-world-cultural-persistence-of-a-conventional-voice-across-replacements-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 成立した慣習的な合図（判断0024）が、それを作った個体が全員入れ替わった後も残るかを測る。convention-v2の世界で3600ステップ走らせ、1200・1600・2000・2400ステップ目にA・B・C・Dを順に何も知らない個体に入れ替える（2400以降は最初の4人は誰もいない）。入れ替え前（800〜1200）の集団の食料の声と、後ろ3分の1（2400〜3600）の声が同じ場所にあるか（系統の連続）を測る。判断0030。v2: 入れ替え前の窓を800〜1600に広げて重心が取れるようにし、入れ替えを1600・2000・2400・2800、実行を4000ステップにする。漂いの量（入れ替え前後の重心の距離）を報告する。判断0032",
+  "models": {
+    "baseline": "human-0.2.0",
+    "innateVoice": "eating-voice-referent-0.8.0-experimental.3",
+    "noImitation": "convention-no-imitation-0.10.0-experimental.1",
+    "candidate": "convention-contrast-0.10.0-experimental.2"
+  },
+  "pilotSeeds": [],
+  "pilotUse": "パイロットなし。世界・モデル・閾値はgenerations-v1と同一で、変えたのは窓と入れ替えの時刻だけ。観察済みシードは判定に使わない",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        60001,
+        60002,
+        60003,
+        60004,
+        60005,
+        60006,
+        60007,
+        60008
+      ],
+      "validationSeeds": [
+        61001,
+        61002,
+        61003,
+        61004,
+        61005,
+        61006,
+        61007,
+        61008
+      ],
+      "status": "reserved for the wider-window generations comparison (decision 0032)"
+    }
+  },
+  "developmentSeeds": [
+    60001,
+    60002,
+    60003,
+    60004,
+    60005,
+    60006,
+    60007,
+    60008
+  ],
+  "validationSeeds": [
+    61001,
+    61002,
+    61003,
+    61004,
+    61005,
+    61006,
+    61007,
+    61008
+  ],
+  "horizon": 4000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 4,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ]
+    }
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 4,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。食後の声＝実行の後ろ3分の1に食べている状態で出した声。散らばり＝全員の食後の声を合わせた重心からの平均距離（5回未満なら1）。収束の利得＝音なしの散らばり − 音ありの散らばり。任意性＝各シードの音あり重心（5回以上の個体の重心の平均）の、全シード平均重心からの距離（assessSeedsで計算）。個体ごとの重心と個体間の広がりは報告のみ。空腹・到着はreferential-v5と同じ。v2では空腹の平均を実行の後ろ3分の1（2000〜3000ステップ）で取る。系統の連続＝0.3 − （800〜1600の集団の食料の声の重心と、2667〜4000（後ろ3分の1）の重心の距離）。後ろの声が収束していない（散らばり>0.15）か、どちらかの声がなければ0。後ろ3分の1は2667〜4000（後ろ3分の1）で、最初の4人は誰もいない",
+  "checks": [
+    {
+      "id": "convergence-gain",
+      "label": "全員が入れ替わった後の食料の声は、聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "arbitrariness",
+      "label": "入れ替わった後の声の収束先はシードごとに異なる",
+      "minimum": 0.08,
+      "unit": "sound distance"
+    },
+    {
+      "id": "lineage-continuity",
+      "label": "入れ替わった後の声は、最初の4人が作った声と同じ場所にある（0.3 − 距離）",
+      "minimum": 0.15,
+      "unit": "sound distance"
+    },
+    {
+      "id": "shape-dependence",
+      "label": "音の特徴をでたらめにすると空腹が悪化する（後ろ3分の1、全員入れ替わった後）",
+      "minimum": 0.03,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "forage-benefit",
+      "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    }
+  ],
+  "reported": [
+    "earlyVoiceCentroid",
+    "foodVoiceCentroid",
+    "foodVoiceDispersion",
+    "earlyCalls",
+    "arrival-benefit",
+    "foodCalls"
+  ],
+  "notAClaim": "入れ替えられた個体は何も受け継がない。誰も教えない。系統の連続は真似の連鎖の結果。語・文法・意図の再現ではない",
+  "thresholdBasis": "generations-v1の閾値を据え置き。窓と時刻の変更の根拠は判断0030の診断（入れ替え前の食料の声が数回しかないシードで重心が取れなかった）。候補の結果はこのシード群では未観察",
+  "establishedIf": "5項目を開発・確認の両群で達成した候補について「集団の任意の食料の声は、それを作った個体が全員入れ替わった後も、真似の連鎖だけで同じ声として残り、機能する（慣習の世代を越えた持続）」と呼ぶ",
+  "hungerWindow": "late",
+  "newcomers": [
+    {
+      "id": "A",
+      "tick": 1600
+    },
+    {
+      "id": "B",
+      "tick": 2000
+    },
+    {
+      "id": "C",
+      "tick": 2400
+    },
+    {
+      "id": "D",
+      "tick": 2800
+    }
+  ],
+  "earlyWindow": [
+    800,
+    1600
+  ]
+}

@@ -29,3 +29,13 @@ test("a single-newcomer protocol still works through the generalized replacement
   const r = runCondition("human-0.2.0", 56101, "sound", short);
   assert.ok(Number.isFinite(r.newcomerLateHunger) && r.earlyVoiceCentroid === null && r.earlyCalls === 0);
 });
+test("generations-v2 widens the early window, replaces founders later in a 4000-tick run, and uses fresh seeds", async () => {
+  const { protocol: g2 } = await import("../../research/studies/generations-v2.ts");
+  assert.deepEqual(g2.world, gen.world); assert.deepEqual(g2.checks, gen.checks); assert.equal(g2.horizon, 4000);
+  const x = g2 as unknown as { newcomers: { id: string; tick: number }[]; earlyWindow: [number, number] };
+  assert.deepEqual(x.earlyWindow, [800, 1600]); assert.deepEqual(x.newcomers.map(n => n.tick), [1600, 2000, 2400, 2800]);
+  assert.ok(x.newcomers.at(-1)!.tick <= g2.horizon * 2 / 3);
+  const all = [...seedsFor("development", g2, "1"), ...seedsFor("validation", g2, "1")];
+  const used = [gen.pilotSeeds, seedsFor("development", gen, "1"), seedsFor("validation", gen, "1")].flat();
+  assert.ok(all.every(s => !used.includes(s)) && new Set(all).size === 16 && all.every(s => s >= 60000));
+});
