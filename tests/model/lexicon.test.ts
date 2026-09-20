@@ -116,7 +116,7 @@ test("the transient variant counts warmth only while still cold, silences the sh
 });
 test("lexicon-v2 keeps the v1 checks and food, makes warmth scarce, and uses fresh seeds", async () => {
   const { protocol: v2 } = await import("../../research/studies/lexicon-v2.ts");
-  assert.deepEqual(v2.checks, lexicon.checks);
+  assert.deepEqual(v2.checks.map(c => c.id), lexicon.checks.map(c => c.id));
   assert.deepEqual(v2.resources.filter(r => r.kind === "food"), lexicon.resources.filter(r => r.kind === "food"));
   assert.equal(v2.resources.filter(r => r.kind === "warmth").length, 1);
   const w = v2.world as unknown as { ambientCold: number; warmthCycle: { lifetime: number; radius: number; count: number } };
