@@ -87,6 +87,10 @@ test("episode counting: a peer calling every tick while the listener eats counts
   const w10 = valence10.world as { foodSpawn?: { toxicEvery?: number } };
   assert.equal(w10.foodSpawn!.toxicEvery, 2);
   assert.deepEqual({ ...w10, foodSpawn: { ...w10.foodSpawn!, toxicEvery: 3 } }, valence9.world);
+  assert.equal(valence10.resources.filter(r => r.kind === "food").length, 9, "nine live food slots");
+  const food = (q: typeof valence9) => q.resources.filter(r => r.kind === "food");
+  assert.deepEqual(food(valence10).slice(0, food(valence9).length), food(valence9), "the valence-v9 patches are unchanged and two are added");
+  assert.deepEqual(valence10.resources.filter(r => r.kind === "warmth"), valence9.resources.filter(r => r.kind === "warmth"));
   const used = [valence, valence2, valence3, valence4, valence5, valence6, valence7, valence8, valence9].flatMap(q => [q.pilotSeeds, seedsFor("development", q, "1"), seedsFor("validation", q, "1")].flat());
   const v10 = [valence10.pilotSeeds, seedsFor("development", valence10, "1"), seedsFor("validation", valence10, "1")].flat();
   assert.equal(new Set([...used, ...v10]).size, used.length + v10.length);
