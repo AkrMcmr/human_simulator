@@ -1,0 +1,330 @@
+{
+  "id": "valence-v8",
+  "version": "1.0.0",
+  "evidence": "free-world-two-valence-conventional-voices-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: valence-v7で確定した世界（腐る、毒3つに1つ、食料量6・7か所）で、産出による理解の修正版（自分の声を状態連動の前の形で覚え、悪い声を良い声から離す）を測る。判断0044",
+  "models": {
+    "baseline": "human-0.2.0",
+    "ceiling": "valence-alarm-ceiling-0.12.0-experimental.5",
+    "private": "valence-mirror-private-0.12.0-experimental.7",
+    "candidate": "valence-mirror-0.12.0-experimental.7"
+  },
+  "pilotSeeds": [],
+  "pilotUse": "パイロットなし。世界はvalence-v7（パイロット4で確定）と同一で、帰無（既定・味覚嫌悪・上限対照）はvalence-v7の20シードで測定済み",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        84001,
+        84002,
+        84003,
+        84004,
+        84005,
+        84006,
+        84007,
+        84008
+      ],
+      "validationSeeds": [
+        85001,
+        85002,
+        85003,
+        85004,
+        85005,
+        85006,
+        85007,
+        85008
+      ],
+      "status": "reserved for the corrected mirror-by-production comparison (decision 0044)"
+    }
+  },
+  "developmentSeeds": [
+    84001,
+    84002,
+    84003,
+    84004,
+    84005,
+    84006,
+    84007,
+    84008
+  ],
+  "validationSeeds": [
+    85001,
+    85002,
+    85003,
+    85004,
+    85005,
+    85006,
+    85007,
+    85008
+  ],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 6,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ],
+      "toxicEvery": 3,
+      "lifetime": 500
+    }
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 6,
+      "radius": 2,
+      "toxic": true
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-4",
+      "kind": "food",
+      "position": {
+        "x": 10,
+        "y": 26
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-5",
+      "kind": "food",
+      "position": {
+        "x": 30,
+        "y": 3
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-6",
+      "kind": "food",
+      "position": {
+        "x": 36,
+        "y": 13
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-7",
+      "kind": "food",
+      "position": {
+        "x": 4,
+        "y": 14
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。到着遅れは、食料ごとに『先に食べた個体の初回摂食から、他の各個体の初回摂食まで』のステップ（上限300、未到着は上限）を上限比で他の個体について平均し、先の発見が実行終了の300ステップ前までに起きた食料について平均する。接触・4u未満はどの対でも起きたステップの割合。種類依存は空腹の平均の差（でたらめ特徴 − 音あり）で測る。良い食料の声＝毒でない摂食の直後の声、悪い食料の声＝毒の摂食の直後の声（いずれも後ろ3分の1）。毒の摂食量は後ろ3分の1の合計。毒の利益＝（音なし − 音あり）/ 音なし、毒の種類依存＝（でたらめ特徴 − 音あり）/ 音なし。食料は現れてから500ステップで腐って消え（尽きたときと同じく次の場所に新しい食料が現れる）、初期の3か所も0ステップ起点で腐る。悪い食料の声＝毒の摂食の直後、または嫌悪の場所の食料が見えている（lastDisgust）ときの声。毒の利益（単位）＝音なし − 音あり の後ろ3分の1の毒の摂食量（食料単位）、毒の種類依存（単位）＝でたらめ特徴 − 音あり。毒に当たる回数＝毒の摂食があった（個体, 毒の場所）の組の数（何口食べても1回。後ろ3分の1は、その窓に摂食があった組）",
+  "checks": [
+    {
+      "id": "convergence-gain",
+      "label": "良い食料の声は聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "arbitrariness",
+      "label": "良い食料の声の収束先はシードごとに異なる",
+      "minimum": 0.08,
+      "unit": "sound distance"
+    },
+    {
+      "id": "convergence-bad",
+      "label": "悪い食料の声は聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "valence-distinctness",
+      "label": "良い声と悪い声が別の音（重心間の距離）",
+      "minimum": 0.25,
+      "unit": "sound distance"
+    },
+    {
+      "id": "poisoning-benefit",
+      "label": "聞き合えると毒に当たる回数（個体×毒の場所）が減る（後ろ3分の1）",
+      "minimum": 1.0,
+      "unit": "poisonings"
+    },
+    {
+      "id": "poisoning-shape",
+      "label": "音の特徴をでたらめにすると毒に当たる回数が増える（後ろ3分の1）",
+      "minimum": 1.0,
+      "unit": "poisonings"
+    },
+    {
+      "id": "forage-benefit",
+      "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    }
+  ],
+  "reported": [
+    "poisonIntake",
+    "latePoisonIntake",
+    "badCalls",
+    "foodCalls",
+    "foodVoiceCentroid",
+    "badVoiceCentroid",
+    "shape-dependence",
+    "arrival-benefit",
+    "minimumHealth",
+    "poisonings",
+    "latePoisonings",
+    "poison-benefit-units",
+    "poison-shape-units",
+    "desperateFraction",
+    "poisoningKinds"
+  ],
+  "notAClaim": "毒は見た目では分からず、食べた本人の身体にだけ現れる。音に意味・正解を与えない。語・文法・意図の再現ではない",
+  "thresholdBasis": "valence-v7（判断0043）の7閾値と対比較1.0回を据え置く。世界は変えない",
+  "establishedIf": "7項目と対比較「聞き手の寄与」（1.0回）を開発・確認の両群で達成した候補について「経験と真似だけで、良い食料の声と悪い食料の声が集団ごとに別々に共有され、形成後に聞き手が毒を避ける（2つの価値を持つ語彙の最小形）」と呼ぶ",
+  "hungerWindow": "late",
+  "paired": [
+    {
+      "id": "comprehension-benefit",
+      "label": "聞き手の寄与: 同じ声を出す聞かない対照より毒に当たる回数が少ない（音あり、後ろ3分の1）",
+      "candidate": "valence-mirror-0.12.0-experimental.7",
+      "reference": "valence-mirror-private-0.12.0-experimental.7",
+      "field": "latePoisonings",
+      "condition": "sound",
+      "minimum": 1.0
+    },
+    {
+      "id": "comprehension-benefit-all",
+      "label": "聞き手の寄与（実行全体）",
+      "candidate": "valence-mirror-0.12.0-experimental.7",
+      "reference": "valence-mirror-private-0.12.0-experimental.7",
+      "field": "poisonings",
+      "condition": "sound"
+    },
+    {
+      "id": "ceiling-gap",
+      "label": "上限対照との差: 上限対照 − 候補 の毒に当たる回数（音あり、後ろ3分の1）",
+      "candidate": "valence-mirror-0.12.0-experimental.7",
+      "reference": "valence-alarm-ceiling-0.12.0-experimental.5",
+      "field": "latePoisonings",
+      "condition": "sound"
+    }
+  ]
+}

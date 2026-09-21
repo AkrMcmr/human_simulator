@@ -67,11 +67,20 @@ export const VALENCE_FAST_VERSION = "0.12.0-experimental.5";
  */
 export const VALENCE_MIRROR_VERSION = "0.12.0-experimental.6";
 export const MIRROR = { radius: 0.18 };
+/**
+ * 0.12.0-experimental.7 (research decision 0044): experimental.6 recorded the sound as expressed — after state
+ * coupling — and re-expressed it, so every own voice was pulled tick by tick toward the coupling target and the
+ * good and bad voices of every individual collapsed onto one point (valence-v7). Here the own voice is the chosen
+ * shape before coupling (the imitation target when there is one, the remembered own voice otherwise; the very first
+ * call is the random base the default producer draws, recorded once), and a remembered bad voice is kept at least
+ * SEPARATION.minimumGap from the own good voice (and vice versa) when it is reused.
+ */
+export const VALENCE_MIRROR2_VERSION = "0.12.0-experimental.7";
 export const AVERSION = { ticks: 600, desperateAbove: 0.95 };
 export const DISGUST = { refractory: 50 };
 export const DISGUST_FAST = { refractory: 10 };
 export const ALARM = { shape: { openness: 0.1, resonance: 0.1 }, radius: 0.18 };
-export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private" | "onset-fast" | "onset-fast-private" | "alarm" | "mirror" | "mirror-private";
+export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private" | "onset-fast" | "onset-fast-private" | "alarm" | "mirror" | "mirror-private" | "mirror2" | "mirror2-private";
 export const VALENCE = { visitRadius: 3, memoryTicks: REFERENT.memoryTicks, maxRecent: REFERENT.maxRecent, badCall: FOOD_CALL.utility, warnAbove: 0.3 };
 export type Valence = "good" | "bad";
 type ValenceState = HumanState & {
@@ -134,11 +143,12 @@ export function selectSafeFood(human: HumanState, sounds: HeardSound[], random: 
 export function decideValence(previous: HumanState, observation: Observation, random: RandomSource, mode: ValenceMode = "drop") {
   const human: ValenceState = structuredClone(previous);
   const self = observation.selfPosition;
-  const mirrorMode = mode === "mirror" || mode === "mirror-private";
+  const mirror2 = mode === "mirror2" || mode === "mirror2-private";
+  const mirrorMode = mode === "mirror" || mode === "mirror-private" || mirror2;
   const fastMode = mode === "onset-fast" || mode === "onset-fast-private" || mode === "alarm" || mirrorMode;
   const onsetMode = mode === "onset" || mode === "onset-private" || fastMode;
   const disgustMode = mode === "disgust" || mode === "disgust-private" || onsetMode;
-  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private" && mode !== "onset-fast-private" && mode !== "mirror-private";
+  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private" && mode !== "onset-fast-private" && mode !== "mirror-private" && mode !== "mirror2-private";
   const refractory = fastMode ? DISGUST_FAST.refractory : DISGUST.refractory;
   const near = (a: { x: number; y: number }, b: { x: number; y: number }) => magnitude({ x: a.x - b.x, y: a.y - b.y }) <= VALENCE.visitRadius;
   const remember = (place: { x: number; y: number }, firsthand: boolean) => { if (mode !== "drop") (human.aversions ??= []).push({ x: place.x, y: place.y, tick: observation.tick, ...(onsetMode ? { firsthand } : {}) }); };
@@ -217,9 +227,19 @@ export function decideValence(previous: HumanState, observation: Observation, ra
       perceived = { ...observation, resources: observation.resources.filter(r => r.kind !== "food" || !aversive({ x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y })) };
     }
   }
+  let chosenShape: SoundShape | null = null;
   const result = decideWithSenderOptions(human, perceived, random, {
     stateCoupling: CONVENTION.stateCoupling, satiationCall: FOOD_CALL.utility,
     chooseSound: mode === "alarm" ? (h) => valenceOf(h) === "bad" ? { ...ALARM.shape } : chooseValenceVoice(h)
+      : mirror2 ? (h) => {
+        const context = valenceOf(h); const voices = (h as ValenceState).ownVoices ?? {};
+        const target = chooseValenceVoice(h);
+        let own = context ? voices[context] : undefined;
+        if (own && context === "bad" && voices.good) own = separateFrom(own, voices.good);
+        if (own && context === "good" && voices.bad) own = separateFrom(own, voices.bad);
+        chosenShape = target ?? (context && own ? { ...own } : null);
+        return chosenShape;
+      }
       : mirrorMode ? (h) => { const context = valenceOf(h); const own = (h as ValenceState).ownVoices?.[context ?? "good"]; return chooseValenceVoice(h) ?? (context && own ? { ...own } : null); }
       : (h) => chooseValenceVoice(h),
     soundOrienting: listens ? (h, sounds, r) => selectSafeFood(h, sounds, r) : (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food"),
@@ -228,7 +248,8 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   const next = result.human as ValenceState;
   if (disgustMode) next.lastDisgust = human.lastDisgust ?? 0;
   if (onsetMode && (human.lastDisgust ?? 0) > 0 && result.action.kind === "vocalize") next.lastDisgustCall = observation.tick;
-  if (mirrorMode && context && result.action.kind === "vocalize" && result.action.sound) next.ownVoices = { ...(human.ownVoices ?? {}), [context]: { ...result.action.sound } };
+  if (mirror2 && context && result.action.kind === "vocalize" && result.action.sound) next.ownVoices = { ...(human.ownVoices ?? {}), [context]: { ...(chosenShape ?? result.action.sound) } };
+  else if (mirrorMode && context && result.action.kind === "vocalize" && result.action.sound) next.ownVoices = { ...(human.ownVoices ?? {}), [context]: { ...result.action.sound } };
   next.recentSounds = [...(human.recentSounds ?? [])];
   for (const s of observation.sounds) {
     const category = nearestHeardCategory(next, s);
@@ -249,3 +270,5 @@ export const decideValenceOnsetFastPrivate = (h: HumanState, o: Observation, r: 
 export const decideValenceAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "alarm");
 export const decideValenceMirror = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "mirror");
 export const decideValenceMirrorPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "mirror-private");
+export const decideValenceMirror2 = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "mirror2");
+export const decideValenceMirror2Private = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "mirror2-private");
