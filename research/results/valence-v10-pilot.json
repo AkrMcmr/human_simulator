@@ -1,0 +1,6237 @@
+{
+  "format": "human-world-lab/referential-study",
+  "schemaVersion": 1,
+  "protocol": {
+    "id": "valence-v10",
+    "version": "1.1.0",
+    "evidence": "free-world-two-valence-conventional-voices-diagnostics-not-language-or-human-validation",
+    "purpose": "M3: 食料9か所・量6の腐る世界で毒を2つに1つに戻し（無毒の供給はv7の7か所・3つに1つと同等）（悪い声の機会を増やす。飢えと上限対照の余地はパイロットで確認）、厳密な連合学習の候補（訪問1回につき1回の数え方に修正）を測る。判断0046",
+    "models": {
+      "baseline": "human-0.2.0",
+      "aversion": "valence-aversion-0.12.0-experimental.2",
+      "ceiling": "valence-alarm-ceiling-0.12.0-experimental.5",
+      "private": "valence-assoc-private-0.12.0-experimental.9",
+      "candidate": "valence-assoc-0.12.0-experimental.9"
+    },
+    "pilotSeeds": [
+      88111,
+      88112,
+      88113,
+      88114
+    ],
+    "pilotUse": "パイロット1（88101–88104、7か所・毒2つに1つ、research/results/valence-v10-pilot1）は非常時7.0%・上限対照0.75回で両基準に不達。毒を半分にすると無毒の食料が実質4.7→3.5か所に減る。無毒の供給をv7と同等（約4.5か所）に保つため9か所にし、パイロット2（88111–88114）で既定・味覚嫌悪・上限対照だけを走らせ、(1) 味覚嫌悪の音なしの非常時3%未満・空腹0.5未満、(2) 上限対照の利益1.0回以上を確認する。閾値は変えない",
+    "rounds": {
+      "1": {
+        "developmentSeeds": [
+          88001,
+          88002,
+          88003,
+          88004,
+          88005,
+          88006,
+          88007,
+          88008
+        ],
+        "validationSeeds": [
+          89001,
+          89002,
+          89003,
+          89004,
+          89005,
+          89006,
+          89007,
+          89008
+        ],
+        "status": "reserved for the episode-counted association comparison (decision 0046)"
+      }
+    },
+    "developmentSeeds": [
+      88001,
+      88002,
+      88003,
+      88004,
+      88005,
+      88006,
+      88007,
+      88008
+    ],
+    "validationSeeds": [
+      89001,
+      89002,
+      89003,
+      89004,
+      89005,
+      89006,
+      89007,
+      89008
+    ],
+    "horizon": 3000,
+    "world": {
+      "visionRadius": 5,
+      "hearingRadius": 24,
+      "ambientCold": 0.36,
+      "foodRegeneration": 0,
+      "foodSpawn": {
+        "amount": 6,
+        "radius": 2,
+        "depletedBelow": 0.01,
+        "positions": [
+          {
+            "x": 5,
+            "y": 22
+          },
+          {
+            "x": 35,
+            "y": 6
+          },
+          {
+            "x": 20,
+            "y": 25
+          },
+          {
+            "x": 12,
+            "y": 20
+          },
+          {
+            "x": 28,
+            "y": 8
+          },
+          {
+            "x": 8,
+            "y": 12
+          },
+          {
+            "x": 32,
+            "y": 16
+          },
+          {
+            "x": 16,
+            "y": 7
+          },
+          {
+            "x": 24,
+            "y": 21
+          },
+          {
+            "x": 7,
+            "y": 5
+          },
+          {
+            "x": 33,
+            "y": 23
+          },
+          {
+            "x": 20,
+            "y": 3
+          }
+        ],
+        "toxicEvery": 2,
+        "lifetime": 500
+      }
+    },
+    "agents": {
+      "A": {
+        "x": 10,
+        "y": 14
+      },
+      "B": {
+        "x": 30,
+        "y": 14
+      },
+      "C": {
+        "x": 20,
+        "y": 6
+      },
+      "D": {
+        "x": 20,
+        "y": 22
+      }
+    },
+    "body": {
+      "hunger": 0.5,
+      "fatigue": 0.15,
+      "cold": 0.1
+    },
+    "resources": [
+      {
+        "id": "food-1",
+        "kind": "food",
+        "position": {
+          "x": 7,
+          "y": 5
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "food-2",
+        "kind": "food",
+        "position": {
+          "x": 33,
+          "y": 23
+        },
+        "amount": 6,
+        "radius": 2,
+        "toxic": true
+      },
+      {
+        "id": "food-3",
+        "kind": "food",
+        "position": {
+          "x": 20,
+          "y": 3
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "food-4",
+        "kind": "food",
+        "position": {
+          "x": 10,
+          "y": 26
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "food-5",
+        "kind": "food",
+        "position": {
+          "x": 30,
+          "y": 3
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "food-6",
+        "kind": "food",
+        "position": {
+          "x": 36,
+          "y": 13
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "food-7",
+        "kind": "food",
+        "position": {
+          "x": 4,
+          "y": 14
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "food-8",
+        "kind": "food",
+        "position": {
+          "x": 14,
+          "y": 13
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "food-9",
+        "kind": "food",
+        "position": {
+          "x": 26,
+          "y": 16
+        },
+        "amount": 6,
+        "radius": 2
+      },
+      {
+        "id": "warm-c",
+        "kind": "warmth",
+        "position": {
+          "x": 20,
+          "y": 14
+        },
+        "amount": 1,
+        "radius": 3
+      }
+    ],
+    "conditions": [
+      "sound",
+      "muted",
+      "misdirected",
+      "scrambled"
+    ],
+    "hearWindow": 30,
+    "arrivalCap": 300,
+    "unit": "シードごとの差。到着遅れは、食料ごとに『先に食べた個体の初回摂食から、他の各個体の初回摂食まで』のステップ（上限300、未到着は上限）を上限比で他の個体について平均し、先の発見が実行終了の300ステップ前までに起きた食料について平均する。接触・4u未満はどの対でも起きたステップの割合。種類依存は空腹の平均の差（でたらめ特徴 − 音あり）で測る。良い食料の声＝毒でない摂食の直後の声、悪い食料の声＝毒の摂食の直後の声（いずれも後ろ3分の1）。毒の摂食量は後ろ3分の1の合計。毒の利益＝（音なし − 音あり）/ 音なし、毒の種類依存＝（でたらめ特徴 − 音あり）/ 音なし。食料は現れてから500ステップで腐って消え（尽きたときと同じく次の場所に新しい食料が現れる）、初期の3か所も0ステップ起点で腐る。悪い食料の声＝毒の摂食の直後、または嫌悪の場所の食料が見えている（lastDisgust）ときの声。毒の利益（単位）＝音なし − 音あり の後ろ3分の1の毒の摂食量（食料単位）、毒の種類依存（単位）＝でたらめ特徴 − 音あり。毒に当たる回数＝毒の摂食があった（個体, 毒の場所）の組の数（何口食べても1回。後ろ3分の1は、その窓に摂食があった組）",
+    "checks": [
+      {
+        "id": "convergence-gain",
+        "label": "良い食料の声は聞き合えると一つに集まる",
+        "minimum": 0.12,
+        "unit": "sound distance"
+      },
+      {
+        "id": "arbitrariness",
+        "label": "良い食料の声の収束先はシードごとに異なる",
+        "minimum": 0.08,
+        "unit": "sound distance"
+      },
+      {
+        "id": "convergence-bad",
+        "label": "悪い食料の声は聞き合えると一つに集まる",
+        "minimum": 0.12,
+        "unit": "sound distance"
+      },
+      {
+        "id": "valence-distinctness",
+        "label": "良い声と悪い声が別の音（重心間の距離）",
+        "minimum": 0.25,
+        "unit": "sound distance"
+      },
+      {
+        "id": "poisoning-benefit",
+        "label": "聞き合えると毒に当たる回数（個体×毒の場所）が減る（後ろ3分の1）",
+        "minimum": 1,
+        "unit": "poisonings"
+      },
+      {
+        "id": "poisoning-shape",
+        "label": "音の特徴をでたらめにすると毒に当たる回数が増える（後ろ3分の1）",
+        "minimum": 1,
+        "unit": "poisonings"
+      },
+      {
+        "id": "forage-benefit",
+        "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+        "minimum": -0.02,
+        "unit": "mean hunger difference"
+      }
+    ],
+    "reported": [
+      "poisonIntake",
+      "latePoisonIntake",
+      "badCalls",
+      "foodCalls",
+      "foodVoiceCentroid",
+      "badVoiceCentroid",
+      "shape-dependence",
+      "arrival-benefit",
+      "minimumHealth",
+      "poisonings",
+      "latePoisonings",
+      "poison-benefit-units",
+      "poison-shape-units",
+      "desperateFraction",
+      "poisoningKinds"
+    ],
+    "notAClaim": "毒は見た目では分からず、食べた本人の身体にだけ現れる。音に意味・正解を与えない。語・文法・意図の再現ではない",
+    "thresholdBasis": "valence-v7〜v9の7閾値と対比較1.0回を据え置く。世界は毒の割合だけを2つに1つに戻す（v3/v4で過酷だったのは3か所・量4の世界。7か所・量6なら飢えずに悪い声の機会を増やせるかをパイロットで確認）。パイロット1で7か所・毒2つに1つは飢え（7%）が戻ったので、無毒の供給を保つ9か所にした",
+    "establishedIf": "7項目と対比較「聞き手の寄与」（1.0回）を開発・確認の両群で達成した候補について「経験と真似だけで、良い食料の声と悪い食料の声が集団ごとに別々に共有され、形成後に聞き手が毒を避ける（2つの価値を持つ語彙の最小形）」と呼ぶ",
+    "hungerWindow": "late",
+    "paired": [
+      {
+        "id": "comprehension-benefit",
+        "label": "聞き手の寄与: 同じ声を出す聞かない対照より毒に当たる回数が少ない（音あり、後ろ3分の1）",
+        "candidate": "valence-assoc-0.12.0-experimental.9",
+        "reference": "valence-assoc-private-0.12.0-experimental.9",
+        "field": "latePoisonings",
+        "condition": "sound",
+        "minimum": 1
+      },
+      {
+        "id": "comprehension-benefit-all",
+        "label": "聞き手の寄与（実行全体）",
+        "candidate": "valence-assoc-0.12.0-experimental.9",
+        "reference": "valence-assoc-private-0.12.0-experimental.9",
+        "field": "poisonings",
+        "condition": "sound"
+      },
+      {
+        "id": "ceiling-gap",
+        "label": "上限対照との差: 上限対照 − 候補 の毒に当たる回数（音あり、後ろ3分の1）",
+        "candidate": "valence-assoc-0.12.0-experimental.9",
+        "reference": "valence-alarm-ceiling-0.12.0-experimental.5",
+        "field": "latePoisonings",
+        "condition": "sound"
+      }
+    ]
+  },
+  "provenance": {
+    "commit": "8f98fb23d0a9d3e6441b81898aaf732090f527e3",
+    "tree": "5270c39064cea8a585391b8aa24723f2b944e6ab",
+    "dirty": false,
+    "modelHash": "fdbfd6d8a4ff50ced277c8b3843e8921ee2433255fec338cd8767f9e52b26bdd",
+    "evaluatorHash": "b5c4460ce496df93e78dbd3ab2365c418a652a9ba8b7d27a675799e78def2013",
+    "environmentHash": "abdf77834183dddc5c96b4ce209c46447dcb2c2881a102c40e4c8aba69119b71",
+    "dependencyLockHash": "7f1b86b4e1f673057e6622a450f60272ff2027af34c36368f641f7d12aaa3229",
+    "runtime": "Node v22.22.2 / linux / x64",
+    "versions": {
+      "contracts": "0.3.0",
+      "human": "0.2.0",
+      "world": "0.6.0",
+      "simulation": "0.2.0",
+      "rng": "keyed-fnv-mulberry-v1"
+    }
+  },
+  "round": "1",
+  "seedUse": "pilot seeds: scale check only, not a gate",
+  "models": {
+    "human-0.2.0": "0.2.0",
+    "valence-aversion-0.12.0-experimental.2": "0.12.0-experimental.2",
+    "valence-alarm-ceiling-0.12.0-experimental.5": "0.12.0-experimental.5"
+  },
+  "partitions": [
+    {
+      "name": "pilot",
+      "protocol": "valence-v10",
+      "round": "1",
+      "seeds": [
+        88111,
+        88112,
+        88113,
+        88114
+      ],
+      "model": "human-0.2.0",
+      "results": [
+        {
+          "seed": 88111,
+          "model": "human-0.2.0",
+          "sound": {
+            "condition": "sound",
+            "model": "human-0.2.0",
+            "seed": 88111,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.28483651338492655,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.5288706258992268,
+              "resonance": 0.48789402497769774
+            },
+            "otherCalls": 1007,
+            "poisonIntake": 10.879999999999944,
+            "latePoisonIntake": 4.280000000000003,
+            "poisonings": 7,
+            "latePoisonings": 4,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.24700056613231267,
+            "lateMeanHunger": 0.2544340916505407,
+            "foodIntake": 28.03999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 91
+            },
+            "meanFirstFoodTick": 26.5,
+            "heardEvents": 2842,
+            "unseenHeardEvents": 2474,
+            "towardSourceFraction": 0.49363867684478374,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.006,
+            "closeFraction": 0.44566666666666666,
+            "vocalizations": 1007,
+            "minimumHealth": 0.6359783909521373,
+            "arrivalDelay": 0.9512962962962962,
+            "patchesFound": 12,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "human-0.2.0",
+            "seed": 88111,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.26849143840428286,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.5066826476382625,
+              "resonance": 0.4715271113431861
+            },
+            "otherCalls": 1009,
+            "poisonIntake": 16.439999999999827,
+            "latePoisonIntake": 6.520000000000005,
+            "poisonings": 7,
+            "latePoisonings": 3,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.24982985122204668,
+            "lateMeanHunger": 0.2504074700857016,
+            "foodIntake": 27.879999999999583,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 91
+            },
+            "meanFirstFoodTick": 26.5,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.008333333333333333,
+            "closeFraction": 0.5646666666666667,
+            "vocalizations": 1009,
+            "minimumHealth": 0.5147871920667176,
+            "arrivalDelay": 0.9954761904761905,
+            "patchesFound": 14,
+            "patchesShared": 3,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "human-0.2.0",
+            "seed": 88111,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.28483651338492655,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.5288706258992268,
+              "resonance": 0.48789402497769774
+            },
+            "otherCalls": 1007,
+            "poisonIntake": 10.879999999999944,
+            "latePoisonIntake": 4.280000000000003,
+            "poisonings": 7,
+            "latePoisonings": 4,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.24700056613231267,
+            "lateMeanHunger": 0.2544340916505407,
+            "foodIntake": 28.03999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 91
+            },
+            "meanFirstFoodTick": 26.5,
+            "heardEvents": 2842,
+            "unseenHeardEvents": 2474,
+            "towardSourceFraction": 0.5063613231552163,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.006,
+            "closeFraction": 0.44566666666666666,
+            "vocalizations": 1007,
+            "minimumHealth": 0.6359783909521373,
+            "arrivalDelay": 0.9512962962962962,
+            "patchesFound": 12,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "human-0.2.0",
+            "seed": 88111,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.2904995246046269,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.5227361392934895,
+              "resonance": 0.4856855431634374
+            },
+            "otherCalls": 1184,
+            "poisonIntake": 12.03999999999992,
+            "latePoisonIntake": 4.320000000000003,
+            "poisonings": 8,
+            "latePoisonings": 2,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 4,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.24154876764196914,
+            "lateMeanHunger": 0.23780763654145648,
+            "foodIntake": 27.95999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 91
+            },
+            "meanFirstFoodTick": 26.5,
+            "heardEvents": 3385,
+            "unseenHeardEvents": 2792,
+            "towardSourceFraction": 0.5132905591200734,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.012666666666666666,
+            "closeFraction": 0.6766666666666666,
+            "vocalizations": 1184,
+            "minimumHealth": 0.6831088881085816,
+            "arrivalDelay": 0.9626262626262626,
+            "patchesFound": 11,
+            "patchesShared": 9,
+            "spawns": 54,
+            "foodCalls": 0
+          }
+        },
+        {
+          "seed": 88112,
+          "model": "human-0.2.0",
+          "sound": {
+            "condition": "sound",
+            "model": "human-0.2.0",
+            "seed": 88112,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.270319559634324,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.4737334049632466,
+              "resonance": 0.4530603168853084
+            },
+            "otherCalls": 1235,
+            "poisonIntake": 8.479999999999995,
+            "latePoisonIntake": 4.280000000000003,
+            "poisonings": 5,
+            "latePoisonings": 2,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2478146232959198,
+            "lateMeanHunger": 0.26455248294003747,
+            "foodIntake": 27.879999999999583,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 42
+            },
+            "meanFirstFoodTick": 14,
+            "heardEvents": 3698,
+            "unseenHeardEvents": 2511,
+            "towardSourceFraction": 0.5166666666666667,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.018,
+            "closeFraction": 0.8746666666666667,
+            "vocalizations": 1235,
+            "minimumHealth": 0.5816732670357131,
+            "arrivalDelay": 0.882020202020202,
+            "patchesFound": 11,
+            "patchesShared": 6,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "human-0.2.0",
+            "seed": 88112,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.28844038206655764,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.4816787438225174,
+              "resonance": 0.5006386599384507
+            },
+            "otherCalls": 1418,
+            "poisonIntake": 15.559999999999844,
+            "latePoisonIntake": 6.840000000000005,
+            "poisonings": 9,
+            "latePoisonings": 4,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 5,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.23623849364129235,
+            "lateMeanHunger": 0.22935264597518804,
+            "foodIntake": 28.07999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 41
+            },
+            "meanFirstFoodTick": 13.75,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.009666666666666667,
+            "closeFraction": 0.598,
+            "vocalizations": 1418,
+            "minimumHealth": 0.5103885421694953,
+            "arrivalDelay": 0.925959595959596,
+            "patchesFound": 11,
+            "patchesShared": 6,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "human-0.2.0",
+            "seed": 88112,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.270319559634324,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.4737334049632466,
+              "resonance": 0.4530603168853084
+            },
+            "otherCalls": 1235,
+            "poisonIntake": 8.479999999999995,
+            "latePoisonIntake": 4.280000000000003,
+            "poisonings": 5,
+            "latePoisonings": 2,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2478146232959198,
+            "lateMeanHunger": 0.26455248294003747,
+            "foodIntake": 27.879999999999583,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 42
+            },
+            "meanFirstFoodTick": 14,
+            "heardEvents": 3698,
+            "unseenHeardEvents": 2511,
+            "towardSourceFraction": 0.5225225225225225,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.018,
+            "closeFraction": 0.8746666666666667,
+            "vocalizations": 1235,
+            "minimumHealth": 0.5816732670357131,
+            "arrivalDelay": 0.882020202020202,
+            "patchesFound": 11,
+            "patchesShared": 6,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "human-0.2.0",
+            "seed": 88112,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.30633930139108556,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.49391782688248353,
+              "resonance": 0.47182680461487214
+            },
+            "otherCalls": 1918,
+            "poisonIntake": 1.3600000000000005,
+            "latePoisonIntake": 0,
+            "poisonings": 3,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.20405332464335743,
+            "lateMeanHunger": 0.2458356887066777,
+            "foodIntake": 27.759999999999586,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 44
+            },
+            "meanFirstFoodTick": 14.5,
+            "heardEvents": 5691,
+            "unseenHeardEvents": 3815,
+            "towardSourceFraction": 0.5296167247386759,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.006333333333333333,
+            "closeFraction": 0.8663333333333333,
+            "vocalizations": 1918,
+            "minimumHealth": 0.951699999999996,
+            "arrivalDelay": 0.9088034188034187,
+            "patchesFound": 13,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 0
+          }
+        },
+        {
+          "seed": 88113,
+          "model": "human-0.2.0",
+          "sound": {
+            "condition": "sound",
+            "model": "human-0.2.0",
+            "seed": 88113,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.284493696956179,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.4673837911652041,
+              "resonance": 0.505806241553299
+            },
+            "otherCalls": 1182,
+            "poisonIntake": 10.079999999999961,
+            "latePoisonIntake": 4.360000000000003,
+            "poisonings": 6,
+            "latePoisonings": 5,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2439731826616866,
+            "lateMeanHunger": 0.23256098555300908,
+            "foodIntake": 28.07999999999958,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 174
+            },
+            "meanFirstFoodTick": 47.25,
+            "heardEvents": 3522,
+            "unseenHeardEvents": 2739,
+            "towardSourceFraction": 0.5062949640287769,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.013,
+            "closeFraction": 0.8126666666666666,
+            "vocalizations": 1182,
+            "minimumHealth": 0.5245102380892337,
+            "arrivalDelay": 0.9467901234567901,
+            "patchesFound": 9,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "human-0.2.0",
+            "seed": 88113,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.29965103921171493,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.44971030463055,
+              "resonance": 0.520215590339666
+            },
+            "otherCalls": 1431,
+            "poisonIntake": 11.839999999999923,
+            "latePoisonIntake": 6.520000000000005,
+            "poisonings": 9,
+            "latePoisonings": 6,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 3,
+              "warned": 0
+            },
+            "desperateFraction": 0.0015833333333333333,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.23095886083445463,
+            "lateMeanHunger": 0.2547781939891266,
+            "foodIntake": 28.239999999999576,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 174
+            },
+            "meanFirstFoodTick": 47.25,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.006333333333333333,
+            "closeFraction": 0.49433333333333335,
+            "vocalizations": 1431,
+            "minimumHealth": 0.6082538246349366,
+            "arrivalDelay": 0.9629059829059828,
+            "patchesFound": 13,
+            "patchesShared": 6,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "human-0.2.0",
+            "seed": 88113,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.284493696956179,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.4673837911652041,
+              "resonance": 0.505806241553299
+            },
+            "otherCalls": 1182,
+            "poisonIntake": 10.079999999999961,
+            "latePoisonIntake": 4.360000000000003,
+            "poisonings": 6,
+            "latePoisonings": 5,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2439731826616866,
+            "lateMeanHunger": 0.23256098555300908,
+            "foodIntake": 28.07999999999958,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 174
+            },
+            "meanFirstFoodTick": 47.25,
+            "heardEvents": 3522,
+            "unseenHeardEvents": 2739,
+            "towardSourceFraction": 0.4856115107913669,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.013,
+            "closeFraction": 0.8126666666666666,
+            "vocalizations": 1182,
+            "minimumHealth": 0.5245102380892337,
+            "arrivalDelay": 0.9467901234567901,
+            "patchesFound": 9,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "human-0.2.0",
+            "seed": 88113,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.2832176577324159,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.4538111332396658,
+              "resonance": 0.5198551714123096
+            },
+            "otherCalls": 1142,
+            "poisonIntake": 7.2400000000000055,
+            "latePoisonIntake": 3.6000000000000023,
+            "poisonings": 4,
+            "latePoisonings": 3,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.24308228140468557,
+            "lateMeanHunger": 0.22676775144016445,
+            "foodIntake": 28.159999999999577,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 171
+            },
+            "meanFirstFoodTick": 46.5,
+            "heardEvents": 3387,
+            "unseenHeardEvents": 2608,
+            "towardSourceFraction": 0.4934579439252336,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.020666666666666667,
+            "closeFraction": 0.745,
+            "vocalizations": 1142,
+            "minimumHealth": 0.7230999999999765,
+            "arrivalDelay": 0.9114444444444445,
+            "patchesFound": 10,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 0
+          }
+        },
+        {
+          "seed": 88114,
+          "model": "human-0.2.0",
+          "sound": {
+            "condition": "sound",
+            "model": "human-0.2.0",
+            "seed": 88114,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.31145155229813803,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.48660455719354095,
+              "resonance": 0.48513176056164
+            },
+            "otherCalls": 1599,
+            "poisonIntake": 6.720000000000005,
+            "latePoisonIntake": 2.200000000000001,
+            "poisonings": 4,
+            "latePoisonings": 1,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.20275003060409358,
+            "lateMeanHunger": 0.18234151116503516,
+            "foodIntake": 27.839999999999584,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 38
+            },
+            "meanFirstFoodTick": 13,
+            "heardEvents": 4487,
+            "unseenHeardEvents": 3343,
+            "towardSourceFraction": 0.516280894468419,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.0023333333333333335,
+            "closeFraction": 0.49233333333333335,
+            "vocalizations": 1599,
+            "minimumHealth": 0.6907643965383468,
+            "arrivalDelay": 0.9610317460317459,
+            "patchesFound": 14,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "human-0.2.0",
+            "seed": 88114,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.2620543752214411,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.5131498874564816,
+              "resonance": 0.4976170764282624
+            },
+            "otherCalls": 1102,
+            "poisonIntake": 13.039999999999898,
+            "latePoisonIntake": 4.520000000000003,
+            "poisonings": 7,
+            "latePoisonings": 2,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.23785977251718293,
+            "lateMeanHunger": 0.24499561603783798,
+            "foodIntake": 27.99999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 38
+            },
+            "meanFirstFoodTick": 13,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.018666666666666668,
+            "closeFraction": 0.678,
+            "vocalizations": 1102,
+            "minimumHealth": 0.5346598086901919,
+            "arrivalDelay": 0.9538095238095238,
+            "patchesFound": 14,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "human-0.2.0",
+            "seed": 88114,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.31145155229813803,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.48660455719354095,
+              "resonance": 0.48513176056164
+            },
+            "otherCalls": 1599,
+            "poisonIntake": 6.720000000000005,
+            "latePoisonIntake": 2.200000000000001,
+            "poisonings": 4,
+            "latePoisonings": 1,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.20275003060409358,
+            "lateMeanHunger": 0.18234151116503516,
+            "foodIntake": 27.839999999999584,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 38
+            },
+            "meanFirstFoodTick": 13,
+            "heardEvents": 4487,
+            "unseenHeardEvents": 3343,
+            "towardSourceFraction": 0.49823460180462925,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.0023333333333333335,
+            "closeFraction": 0.49233333333333335,
+            "vocalizations": 1599,
+            "minimumHealth": 0.6907643965383468,
+            "arrivalDelay": 0.9610317460317459,
+            "patchesFound": 14,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 0
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "human-0.2.0",
+            "seed": 88114,
+            "foodVoices": {},
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": null,
+            "foodVoiceDispersion": 1,
+            "lateMeanCold": 0.2642870678149894,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 0,
+            "otherVoiceCentroid": {
+              "openness": 0.5325395319892582,
+              "resonance": 0.46636394346946936
+            },
+            "otherCalls": 957,
+            "poisonIntake": 10.959999999999942,
+            "latePoisonIntake": 4.520000000000003,
+            "poisonings": 5,
+            "latePoisonings": 2,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 0,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.24969542708509945,
+            "lateMeanHunger": 0.2441749138178184,
+            "foodIntake": 27.99999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 38
+            },
+            "meanFirstFoodTick": 13,
+            "heardEvents": 2724,
+            "unseenHeardEvents": 2042,
+            "towardSourceFraction": 0.5206157229246839,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.01633333333333333,
+            "closeFraction": 0.6443333333333333,
+            "vocalizations": 957,
+            "minimumHealth": 0.511450955631098,
+            "arrivalDelay": 0.9731481481481481,
+            "patchesFound": 12,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 0
+          }
+        }
+      ],
+      "checks": [
+        {
+          "id": "forage-benefit",
+          "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+          "minimum": -0.02,
+          "values": [
+            -0.004026621564839128,
+            -0.035199836964849435,
+            0.02221720843611752,
+            0.06265410487280282
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.011411213694807944,
+            "sd": 0.041446834297005054,
+            "interval95": [
+              -0.020845575614607696,
+              0.04598392326339233
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "direction-dependence",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "shape-dependence",
+          "minimum": null,
+          "values": [
+            -0.016626455109084226,
+            -0.018716794233359757,
+            -0.005793234112844631,
+            0.061833402652783226
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.005174229799373653,
+            "sd": 0.03819510450703015,
+            "interval95": [
+              -0.01767162467122199,
+              0.04221843821231636
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-benefit",
+          "minimum": null,
+          "values": [
+            0,
+            -0.00008333333333333333,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.000020833333333333333,
+            "sd": 0.000041666666666666665,
+            "interval95": [
+              -0.0000625,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-direction",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-shape",
+          "minimum": null,
+          "values": [
+            0,
+            0.00016666666666666666,
+            -0.00025,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.000020833333333333336,
+            "sd": 0.0001717960677340692,
+            "interval95": [
+              -0.0001875,
+              0.00008333333333333333
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-benefit",
+          "minimum": null,
+          "values": [
+            0.04417989417989432,
+            0.043939393939393945,
+            0.016115859449192693,
+            -0.00722222222222213
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.024253231336564707,
+            "sd": 0.02477591497174561,
+            "interval95": [
+              0.004446818613485282,
+              0.04405964405964413
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-direction",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-shape",
+          "minimum": null,
+          "values": [
+            0.011329966329966412,
+            0.026783216783216712,
+            -0.03534567901234564,
+            0.012116402116402192
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.0037209765543099182,
+            "sd": 0.02699660717765712,
+            "interval95": [
+              -0.023480158730158684,
+              0.023116513116513082
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "call-suppression",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "convergence-gain",
+          "label": "良い食料の声は聞き合えると一つに集まる",
+          "minimum": 0.12,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "arbitrariness",
+          "label": "良い食料の声の収束先はシードごとに異なる",
+          "minimum": 0.08,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "convergence-warmth",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arbitrariness-warmth",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "distinctness",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "warmth-specificity",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "cold-benefit",
+          "minimum": null,
+          "values": [
+            -0.016345074980643692,
+            0.01812082243223362,
+            0.015157342255535944,
+            -0.04939717707669694
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.008116021842392768,
+            "sd": 0.031632644356511565,
+            "interval95": [
+              -0.03325854724363872,
+              0.0173799523880592
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "cold-shape-dependence",
+          "minimum": null,
+          "values": [
+            0.005663011219700365,
+            0.036019741756761536,
+            -0.0012760392237630702,
+            -0.04716448448314864
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.001689442682612452,
+            "sd": 0.03437145859890472,
+            "interval95": [
+              -0.03395761055743639,
+              0.026695796511630385
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "adoption-gain",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "adoption-rate-gain",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "newcomer-benefit",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "newcomer-shape",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "lineage-continuity",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "convergence-bad",
+          "label": "悪い食料の声は聞き合えると一つに集まる",
+          "minimum": 0.12,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "valence-distinctness",
+          "label": "良い声と悪い声が別の音（重心間の距離）",
+          "minimum": 0.25,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "poison-benefit",
+          "minimum": null,
+          "values": [
+            0.343558282208589,
+            0.37426900584795325,
+            0.33128834355828224,
+            0.513274336283186
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.3905974919745026,
+            "sd": 0.08375856161209377,
+            "interval95": [
+              0.33742331288343563,
+              0.4708453227645367
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-shape",
+          "minimum": null,
+          "values": [
+            0.006134969325153375,
+            -0.6257309941520467,
+            -0.11656441717791413,
+            0.513274336283186
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.05572152643040537,
+            "sd": 0.4676876338252429,
+            "interval95": [
+              -0.46776450328274666,
+              0.3864894945436778
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-benefit-units",
+          "minimum": null,
+          "values": [
+            2.240000000000002,
+            2.5600000000000023,
+            2.160000000000002,
+            2.320000000000002
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 2.320000000000002,
+            "sd": 0.1728197519575431,
+            "interval95": [
+              2.200000000000002,
+              2.500000000000002
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-shape-units",
+          "minimum": null,
+          "values": [
+            0.040000000000000036,
+            -4.280000000000003,
+            -0.7600000000000007,
+            2.320000000000002
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.6700000000000004,
+            "sd": 2.7376632371422187,
+            "interval95": [
+              -3.2000000000000024,
+              1.7500000000000016
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poisoning-benefit",
+          "label": "聞き合えると毒に当たる回数（個体×毒の場所）が減る（後ろ3分の1）",
+          "minimum": 1,
+          "values": [
+            -1,
+            2,
+            1,
+            1
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.75,
+            "sd": 1.2583057392117916,
+            "interval95": [
+              -0.5,
+              1.75
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "poisoning-shape",
+          "label": "音の特徴をでたらめにすると毒に当たる回数が増える（後ろ3分の1）",
+          "minimum": 1,
+          "values": [
+            -2,
+            -2,
+            -2,
+            1
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -1.25,
+            "sd": 1.5,
+            "interval95": [
+              -2,
+              0.25
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "contact-side-effect",
+          "minimum": null,
+          "values": [
+            0.002333333333333333,
+            -0.008333333333333331,
+            -0.006666666666666666,
+            0.016333333333333335
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.0009166666666666676,
+            "sd": 0.011295279249904951,
+            "interval95": [
+              -0.0075,
+              0.010583333333333333
+            ]
+          },
+          "status": "reported"
+        }
+      ],
+      "established": false
+    },
+    {
+      "name": "pilot",
+      "protocol": "valence-v10",
+      "round": "1",
+      "seeds": [
+        88111,
+        88112,
+        88113,
+        88114
+      ],
+      "model": "valence-aversion-0.12.0-experimental.2",
+      "results": [
+        {
+          "seed": 88111,
+          "model": "valence-aversion-0.12.0-experimental.2",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88111,
+            "foodVoices": {
+              "A": {
+                "openness": 0.2623178905475959,
+                "resonance": 0.390583769385183,
+                "count": 45
+              },
+              "B": {
+                "openness": 0.2581947105614832,
+                "resonance": 0.3838039688553698,
+                "count": 48
+              },
+              "D": {
+                "openness": 0.2689012174374812,
+                "resonance": 0.38832344038217914,
+                "count": 34
+              },
+              "C": {
+                "openness": 0.28080715234647313,
+                "resonance": 0.39604236109195234,
+                "count": 32
+              }
+            },
+            "foodVoiceSpread": 0.014282710559172546,
+            "foodVoiceCentroid": {
+              "openness": 0.26755524272325837,
+              "resonance": 0.3896883849286711
+            },
+            "foodVoiceDispersion": 0.05496314130001165,
+            "lateMeanCold": 0.28905219364157547,
+            "warmthVoiceDispersion": 0.16314964945702537,
+            "warmthVoiceCentroid": {
+              "openness": 0.4287745785569973,
+              "resonance": 0.4646348497731232
+            },
+            "warmthCalls": 194,
+            "otherVoiceCentroid": {
+              "openness": 0.4507127787251858,
+              "resonance": 0.43602592215830843
+            },
+            "otherCalls": 520,
+            "poisonIntake": 0.16,
+            "latePoisonIntake": 0,
+            "poisonings": 4,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 2,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 2
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 4,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2891813782072437,
+            "lateMeanHunger": 0.29264197003409614,
+            "foodIntake": 27.95999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 36
+            },
+            "meanFirstFoodTick": 12.75,
+            "heardEvents": 3603,
+            "unseenHeardEvents": 1297,
+            "towardSourceFraction": 0.5345485375158966,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.083,
+            "closeFraction": 0.9443333333333334,
+            "vocalizations": 1201,
+            "minimumHealth": 0.9906005347616003,
+            "arrivalDelay": 0.8461111111111111,
+            "patchesFound": 8,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 483
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88111,
+            "foodVoices": {
+              "B": {
+                "openness": 0.43326022609990683,
+                "resonance": 0.383987979229316,
+                "count": 36
+              },
+              "D": {
+                "openness": 0.3605145361165685,
+                "resonance": 0.46685606361643134,
+                "count": 47
+              },
+              "C": {
+                "openness": 0.3310634690400974,
+                "resonance": 0.4615166180645553,
+                "count": 45
+              },
+              "A": {
+                "openness": 0.4077965526210021,
+                "resonance": 0.47986767815611503,
+                "count": 38
+              }
+            },
+            "foodVoiceSpread": 0.08260263960134386,
+            "foodVoiceCentroid": {
+              "openness": 0.38315869596939367,
+              "resonance": 0.44805708476660444
+            },
+            "foodVoiceDispersion": 0.2549242702591216,
+            "lateMeanCold": 0.2966805844948718,
+            "warmthVoiceDispersion": 0.24668248222744915,
+            "warmthVoiceCentroid": {
+              "openness": 0.3528972388457999,
+              "resonance": 0.4409621873837704
+            },
+            "warmthCalls": 90,
+            "otherVoiceCentroid": {
+              "openness": 0.38514869026658555,
+              "resonance": 0.47032770274754204
+            },
+            "otherCalls": 732,
+            "poisonIntake": 2.000000000000001,
+            "latePoisonIntake": 0.24000000000000002,
+            "poisonings": 11,
+            "latePoisonings": 3,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 5,
+              "warned": 0
+            },
+            "desperateFraction": 0.011166666666666667,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 35,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.3151910216699595,
+            "lateMeanHunger": 0.2641550302001116,
+            "foodIntake": 27.839999999999584,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 91
+            },
+            "meanFirstFoodTick": 26.5,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.021333333333333333,
+            "closeFraction": 0.6086666666666667,
+            "vocalizations": 1302,
+            "minimumHealth": 0.9059447950721771,
+            "arrivalDelay": 0.9603968253968255,
+            "patchesFound": 14,
+            "patchesShared": 9,
+            "spawns": 54,
+            "foodCalls": 445
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88111,
+            "foodVoices": {
+              "D": {
+                "openness": 0.0980651264267508,
+                "resonance": 0.38824302570070984,
+                "count": 41
+              },
+              "B": {
+                "openness": 0.07724338096739931,
+                "resonance": 0.3847407164220962,
+                "count": 48
+              },
+              "A": {
+                "openness": 0.1462486450621821,
+                "resonance": 0.3570691859827987,
+                "count": 42
+              }
+            },
+            "foodVoiceSpread": 0.05094989040123118,
+            "foodVoiceCentroid": {
+              "openness": 0.10718571748544407,
+              "resonance": 0.376684309368535
+            },
+            "foodVoiceDispersion": 0.06867642196736062,
+            "lateMeanCold": 0.3032633201725994,
+            "warmthVoiceDispersion": 0.08483218116997711,
+            "warmthVoiceCentroid": {
+              "openness": 0.41817929955549277,
+              "resonance": 0.28242353646841833
+            },
+            "warmthCalls": 148,
+            "otherVoiceCentroid": {
+              "openness": 0.4053941514258844,
+              "resonance": 0.341329309057822
+            },
+            "otherCalls": 529,
+            "poisonIntake": 3.8400000000000025,
+            "latePoisonIntake": 1.920000000000001,
+            "poisonings": 8,
+            "latePoisonings": 4,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 4,
+              "warned": 0
+            },
+            "desperateFraction": 0.051833333333333335,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 22,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.3796407991172388,
+            "lateMeanHunger": 0.4515048205838531,
+            "foodIntake": 26.67999999999961,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 58
+            },
+            "meanFirstFoodTick": 18.25,
+            "heardEvents": 3130,
+            "unseenHeardEvents": 2213,
+            "towardSourceFraction": 0.5671502105755732,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.023333333333333334,
+            "closeFraction": 0.778,
+            "vocalizations": 1119,
+            "minimumHealth": 0.2517654530358328,
+            "arrivalDelay": 0.9222222222222223,
+            "patchesFound": 13,
+            "patchesShared": 7,
+            "spawns": 54,
+            "foodCalls": 420
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88111,
+            "foodVoices": {
+              "B": {
+                "openness": 0.2083323843894427,
+                "resonance": 0.6008297256815883,
+                "count": 47
+              },
+              "D": {
+                "openness": 0.45040971573963146,
+                "resonance": 0.5105354312656604,
+                "count": 47
+              },
+              "A": {
+                "openness": 0.2874215511118276,
+                "resonance": 0.40260331360777557,
+                "count": 30
+              },
+              "C": {
+                "openness": 0.5951205218000584,
+                "resonance": 0.4693754312635185,
+                "count": 32
+              }
+            },
+            "foodVoiceSpread": 0.2568504811175937,
+            "foodVoiceCentroid": {
+              "openness": 0.38532104326024,
+              "resonance": 0.4958359754546357
+            },
+            "foodVoiceDispersion": 0.22397382900529747,
+            "lateMeanCold": 0.28607706992182325,
+            "warmthVoiceDispersion": 0.2801534711247349,
+            "warmthVoiceCentroid": {
+              "openness": 0.33790593658709395,
+              "resonance": 0.36263371290424024
+            },
+            "warmthCalls": 147,
+            "otherVoiceCentroid": {
+              "openness": 0.3262425459708502,
+              "resonance": 0.3920262447385553
+            },
+            "otherCalls": 590,
+            "poisonIntake": 0.7200000000000001,
+            "latePoisonIntake": 0,
+            "poisonings": 12,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 7,
+              "warned": 0
+            },
+            "desperateFraction": 0.019666666666666666,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 9,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.32777360817868856,
+            "lateMeanHunger": 0.28066686866487084,
+            "foodIntake": 27.799999999999585,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 41
+            },
+            "meanFirstFoodTick": 14,
+            "heardEvents": 3553,
+            "unseenHeardEvents": 1689,
+            "towardSourceFraction": 0.5565489494859186,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.07466666666666667,
+            "closeFraction": 0.921,
+            "vocalizations": 1185,
+            "minimumHealth": 0.7653022597666942,
+            "arrivalDelay": 0.7976851851851853,
+            "patchesFound": 12,
+            "patchesShared": 9,
+            "spawns": 54,
+            "foodCalls": 439
+          }
+        },
+        {
+          "seed": 88112,
+          "model": "valence-aversion-0.12.0-experimental.2",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88112,
+            "foodVoices": {
+              "A": {
+                "openness": 0.420702859548923,
+                "resonance": 0.4982883451917158,
+                "count": 41
+              },
+              "D": {
+                "openness": 0.5175672298686003,
+                "resonance": 0.5647063907563477,
+                "count": 45
+              },
+              "C": {
+                "openness": 0.23712371829879753,
+                "resonance": 0.32709135090262215,
+                "count": 49
+              },
+              "B": {
+                "openness": 0.5103939650606868,
+                "resonance": 0.5615219925112716,
+                "count": 40
+              }
+            },
+            "foodVoiceSpread": 0.20227907752568983,
+            "foodVoiceCentroid": {
+              "openness": 0.4214469431942519,
+              "resonance": 0.48790201984048925
+            },
+            "foodVoiceDispersion": 0.18116146348359327,
+            "lateMeanCold": 0.29501375798442003,
+            "warmthVoiceDispersion": 0.15685865066741028,
+            "warmthVoiceCentroid": {
+              "openness": 0.19755988173855007,
+              "resonance": 0.39191902700472964
+            },
+            "warmthCalls": 214,
+            "otherVoiceCentroid": {
+              "openness": 0.4591297074868913,
+              "resonance": 0.5360807845331922
+            },
+            "otherCalls": 964,
+            "poisonIntake": 0.24000000000000002,
+            "latePoisonIntake": 0,
+            "poisonings": 3,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 6,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2441210674244563,
+            "lateMeanHunger": 0.23767848277134018,
+            "foodIntake": 27.919999999999582,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 27
+            },
+            "meanFirstFoodTick": 10.25,
+            "heardEvents": 5160,
+            "unseenHeardEvents": 2583,
+            "towardSourceFraction": 0.511943189154293,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.05,
+            "closeFraction": 0.9813333333333333,
+            "vocalizations": 1721,
+            "minimumHealth": 0.9848499999999997,
+            "arrivalDelay": 0.8686666666666667,
+            "patchesFound": 10,
+            "patchesShared": 3,
+            "spawns": 54,
+            "foodCalls": 537
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88112,
+            "foodVoices": {
+              "D": {
+                "openness": 0.359200972069951,
+                "resonance": 0.48080577434147603,
+                "count": 37
+              },
+              "B": {
+                "openness": 0.423096605974249,
+                "resonance": 0.45261307202704276,
+                "count": 43
+              },
+              "A": {
+                "openness": 0.38865444288463674,
+                "resonance": 0.4585989233585041,
+                "count": 49
+              },
+              "C": {
+                "openness": 0.4467040309331118,
+                "resonance": 0.45581572371343837,
+                "count": 51
+              }
+            },
+            "foodVoiceSpread": 0.05243765683257124,
+            "foodVoiceCentroid": {
+              "openness": 0.4044140129654871,
+              "resonance": 0.4619583733601153
+            },
+            "foodVoiceDispersion": 0.2820059030506329,
+            "lateMeanCold": 0.31016033901206413,
+            "warmthVoiceDispersion": 0.25015920969308886,
+            "warmthVoiceCentroid": {
+              "openness": 0.3448223061707208,
+              "resonance": 0.4672970682253748
+            },
+            "warmthCalls": 170,
+            "otherVoiceCentroid": {
+              "openness": 0.3812133710507076,
+              "resonance": 0.4481869113777633
+            },
+            "otherCalls": 963,
+            "poisonIntake": 0.5199999999999999,
+            "latePoisonIntake": 0,
+            "poisonings": 8,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 3,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 11,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.25462582509449944,
+            "lateMeanHunger": 0.24654355000823644,
+            "foodIntake": 27.919999999999582,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 41
+            },
+            "meanFirstFoodTick": 13.75,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.02266666666666667,
+            "closeFraction": 0.8553333333333333,
+            "vocalizations": 1689,
+            "minimumHealth": 0.9767499999999992,
+            "arrivalDelay": 0.9530555555555557,
+            "patchesFound": 12,
+            "patchesShared": 8,
+            "spawns": 54,
+            "foodCalls": 545
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88112,
+            "foodVoices": {
+              "C": {
+                "openness": 0.14250633594871798,
+                "resonance": 0.41155825774488775,
+                "count": 55
+              },
+              "D": {
+                "openness": 0.15539651099118174,
+                "resonance": 0.40581074938657163,
+                "count": 37
+              },
+              "B": {
+                "openness": 0.16926287620098138,
+                "resonance": 0.4077777493759941,
+                "count": 33
+              },
+              "A": {
+                "openness": 0.44136084266182973,
+                "resonance": 0.5118579232665086,
+                "count": 38
+              }
+            },
+            "foodVoiceSpread": 0.16111606947003912,
+            "foodVoiceCentroid": {
+              "openness": 0.2271316414506777,
+              "resonance": 0.43425116994349056
+            },
+            "foodVoiceDispersion": 0.13171646038264503,
+            "lateMeanCold": 0.30574043352054037,
+            "warmthVoiceDispersion": 0.14472834123497239,
+            "warmthVoiceCentroid": {
+              "openness": 0.5662050351700832,
+              "resonance": 0.2538441657976784
+            },
+            "warmthCalls": 180,
+            "otherVoiceCentroid": {
+              "openness": 0.6113772994785177,
+              "resonance": 0.5164026039792962
+            },
+            "otherCalls": 906,
+            "poisonIntake": 0.2,
+            "latePoisonIntake": 0,
+            "poisonings": 2,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 2,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 4,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2517686115279889,
+            "lateMeanHunger": 0.24359994263604043,
+            "foodIntake": 28.07999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 72
+            },
+            "meanFirstFoodTick": 21.5,
+            "heardEvents": 4845,
+            "unseenHeardEvents": 2358,
+            "towardSourceFraction": 0.48211875843454793,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.047,
+            "closeFraction": 0.9723333333333334,
+            "vocalizations": 1620,
+            "minimumHealth": 0.9837999999999991,
+            "arrivalDelay": 0.8477777777777777,
+            "patchesFound": 11,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 530
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88112,
+            "foodVoices": {
+              "A": {
+                "openness": 0.7815846090312601,
+                "resonance": 0.19793584291415756,
+                "count": 38
+              },
+              "C": {
+                "openness": 0.3999242197205423,
+                "resonance": 0.43178908371652763,
+                "count": 49
+              },
+              "B": {
+                "openness": 0.4132574212903865,
+                "resonance": 0.5581472098327869,
+                "count": 44
+              },
+              "D": {
+                "openness": 0.4007396452861872,
+                "resonance": 0.5425249767729219,
+                "count": 46
+              }
+            },
+            "foodVoiceSpread": 0.2890350543162499,
+            "foodVoiceCentroid": {
+              "openness": 0.4988764738320941,
+              "resonance": 0.4325992783090985
+            },
+            "foodVoiceDispersion": 0.3063312501730354,
+            "lateMeanCold": 0.299885965633686,
+            "warmthVoiceDispersion": 0.23916094382245762,
+            "warmthVoiceCentroid": {
+              "openness": 0.2617954210240325,
+              "resonance": 0.3911391661380095
+            },
+            "warmthCalls": 161,
+            "otherVoiceCentroid": {
+              "openness": 0.32819958106032543,
+              "resonance": 0.3299539015191772
+            },
+            "otherCalls": 941,
+            "poisonIntake": 0.36,
+            "latePoisonIntake": 0,
+            "poisonings": 5,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 8,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.25483338378851944,
+            "lateMeanHunger": 0.23200287971792088,
+            "foodIntake": 28.07999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 27
+            },
+            "meanFirstFoodTick": 10.25,
+            "heardEvents": 4924,
+            "unseenHeardEvents": 2560,
+            "towardSourceFraction": 0.5348525469168901,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.046,
+            "closeFraction": 0.951,
+            "vocalizations": 1645,
+            "minimumHealth": 0.9738999999999995,
+            "arrivalDelay": 0.8762037037037036,
+            "patchesFound": 12,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 535
+          }
+        },
+        {
+          "seed": 88113,
+          "model": "valence-aversion-0.12.0-experimental.2",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88113,
+            "foodVoices": {
+              "D": {
+                "openness": 0.20132751850757707,
+                "resonance": 0.43791159243091143,
+                "count": 39
+              },
+              "A": {
+                "openness": 0.22061749112104329,
+                "resonance": 0.438073473719671,
+                "count": 39
+              },
+              "C": {
+                "openness": 0.19559247499075585,
+                "resonance": 0.4360349613665464,
+                "count": 41
+              },
+              "B": {
+                "openness": 0.45396728304593986,
+                "resonance": 0.47849178699593736,
+                "count": 30
+              }
+            },
+            "foodVoiceSpread": 0.13416252502625325,
+            "foodVoiceCentroid": {
+              "openness": 0.267876191916329,
+              "resonance": 0.4476279536282665
+            },
+            "foodVoiceDispersion": 0.1060328999018225,
+            "lateMeanCold": 0.28677150346770797,
+            "warmthVoiceDispersion": 0.11122428307378539,
+            "warmthVoiceCentroid": {
+              "openness": 0.5197384940720885,
+              "resonance": 0.49331257755200913
+            },
+            "warmthCalls": 211,
+            "otherVoiceCentroid": {
+              "openness": 0.5252979644816081,
+              "resonance": 0.49842869238636534
+            },
+            "otherCalls": 502,
+            "poisonIntake": 0.12,
+            "latePoisonIntake": 0,
+            "poisonings": 2,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 1,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 3,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.27862835187831847,
+            "lateMeanHunger": 0.27766192927113115,
+            "foodIntake": 27.879999999999583,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 30
+            },
+            "meanFirstFoodTick": 11.25,
+            "heardEvents": 3633,
+            "unseenHeardEvents": 1556,
+            "towardSourceFraction": 0.5312370707488622,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.06733333333333333,
+            "closeFraction": 0.9733333333333334,
+            "vocalizations": 1213,
+            "minimumHealth": 0.9884499999999999,
+            "arrivalDelay": 0.8674603174603174,
+            "patchesFound": 7,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 497
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88113,
+            "foodVoices": {
+              "C": {
+                "openness": 0.333095625614771,
+                "resonance": 0.4351319373039569,
+                "count": 45
+              },
+              "A": {
+                "openness": 0.34887761503575243,
+                "resonance": 0.44949519668327853,
+                "count": 51
+              },
+              "B": {
+                "openness": 0.3898654935400512,
+                "resonance": 0.34644299716334687,
+                "count": 41
+              },
+              "D": {
+                "openness": 0.34712010231727153,
+                "resonance": 0.43593089726308704,
+                "count": 38
+              }
+            },
+            "foodVoiceSpread": 0.06074061749064497,
+            "foodVoiceCentroid": {
+              "openness": 0.3547397091269615,
+              "resonance": 0.41675025710341734
+            },
+            "foodVoiceDispersion": 0.2624929735414692,
+            "lateMeanCold": 0.30416350399593517,
+            "warmthVoiceDispersion": 0.25497297730068724,
+            "warmthVoiceCentroid": {
+              "openness": 0.3469834443405812,
+              "resonance": 0.43113078560055706
+            },
+            "warmthCalls": 161,
+            "otherVoiceCentroid": {
+              "openness": 0.36980853889121984,
+              "resonance": 0.4521269896654382
+            },
+            "otherCalls": 829,
+            "poisonIntake": 0.9200000000000003,
+            "latePoisonIntake": 0.28,
+            "poisonings": 6,
+            "latePoisonings": 3,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 3,
+              "warned": 0
+            },
+            "desperateFraction": 0.00375,
+            "badVoiceDispersion": 0.2714097148703001,
+            "badVoiceCentroid": {
+              "openness": 0.27218467237462146,
+              "resonance": 0.3457450286842182
+            },
+            "badCalls": 14,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.27645678986989974,
+            "lateMeanHunger": 0.2605543719601674,
+            "foodIntake": 27.95999999999958,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 173
+            },
+            "meanFirstFoodTick": 47,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.015333333333333332,
+            "closeFraction": 0.872,
+            "vocalizations": 1515,
+            "minimumHealth": 0.9383319700000063,
+            "arrivalDelay": 0.921111111111111,
+            "patchesFound": 9,
+            "patchesShared": 7,
+            "spawns": 54,
+            "foodCalls": 511
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88113,
+            "foodVoices": {
+              "D": {
+                "openness": 0.14198784984269577,
+                "resonance": 0.4293653615440579,
+                "count": 42
+              },
+              "A": {
+                "openness": 0.150166687134734,
+                "resonance": 0.4255255788319005,
+                "count": 46
+              },
+              "B": {
+                "openness": 0.28924899037178603,
+                "resonance": 0.5289039813234302,
+                "count": 24
+              }
+            },
+            "foodVoiceSpread": 0.12002540757547604,
+            "foodVoiceCentroid": {
+              "openness": 0.1938011757830719,
+              "resonance": 0.4612649738997962
+            },
+            "foodVoiceDispersion": 0.08037429174277334,
+            "lateMeanCold": 0.3038577336675591,
+            "warmthVoiceDispersion": 0.06675933843981993,
+            "warmthVoiceCentroid": {
+              "openness": 0.554047115632143,
+              "resonance": 0.5465341298718747
+            },
+            "warmthCalls": 173,
+            "otherVoiceCentroid": {
+              "openness": 0.5396218139682679,
+              "resonance": 0.5473483377565875
+            },
+            "otherCalls": 677,
+            "poisonIntake": 4.200000000000003,
+            "latePoisonIntake": 2.040000000000001,
+            "poisonings": 10,
+            "latePoisonings": 10,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 4,
+              "warned": 0
+            },
+            "desperateFraction": 0.030333333333333334,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 33,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.35011156623281176,
+            "lateMeanHunger": 0.47245049935774014,
+            "foodIntake": 27.0399999999996,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 68
+            },
+            "meanFirstFoodTick": 20.75,
+            "heardEvents": 3861,
+            "unseenHeardEvents": 3028,
+            "towardSourceFraction": 0.5424889246878776,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.013666666666666667,
+            "closeFraction": 0.8326666666666667,
+            "vocalizations": 1309,
+            "minimumHealth": 0.3533639200000449,
+            "arrivalDelay": 0.9137962962962963,
+            "patchesFound": 12,
+            "patchesShared": 7,
+            "spawns": 54,
+            "foodCalls": 426
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88113,
+            "foodVoices": {
+              "C": {
+                "openness": 0.22191392591779277,
+                "resonance": 0.7492713890832443,
+                "count": 40
+              },
+              "D": {
+                "openness": 0.43168994175147546,
+                "resonance": 0.4145838727742265,
+                "count": 42
+              },
+              "B": {
+                "openness": 0.7069204296108276,
+                "resonance": 0.5075606898786362,
+                "count": 36
+              },
+              "A": {
+                "openness": 0.7652534962129235,
+                "resonance": 0.5436869515320986,
+                "count": 39
+              }
+            },
+            "foodVoiceSpread": 0.37243818495928016,
+            "foodVoiceCentroid": {
+              "openness": 0.5314444483732549,
+              "resonance": 0.5537757258170514
+            },
+            "foodVoiceDispersion": 0.27183224056752675,
+            "lateMeanCold": 0.2939146703074528,
+            "warmthVoiceDispersion": 0.19088602543986388,
+            "warmthVoiceCentroid": {
+              "openness": 0.2532379419385384,
+              "resonance": 0.3318042340468458
+            },
+            "warmthCalls": 221,
+            "otherVoiceCentroid": {
+              "openness": 0.266001664802216,
+              "resonance": 0.3526032984889556
+            },
+            "otherCalls": 530,
+            "poisonIntake": 0.04,
+            "latePoisonIntake": 0,
+            "poisonings": 1,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 1,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 1,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.28273126911431395,
+            "lateMeanHunger": 0.29104326637756867,
+            "foodIntake": 27.95999999999958,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 30
+            },
+            "meanFirstFoodTick": 11.25,
+            "heardEvents": 3732,
+            "unseenHeardEvents": 1406,
+            "towardSourceFraction": 0.5564135564135564,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.07766666666666666,
+            "closeFraction": 0.9593333333333334,
+            "vocalizations": 1245,
+            "minimumHealth": 0.99415,
+            "arrivalDelay": 0.8882539682539682,
+            "patchesFound": 7,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 493
+          }
+        },
+        {
+          "seed": 88114,
+          "model": "valence-aversion-0.12.0-experimental.2",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88114,
+            "foodVoices": {
+              "B": {
+                "openness": 0.17623695081896978,
+                "resonance": 0.40538394590678467,
+                "count": 40
+              },
+              "D": {
+                "openness": 0.17994991468837135,
+                "resonance": 0.3940602745579299,
+                "count": 42
+              },
+              "C": {
+                "openness": 0.5155622206494368,
+                "resonance": 0.48108421210314073,
+                "count": 42
+              },
+              "A": {
+                "openness": 0.19664658792099451,
+                "resonance": 0.40860799975332873,
+                "count": 34
+              }
+            },
+            "foodVoiceSpread": 0.17935840092383723,
+            "foodVoiceCentroid": {
+              "openness": 0.2670989185194431,
+              "resonance": 0.422284108080296
+            },
+            "foodVoiceDispersion": 0.14049224648384195,
+            "lateMeanCold": 0.2929630136541844,
+            "warmthVoiceDispersion": 0.14433571353112548,
+            "warmthVoiceCentroid": {
+              "openness": 0.45560966164202216,
+              "resonance": 0.43939365858988105
+            },
+            "warmthCalls": 163,
+            "otherVoiceCentroid": {
+              "openness": 0.45034859902259505,
+              "resonance": 0.44881726908757325
+            },
+            "otherCalls": 617,
+            "poisonIntake": 0.08,
+            "latePoisonIntake": 0,
+            "poisonings": 2,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 1,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 1
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 2,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2692806585930918,
+            "lateMeanHunger": 0.28254857190648225,
+            "foodIntake": 28.03999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 31
+            },
+            "meanFirstFoodTick": 11.25,
+            "heardEvents": 3831,
+            "unseenHeardEvents": 1450,
+            "towardSourceFraction": 0.5435244161358811,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.084,
+            "closeFraction": 0.9783333333333334,
+            "vocalizations": 1279,
+            "minimumHealth": 0.9918078457812052,
+            "arrivalDelay": 0.6401851851851852,
+            "patchesFound": 6,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 497
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88114,
+            "foodVoices": {
+              "A": {
+                "openness": 0.3620711892247922,
+                "resonance": 0.43616341420392635,
+                "count": 40
+              },
+              "D": {
+                "openness": 0.42884437247598506,
+                "resonance": 0.48881748712260437,
+                "count": 40
+              },
+              "B": {
+                "openness": 0.43520319533913054,
+                "resonance": 0.40959364559087397,
+                "count": 47
+              },
+              "C": {
+                "openness": 0.44134007917862494,
+                "resonance": 0.4471514442776507,
+                "count": 41
+              }
+            },
+            "foodVoiceSpread": 0.06731762029055056,
+            "foodVoiceCentroid": {
+              "openness": 0.41686470905463313,
+              "resonance": 0.44543149779876384
+            },
+            "foodVoiceDispersion": 0.27222034130618666,
+            "lateMeanCold": 0.3047047125510358,
+            "warmthVoiceDispersion": 0.26020840824675084,
+            "warmthVoiceCentroid": {
+              "openness": 0.3771378598986725,
+              "resonance": 0.4310592720874929
+            },
+            "warmthCalls": 100,
+            "otherVoiceCentroid": {
+              "openness": 0.37637688821105375,
+              "resonance": 0.42433485802530646
+            },
+            "otherCalls": 896,
+            "poisonIntake": 1.5600000000000007,
+            "latePoisonIntake": 0,
+            "poisonings": 7,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0.021916666666666668,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 12,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2826883588984826,
+            "lateMeanHunger": 0.24587215808315685,
+            "foodIntake": 27.99999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 38
+            },
+            "meanFirstFoodTick": 13,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.038,
+            "closeFraction": 0.6783333333333333,
+            "vocalizations": 1516,
+            "minimumHealth": 0.6747410890347899,
+            "arrivalDelay": 0.969281045751634,
+            "patchesFound": 17,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 508
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88114,
+            "foodVoices": {
+              "A": {
+                "openness": 0.164360880792,
+                "resonance": 0.4238310853461543,
+                "count": 47
+              },
+              "B": {
+                "openness": 0.14879277878154532,
+                "resonance": 0.42792922985203447,
+                "count": 44
+              },
+              "D": {
+                "openness": 0.2131568234415392,
+                "resonance": 0.45083815594835486,
+                "count": 51
+              },
+              "C": {
+                "openness": 0.21911192287065068,
+                "resonance": 0.4584211250580229,
+                "count": 46
+              }
+            },
+            "foodVoiceSpread": 0.04853978481443625,
+            "foodVoiceCentroid": {
+              "openness": 0.18635560147143382,
+              "resonance": 0.4402548990511417
+            },
+            "foodVoiceDispersion": 0.07061816281252695,
+            "lateMeanCold": 0.3093744010855639,
+            "warmthVoiceDispersion": 0.12349588237501435,
+            "warmthVoiceCentroid": {
+              "openness": 0.5039835921484711,
+              "resonance": 0.3523235343904089
+            },
+            "warmthCalls": 104,
+            "otherVoiceCentroid": {
+              "openness": 0.5210367504446775,
+              "resonance": 0.537952548013488
+            },
+            "otherCalls": 913,
+            "poisonIntake": 0.9600000000000003,
+            "latePoisonIntake": 0,
+            "poisonings": 6,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0.013333333333333334,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 10,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2765102311304699,
+            "lateMeanHunger": 0.23718955850463264,
+            "foodIntake": 28.03999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 54
+            },
+            "meanFirstFoodTick": 17,
+            "heardEvents": 4439,
+            "unseenHeardEvents": 2920,
+            "towardSourceFraction": 0.5267120831839369,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.022333333333333334,
+            "closeFraction": 0.6526666666666666,
+            "vocalizations": 1548,
+            "minimumHealth": 0.8107545417737548,
+            "arrivalDelay": 0.9775396825396826,
+            "patchesFound": 14,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 521
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-aversion-0.12.0-experimental.2",
+            "seed": 88114,
+            "foodVoices": {
+              "C": {
+                "openness": 0.2679856095780106,
+                "resonance": 0.6230442366162285,
+                "count": 41
+              },
+              "A": {
+                "openness": 0.2024455535377828,
+                "resonance": 0.782812598330915,
+                "count": 38
+              },
+              "D": {
+                "openness": 0.5875715117273621,
+                "resonance": 0.5657041394419267,
+                "count": 37
+              },
+              "B": {
+                "openness": 0.5026018242544381,
+                "resonance": 0.7532322113525626,
+                "count": 41
+              }
+            },
+            "foodVoiceSpread": 0.28588186614895905,
+            "foodVoiceCentroid": {
+              "openness": 0.3901511247743984,
+              "resonance": 0.6811982964354082
+            },
+            "foodVoiceDispersion": 0.21968723669065834,
+            "lateMeanCold": 0.28698380991891626,
+            "warmthVoiceDispersion": 0.19812877140069857,
+            "warmthVoiceCentroid": {
+              "openness": 0.32762263191484875,
+              "resonance": 0.23655268908786375
+            },
+            "warmthCalls": 222,
+            "otherVoiceCentroid": {
+              "openness": 0.2761233154865596,
+              "resonance": 0.2622142333720295
+            },
+            "otherCalls": 557,
+            "poisonIntake": 0.16,
+            "latePoisonIntake": 0,
+            "poisonings": 4,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 4,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2744310699772611,
+            "lateMeanHunger": 0.27812682428774577,
+            "foodIntake": 28.07999999999958,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 31
+            },
+            "meanFirstFoodTick": 11.25,
+            "heardEvents": 3822,
+            "unseenHeardEvents": 1841,
+            "towardSourceFraction": 0.5128095644748079,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.06866666666666667,
+            "closeFraction": 0.968,
+            "vocalizations": 1274,
+            "minimumHealth": 0.9926499999999995,
+            "arrivalDelay": 0.9108641975308641,
+            "patchesFound": 9,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 491
+          }
+        }
+      ],
+      "checks": [
+        {
+          "id": "forage-benefit",
+          "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+          "minimum": -0.02,
+          "values": [
+            -0.028486939833984537,
+            0.008865067236896257,
+            -0.01710755731096375,
+            -0.0366764138233254
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.018351460932844357,
+            "sd": 0.019839510518395855,
+            "interval95": [
+              -0.03258167682865497,
+              -0.0004729345308239416
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "direction-dependence",
+          "minimum": null,
+          "values": [
+            0.15886285054975696,
+            0.005921459864700246,
+            0.194788570086609,
+            -0.04535901340184961
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.07855346677480414,
+            "sd": 0.11631839570124981,
+            "interval95": [
+              -0.019718776768574683,
+              0.17682571031818298
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "shape-dependence",
+          "minimum": null,
+          "values": [
+            -0.011975101369225305,
+            -0.005675603053419298,
+            0.013381337106437519,
+            -0.004421747618736482
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.0021727787337358917,
+            "sd": 0.01088337704759002,
+            "interval95": [
+              -0.008825352211322302,
+              0.008617102066473314
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-benefit",
+          "minimum": null,
+          "values": [
+            0.004583333333333333,
+            0.0011666666666666668,
+            0.011916666666666667,
+            0.0005833333333333334
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.004562500000000001,
+            "sd": 0.0052105550816836455,
+            "interval95": [
+              0.0008750000000000001,
+              0.009229166666666669
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-direction",
+          "minimum": null,
+          "values": [
+            0.0018333333333333333,
+            0.00375,
+            0.0031666666666666666,
+            0.0019166666666666666
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.002666666666666667,
+            "sd": 0.0009452610848429753,
+            "interval95": [
+              0.001875,
+              0.0034583333333333332
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-shape",
+          "minimum": null,
+          "values": [
+            0.0004166666666666667,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.00010416666666666667,
+            "sd": 0.00020833333333333335,
+            "interval95": [
+              0,
+              0.0003125
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-benefit",
+          "minimum": null,
+          "values": [
+            0.11428571428571432,
+            0.08438888888888896,
+            0.053650793650793616,
+            0.3290958605664488
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.14535531434796142,
+            "sd": 0.12497003977253908,
+            "interval95": [
+              0.06880952380952379,
+              0.26791911764705884
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-direction",
+          "minimum": null,
+          "values": [
+            0.07611111111111113,
+            -0.020888888888888957,
+            0.04633597883597895,
+            0.3373544973544974
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.10972817460317463,
+            "sd": 0.1570809107080329,
+            "interval95": [
+              0.0033611111111110648,
+              0.26459986772486777
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-shape",
+          "minimum": null,
+          "values": [
+            -0.04842592592592587,
+            0.007537037037036898,
+            0.02079365079365081,
+            0.2706790123456789
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.06264594356261019,
+            "sd": 0.14189588188462043,
+            "interval95": [
+              -0.031121031746031702,
+              0.20489351851851842
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "call-suppression",
+          "minimum": null,
+          "values": [
+            -0.0853932584269663,
+            0.014678899082568808,
+            0.0273972602739726,
+            0.021653543307086614
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.005415888940834568,
+            "sd": 0.05357125180307296,
+            "interval95": [
+              -0.06037521904958251,
+              0.02452540179052961
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "convergence-gain",
+          "label": "良い食料の声は聞き合えると一つに集まる",
+          "minimum": 0.12,
+          "values": [
+            0.19996112895910997,
+            0.10084443956703962,
+            0.1564600736396467,
+            0.1317280948223447
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.14724843424703526,
+            "sd": 0.04186364429998328,
+            "interval95": [
+              0.11474834808519138,
+              0.18908586512924414
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "arbitrariness",
+          "label": "良い食料の声の収束先はシードごとに異なる",
+          "minimum": 0.08,
+          "values": [
+            0.06086212131389526,
+            0.12622599210977628,
+            0.03960561515029154,
+            0.04154232415037834
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.06705901318108536,
+            "sd": 0.0405952515568377,
+            "interval95": [
+              0.04057396965033494,
+              0.1045708978699051
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "convergence-warmth",
+          "minimum": null,
+          "values": [
+            0.08353283277042378,
+            0.09330055902567858,
+            0.14374869422690184,
+            0.11587269471562536
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.10911369518465738,
+            "sd": 0.02676878175757632,
+            "interval95": [
+              0.08597476433423748,
+              0.13113666042659602
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arbitrariness-warmth",
+          "minimum": null,
+          "values": [
+            0.03322531047160934,
+            0.2102883969106106,
+            0.12787697800045508,
+            0.05575459318494803
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.10678631964190577,
+            "sd": 0.07994363648693202,
+            "interval95": [
+              0.04448995182827868,
+              0.17165494597919498
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "distinctness",
+          "minimum": null,
+          "values": [
+            0.17778820781860813,
+            0.24359423474495184,
+            0.2559720768174781,
+            0.1892855963650352
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.21666002893651828,
+            "sd": 0.038864150519295676,
+            "interval95": [
+              0.1806625549552149,
+              0.2528776162993465
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "warmth-specificity",
+          "minimum": null,
+          "values": [
+            0.03605212013029491,
+            0.29866601091472195,
+            0.0075552857148253605,
+            0.010792738980339868
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.08826653893504553,
+            "sd": 0.14084362417973204,
+            "interval95": [
+              0.009174012347582614,
+              0.2266976929311264
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "cold-benefit",
+          "minimum": null,
+          "values": [
+            0.007628390853296307,
+            0.015146581027644102,
+            0.017392000528227203,
+            0.011741698896851394
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.012977167826504751,
+            "sd": 0.004255698141188248,
+            "interval95": [
+              0.008656717864185079,
+              0.01597942512038325
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "cold-shape-dependence",
+          "minimum": null,
+          "values": [
+            -0.0029751237197522262,
+            0.004872207649265992,
+            0.007143166839744808,
+            -0.005979203735268168
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.0007652617584976013,
+            "sd": 0.006245611154979088,
+            "interval95": [
+              -0.004477163727510197,
+              0.0060076872445054
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "adoption-gain",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "adoption-rate-gain",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "newcomer-benefit",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "newcomer-shape",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "lineage-continuity",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "convergence-bad",
+          "label": "悪い食料の声は聞き合えると一つに集まる",
+          "minimum": 0.12,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "valence-distinctness",
+          "label": "良い声と悪い声が別の音（重心間の距離）",
+          "minimum": 0.25,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "poison-benefit",
+          "minimum": null,
+          "values": [
+            1,
+            0,
+            1,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.5,
+            "sd": 0.5773502691896257,
+            "interval95": [
+              0,
+              1
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-shape",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-benefit-units",
+          "minimum": null,
+          "values": [
+            0.24000000000000002,
+            0,
+            0.28,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.13,
+            "sd": 0.15099668870541502,
+            "interval95": [
+              0,
+              0.26
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-shape-units",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poisoning-benefit",
+          "label": "聞き合えると毒に当たる回数（個体×毒の場所）が減る（後ろ3分の1）",
+          "minimum": 1,
+          "values": [
+            3,
+            0,
+            3,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 1.5,
+            "sd": 1.7320508075688772,
+            "interval95": [
+              0,
+              3
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "poisoning-shape",
+          "label": "音の特徴をでたらめにすると毒に当たる回数が増える（後ろ3分の1）",
+          "minimum": 1,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "contact-side-effect",
+          "minimum": null,
+          "values": [
+            -0.061666666666666675,
+            -0.027333333333333334,
+            -0.052,
+            -0.046000000000000006
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.04675000000000001,
+            "sd": 0.014464195897559016,
+            "interval95": [
+              -0.05775000000000001,
+              -0.035916666666666666
+            ]
+          },
+          "status": "reported"
+        }
+      ],
+      "established": false
+    },
+    {
+      "name": "pilot",
+      "protocol": "valence-v10",
+      "round": "1",
+      "seeds": [
+        88111,
+        88112,
+        88113,
+        88114
+      ],
+      "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+      "results": [
+        {
+          "seed": 88111,
+          "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88111,
+            "foodVoices": {
+              "C": {
+                "openness": 0.10963304936411032,
+                "resonance": 0.44206845557473934,
+                "count": 49
+              },
+              "D": {
+                "openness": 0.3750176618758742,
+                "resonance": 0.3606629044112241,
+                "count": 51
+              },
+              "A": {
+                "openness": 0.15943946317471414,
+                "resonance": 0.44617689681449685,
+                "count": 41
+              },
+              "B": {
+                "openness": 0.5713678321092408,
+                "resonance": 0.422658627384552,
+                "count": 2
+              }
+            },
+            "foodVoiceSpread": 0.18649477670717415,
+            "foodVoiceCentroid": {
+              "openness": 0.21469672480489957,
+              "resonance": 0.4163027522668201
+            },
+            "foodVoiceDispersion": 0.13650356813113526,
+            "lateMeanCold": 0.30457579857168543,
+            "warmthVoiceDispersion": 0.13168771167579643,
+            "warmthVoiceCentroid": {
+              "openness": 0.4570289572235168,
+              "resonance": 0.31438923036236827
+            },
+            "warmthCalls": 109,
+            "otherVoiceCentroid": {
+              "openness": 0.44411080175164236,
+              "resonance": 0.31666407402462005
+            },
+            "otherCalls": 1066,
+            "poisonIntake": 3.240000000000002,
+            "latePoisonIntake": 1.5200000000000007,
+            "poisonings": 7,
+            "latePoisonings": 1,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 3
+            },
+            "desperateFraction": 0.022833333333333334,
+            "badVoiceDispersion": 0.03979084992630293,
+            "badVoiceCentroid": {
+              "openness": 0.08755960081406984,
+              "resonance": 0.16538474620762186
+            },
+            "badCalls": 226,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.31984178155129145,
+            "lateMeanHunger": 0.30301422857261884,
+            "foodIntake": 27.239999999999597,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 36
+            },
+            "meanFirstFoodTick": 12.75,
+            "heardEvents": 4851,
+            "unseenHeardEvents": 3364,
+            "towardSourceFraction": 0.5316579634464752,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.026,
+            "closeFraction": 0.7033333333333334,
+            "vocalizations": 1674,
+            "minimumHealth": 0.8296072734122379,
+            "arrivalDelay": 0.8624603174603173,
+            "patchesFound": 14,
+            "patchesShared": 7,
+            "spawns": 54,
+            "foodCalls": 438
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88111,
+            "foodVoices": {
+              "D": {
+                "openness": 0.35395174372958965,
+                "resonance": 0.40945691237257487,
+                "count": 48
+              },
+              "C": {
+                "openness": 0.32968097333301777,
+                "resonance": 0.4755274936963287,
+                "count": 49
+              },
+              "A": {
+                "openness": 0.43048773694230313,
+                "resonance": 0.43440972040393616,
+                "count": 46
+              },
+              "B": {
+                "openness": 0.3660062823712148,
+                "resonance": 0.4211729200286422,
+                "count": 47
+              }
+            },
+            "foodVoiceSpread": 0.06796164852579979,
+            "foodVoiceCentroid": {
+              "openness": 0.3700316840940313,
+              "resonance": 0.4351417616253705
+            },
+            "foodVoiceDispersion": 0.28560962631648273,
+            "lateMeanCold": 0.3092754208952856,
+            "warmthVoiceDispersion": 0.25357511053298676,
+            "warmthVoiceCentroid": {
+              "openness": 0.4162141461310433,
+              "resonance": 0.4336291352305232
+            },
+            "warmthCalls": 93,
+            "otherVoiceCentroid": {
+              "openness": 0.35698718905627325,
+              "resonance": 0.4531042456559933
+            },
+            "otherCalls": 2019,
+            "poisonIntake": 1.2400000000000004,
+            "latePoisonIntake": 0,
+            "poisonings": 8,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 2,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 190,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2293664399485437,
+            "lateMeanHunger": 0.17683074014220043,
+            "foodIntake": 27.879999999999583,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 91
+            },
+            "meanFirstFoodTick": 26.5,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.008,
+            "closeFraction": 0.7543333333333333,
+            "vocalizations": 2655,
+            "minimumHealth": 0.9365499999999957,
+            "arrivalDelay": 0.9279861111111111,
+            "patchesFound": 16,
+            "patchesShared": 7,
+            "spawns": 54,
+            "foodCalls": 520
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88111,
+            "foodVoices": {
+              "A": {
+                "openness": 0.5558930450085602,
+                "resonance": 0.5690452065943078,
+                "count": 26
+              },
+              "D": {
+                "openness": 0.5486458659085373,
+                "resonance": 0.577020386006924,
+                "count": 28
+              },
+              "B": {
+                "openness": 0.0836515465682369,
+                "resonance": 0.252864762336796,
+                "count": 29
+              }
+            },
+            "foodVoiceSpread": 0.3819738596568742,
+            "foodVoiceCentroid": {
+              "openness": 0.3960634858284448,
+              "resonance": 0.46631011831267594
+            },
+            "foodVoiceDispersion": 0.25965779430451574,
+            "lateMeanCold": 0.3087808847777193,
+            "warmthVoiceDispersion": 0.07648372437138243,
+            "warmthVoiceCentroid": {
+              "openness": 0.11894924721495206,
+              "resonance": 0.26901993333915747
+            },
+            "warmthCalls": 74,
+            "otherVoiceCentroid": {
+              "openness": 0.1615566550000081,
+              "resonance": 0.30995496438911807
+            },
+            "otherCalls": 689,
+            "poisonIntake": 3.120000000000002,
+            "latePoisonIntake": 1.5600000000000007,
+            "poisonings": 10,
+            "latePoisonings": 3,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 4,
+              "warned": 0
+            },
+            "desperateFraction": 0.10108333333333333,
+            "badVoiceDispersion": 0.03463630000360992,
+            "badVoiceCentroid": {
+              "openness": 0.08060610557124355,
+              "resonance": 0.25454702188041733
+            },
+            "badCalls": 111,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.49202980849309674,
+            "lateMeanHunger": 0.5570004656469534,
+            "foodIntake": 24.839999999999648,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 201
+            },
+            "meanFirstFoodTick": 54,
+            "heardEvents": 3174,
+            "unseenHeardEvents": 2527,
+            "towardSourceFraction": 0.6584930896121266,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.007333333333333333,
+            "closeFraction": 0.479,
+            "vocalizations": 1142,
+            "minimumHealth": 0.5181296789071708,
+            "arrivalDelay": 0.932142857142857,
+            "patchesFound": 14,
+            "patchesShared": 11,
+            "spawns": 54,
+            "foodCalls": 336
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88111,
+            "foodVoices": {
+              "C": {
+                "openness": 0.39797110636169697,
+                "resonance": 0.536455444911729,
+                "count": 44
+              },
+              "D": {
+                "openness": 0.4794009697809104,
+                "resonance": 0.5122031152328784,
+                "count": 37
+              },
+              "B": {
+                "openness": 0.34949854667267083,
+                "resonance": 0.28998050798325153,
+                "count": 34
+              },
+              "A": {
+                "openness": 0.3148733294289256,
+                "resonance": 0.1439819742237188,
+                "count": 24
+              }
+            },
+            "foodVoiceSpread": 0.25801584207337735,
+            "foodVoiceCentroid": {
+              "openness": 0.38543598806105095,
+              "resonance": 0.37065526058789444
+            },
+            "foodVoiceDispersion": 0.18786784107110066,
+            "lateMeanCold": 0.3018200960703188,
+            "warmthVoiceDispersion": 0.23017016756193068,
+            "warmthVoiceCentroid": {
+              "openness": 0.473484038001987,
+              "resonance": 0.22608231402707
+            },
+            "warmthCalls": 103,
+            "otherVoiceCentroid": {
+              "openness": 0.2846933911923048,
+              "resonance": 0.26820624669555515
+            },
+            "otherCalls": 685,
+            "poisonIntake": 1.760000000000001,
+            "latePoisonIntake": 0.24000000000000002,
+            "poisonings": 8,
+            "latePoisonings": 6,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 3,
+              "warned": 0
+            },
+            "desperateFraction": 0.0355,
+            "badVoiceDispersion": 0.053394129330362486,
+            "badVoiceCentroid": {
+              "openness": 0.1389023198140359,
+              "resonance": 0.1776956445573035
+            },
+            "badCalls": 99,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.36650603078902666,
+            "lateMeanHunger": 0.40977853246314655,
+            "foodIntake": 27.55999999999959,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 6,
+              "B": 6,
+              "D": 63
+            },
+            "meanFirstFoodTick": 19.5,
+            "heardEvents": 3484,
+            "unseenHeardEvents": 3071,
+            "towardSourceFraction": 0.5815602836879432,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.023,
+            "closeFraction": 0.4686666666666667,
+            "vocalizations": 1274,
+            "minimumHealth": 0.5759901562845894,
+            "arrivalDelay": 0.9544444444444444,
+            "patchesFound": 17,
+            "patchesShared": 12,
+            "spawns": 54,
+            "foodCalls": 460
+          }
+        },
+        {
+          "seed": 88112,
+          "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88112,
+            "foodVoices": {
+              "D": {
+                "openness": 0.43036781695986454,
+                "resonance": 0.4764033363106402,
+                "count": 44
+              },
+              "B": {
+                "openness": 0.22869936531817742,
+                "resonance": 0.3051594207790584,
+                "count": 42
+              },
+              "C": {
+                "openness": 0.40387579271904345,
+                "resonance": 0.42175832166358274,
+                "count": 35
+              },
+              "A": {
+                "openness": 0.23947631790829818,
+                "resonance": 0.31149272236611086,
+                "count": 39
+              }
+            },
+            "foodVoiceSpread": 0.16640667446218596,
+            "foodVoiceCentroid": {
+              "openness": 0.3256048232263459,
+              "resonance": 0.37870345027984803
+            },
+            "foodVoiceDispersion": 0.12786462108498892,
+            "lateMeanCold": 0.28784627964187953,
+            "warmthVoiceDispersion": 0.18181310601698983,
+            "warmthVoiceCentroid": {
+              "openness": 0.4728605354378534,
+              "resonance": 0.5126426995959217
+            },
+            "warmthCalls": 233,
+            "otherVoiceCentroid": {
+              "openness": 0.4331951126877952,
+              "resonance": 0.48619063996329415
+            },
+            "otherCalls": 489,
+            "poisonIntake": 0.08,
+            "latePoisonIntake": 0,
+            "poisonings": 1,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 1,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0.020166666666666666,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 6,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.3283649068226836,
+            "lateMeanHunger": 0.28306403250102397,
+            "foodIntake": 27.439999999999593,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 27
+            },
+            "meanFirstFoodTick": 10.25,
+            "heardEvents": 3522,
+            "unseenHeardEvents": 1224,
+            "towardSourceFraction": 0.5638804677349502,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.10333333333333333,
+            "closeFraction": 0.9886666666666667,
+            "vocalizations": 1174,
+            "minimumHealth": 0.7161467525748336,
+            "arrivalDelay": 0.8548148148148149,
+            "patchesFound": 6,
+            "patchesShared": 3,
+            "spawns": 54,
+            "foodCalls": 450
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88112,
+            "foodVoices": {
+              "D": {
+                "openness": 0.4150308422181443,
+                "resonance": 0.42376243349848336,
+                "count": 43
+              },
+              "A": {
+                "openness": 0.3995833607557514,
+                "resonance": 0.4238469879450524,
+                "count": 33
+              },
+              "C": {
+                "openness": 0.4032210274909349,
+                "resonance": 0.4118063968747139,
+                "count": 45
+              },
+              "B": {
+                "openness": 0.4463562757736239,
+                "resonance": 0.47116487629692944,
+                "count": 32
+              }
+            },
+            "foodVoiceSpread": 0.04025977799285341,
+            "foodVoiceCentroid": {
+              "openness": 0.4160478765596136,
+              "resonance": 0.43264517365379473
+            },
+            "foodVoiceDispersion": 0.2637057753944974,
+            "lateMeanCold": 0.2821462166233781,
+            "warmthVoiceDispersion": 0.27436043993682446,
+            "warmthVoiceCentroid": {
+              "openness": 0.3657822040013909,
+              "resonance": 0.4300570073901465
+            },
+            "warmthCalls": 188,
+            "otherVoiceCentroid": {
+              "openness": 0.35227015026579317,
+              "resonance": 0.43632727385593395
+            },
+            "otherCalls": 966,
+            "poisonIntake": 1.800000000000001,
+            "latePoisonIntake": 0.12,
+            "poisonings": 5,
+            "latePoisonings": 3,
+            "poisoningKinds": {
+              "first": 4,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 0.03549341085156234,
+            "badVoiceCentroid": {
+              "openness": 0.07563308810931631,
+              "resonance": 0.19658884286592027
+            },
+            "badCalls": 181,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2658495373592481,
+            "lateMeanHunger": 0.2955993773263806,
+            "foodIntake": 27.919999999999582,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 41
+            },
+            "meanFirstFoodTick": 13.75,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.034333333333333334,
+            "closeFraction": 0.848,
+            "vocalizations": 1679,
+            "minimumHealth": 0.8831499999999876,
+            "arrivalDelay": 0.9015384615384614,
+            "patchesFound": 13,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 490
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88112,
+            "foodVoices": {
+              "C": {
+                "openness": 0.09156552713421034,
+                "resonance": 0.4654733997065711,
+                "count": 41
+              },
+              "A": {
+                "openness": 0.5311559325571161,
+                "resonance": 0.22795687598537318,
+                "count": 46
+              },
+              "D": {
+                "openness": 0.07447902810221627,
+                "resonance": 0.4324667185244157,
+                "count": 27
+              },
+              "B": {
+                "openness": 0.4651272922228193,
+                "resonance": 0.5493381879175431,
+                "count": 24
+              }
+            },
+            "foodVoiceSpread": 0.35931811955303594,
+            "foodVoiceCentroid": {
+              "openness": 0.2905819450040905,
+              "resonance": 0.4188087955334757
+            },
+            "foodVoiceDispersion": 0.24539479684548338,
+            "lateMeanCold": 0.3141431262803559,
+            "warmthVoiceDispersion": 0.26836781909042734,
+            "warmthVoiceCentroid": {
+              "openness": 0.38354526518950105,
+              "resonance": 0.4487129554792417
+            },
+            "warmthCalls": 181,
+            "otherVoiceCentroid": {
+              "openness": 0.39120204485897997,
+              "resonance": 0.3130475350746825
+            },
+            "otherCalls": 713,
+            "poisonIntake": 2.6800000000000015,
+            "latePoisonIntake": 0.68,
+            "poisonings": 13,
+            "latePoisonings": 3,
+            "poisoningKinds": {
+              "first": 7,
+              "simultaneous": 0,
+              "unwarned": 6,
+              "warned": 0
+            },
+            "desperateFraction": 0.060583333333333336,
+            "badVoiceDispersion": 0.054664744952636866,
+            "badVoiceCentroid": {
+              "openness": 0.08697507179387168,
+              "resonance": 0.1972032747427808
+            },
+            "badCalls": 153,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.3935521675059753,
+            "lateMeanHunger": 0.39559326608890644,
+            "foodIntake": 27.51999999999959,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 72
+            },
+            "meanFirstFoodTick": 21.5,
+            "heardEvents": 3806,
+            "unseenHeardEvents": 3066,
+            "towardSourceFraction": 0.5779591836734694,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.016,
+            "closeFraction": 0.6906666666666667,
+            "vocalizations": 1361,
+            "minimumHealth": 0.6502372689290389,
+            "arrivalDelay": 0.9342857142857143,
+            "patchesFound": 14,
+            "patchesShared": 10,
+            "spawns": 54,
+            "foodCalls": 429
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88112,
+            "foodVoices": {
+              "B": {
+                "openness": 0.7326881532932518,
+                "resonance": 0.5865947737516984,
+                "count": 12
+              },
+              "D": {
+                "openness": 0.2646274375561104,
+                "resonance": 0.538547479819547,
+                "count": 6
+              },
+              "C": {
+                "openness": 0.6041594482234343,
+                "resonance": 0.6433670046778708,
+                "count": 18
+              },
+              "A": {
+                "openness": 0.6184763223804489,
+                "resonance": 0.6039087731679624,
+                "count": 21
+              }
+            },
+            "foodVoiceSpread": 0.24728327549781148,
+            "foodVoiceCentroid": {
+              "openness": 0.5549878403633113,
+              "resonance": 0.5931045078542696
+            },
+            "foodVoiceDispersion": 0.1558176851477413,
+            "lateMeanCold": 0.2889094904930033,
+            "warmthVoiceDispersion": 0.08703738529641557,
+            "warmthVoiceCentroid": {
+              "openness": 0.12236555593437173,
+              "resonance": 0.26919091385910393
+            },
+            "warmthCalls": 102,
+            "otherVoiceCentroid": {
+              "openness": 0.1627960630262127,
+              "resonance": 0.2904010485598074
+            },
+            "otherCalls": 530,
+            "poisonIntake": 2.360000000000001,
+            "latePoisonIntake": 0.5199999999999999,
+            "poisonings": 14,
+            "latePoisonings": 7,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 8,
+              "warned": 0
+            },
+            "desperateFraction": 0.08783333333333333,
+            "badVoiceDispersion": 0.057544335313188276,
+            "badVoiceCentroid": {
+              "openness": 0.1166242342551586,
+              "resonance": 0.1972932475765928
+            },
+            "badCalls": 173,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.5107797880765738,
+            "lateMeanHunger": 0.5973745287328415,
+            "foodIntake": 25.879999999999626,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 27
+            },
+            "meanFirstFoodTick": 10.25,
+            "heardEvents": 2844,
+            "unseenHeardEvents": 2137,
+            "towardSourceFraction": 0.6290240163515585,
+            "foodAfterHearingFraction": 0.75,
+            "contactTicks": 0.061,
+            "closeFraction": 0.736,
+            "vocalizations": 953,
+            "minimumHealth": 0.6220034852949781,
+            "arrivalDelay": 0.8649999999999999,
+            "patchesFound": 14,
+            "patchesShared": 10,
+            "spawns": 54,
+            "foodCalls": 294
+          }
+        },
+        {
+          "seed": 88113,
+          "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88113,
+            "foodVoices": {
+              "A": {
+                "openness": 0.1963822817538012,
+                "resonance": 0.4425736712455542,
+                "count": 47
+              },
+              "B": {
+                "openness": 0.5000857684224512,
+                "resonance": 0.4893030477349094,
+                "count": 49
+              },
+              "D": {
+                "openness": 0.19292845651123655,
+                "resonance": 0.441823036053992,
+                "count": 46
+              },
+              "C": {
+                "openness": 0.22814138739195666,
+                "resonance": 0.4766629079489959,
+                "count": 42
+              }
+            },
+            "foodVoiceSpread": 0.1649969536611537,
+            "foodVoiceCentroid": {
+              "openness": 0.2793844735198614,
+              "resonance": 0.4625906657458629
+            },
+            "foodVoiceDispersion": 0.12472787313084198,
+            "lateMeanCold": 0.2860690154053018,
+            "warmthVoiceDispersion": 0.22347938730061545,
+            "warmthVoiceCentroid": {
+              "openness": 0.39289142235385677,
+              "resonance": 0.4560867135022298
+            },
+            "warmthCalls": 220,
+            "otherVoiceCentroid": {
+              "openness": 0.3732451811083341,
+              "resonance": 0.44848945939004964
+            },
+            "otherCalls": 524,
+            "poisonIntake": 0.04,
+            "latePoisonIntake": 0,
+            "poisonings": 1,
+            "latePoisonings": 0,
+            "poisoningKinds": {
+              "first": 1,
+              "simultaneous": 0,
+              "unwarned": 0,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 4,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2815724297615531,
+            "lateMeanHunger": 0.27499493664440694,
+            "foodIntake": 28.239999999999576,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 30
+            },
+            "meanFirstFoodTick": 11.25,
+            "heardEvents": 3864,
+            "unseenHeardEvents": 2286,
+            "towardSourceFraction": 0.5351288056206089,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.044333333333333336,
+            "closeFraction": 0.967,
+            "vocalizations": 1289,
+            "minimumHealth": 0.99415,
+            "arrivalDelay": 0.888888888888889,
+            "patchesFound": 8,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 544
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88113,
+            "foodVoices": {
+              "A": {
+                "openness": 0.3905114711272514,
+                "resonance": 0.4334267325426743,
+                "count": 42
+              },
+              "C": {
+                "openness": 0.3887364092970646,
+                "resonance": 0.41681233508790916,
+                "count": 38
+              },
+              "D": {
+                "openness": 0.3842564783172934,
+                "resonance": 0.44055832639685577,
+                "count": 41
+              },
+              "B": {
+                "openness": 0.3123641435743262,
+                "resonance": 0.3855804200714819,
+                "count": 30
+              }
+            },
+            "foodVoiceSpread": 0.052501194835674635,
+            "foodVoiceCentroid": {
+              "openness": 0.3689671255789839,
+              "resonance": 0.41909445352473024
+            },
+            "foodVoiceDispersion": 0.25704085519520203,
+            "lateMeanCold": 0.282569065811484,
+            "warmthVoiceDispersion": 0.25150756646144834,
+            "warmthVoiceCentroid": {
+              "openness": 0.3769682796212973,
+              "resonance": 0.41968072837737447
+            },
+            "warmthCalls": 194,
+            "otherVoiceCentroid": {
+              "openness": 0.38887736563689146,
+              "resonance": 0.4414593753826772
+            },
+            "otherCalls": 825,
+            "poisonIntake": 0.9600000000000003,
+            "latePoisonIntake": 0.4799999999999999,
+            "poisonings": 4,
+            "latePoisonings": 2,
+            "poisoningKinds": {
+              "first": 3,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0.022833333333333334,
+            "badVoiceDispersion": 0.024883844013803835,
+            "badVoiceCentroid": {
+              "openness": 0.09581736313929369,
+              "resonance": 0.2603092900403274
+            },
+            "badCalls": 49,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.29445900954922377,
+            "lateMeanHunger": 0.3277744939870669,
+            "foodIntake": 27.399999999999594,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 173
+            },
+            "meanFirstFoodTick": 47,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.025333333333333333,
+            "closeFraction": 0.8983333333333333,
+            "vocalizations": 1530,
+            "minimumHealth": 0.7214262246714387,
+            "arrivalDelay": 0.921111111111111,
+            "patchesFound": 9,
+            "patchesShared": 5,
+            "spawns": 54,
+            "foodCalls": 498
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88113,
+            "foodVoices": {
+              "B": {
+                "openness": 0.46718971014003113,
+                "resonance": 0.5326098469450858,
+                "count": 33
+              },
+              "A": {
+                "openness": 0.07794654801813534,
+                "resonance": 0.2068186000037679,
+                "count": 30
+              },
+              "D": {
+                "openness": 0.32962070287851164,
+                "resonance": 0.5128120594373253,
+                "count": 25
+              },
+              "C": {
+                "openness": 0.13301390588093828,
+                "resonance": 0.4250279686330321,
+                "count": 4
+              }
+            },
+            "foodVoiceSpread": 0.3475918562153064,
+            "foodVoiceCentroid": {
+              "openness": 0.2915856536788927,
+              "resonance": 0.41741350212872635
+            },
+            "foodVoiceDispersion": 0.22802964738897222,
+            "lateMeanCold": 0.3020257848925756,
+            "warmthVoiceDispersion": 0.17708476074750454,
+            "warmthVoiceCentroid": {
+              "openness": 0.39996707402305887,
+              "resonance": 0.4178166967522481
+            },
+            "warmthCalls": 129,
+            "otherVoiceCentroid": {
+              "openness": 0.3702841653273839,
+              "resonance": 0.40937045748095596
+            },
+            "otherCalls": 751,
+            "poisonIntake": 3.9600000000000026,
+            "latePoisonIntake": 1.840000000000001,
+            "poisonings": 13,
+            "latePoisonings": 7,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 7,
+              "warned": 0
+            },
+            "desperateFraction": 0.072,
+            "badVoiceDispersion": 0.05753166378050718,
+            "badVoiceCentroid": {
+              "openness": 0.08723850150259117,
+              "resonance": 0.23585378493051398
+            },
+            "badCalls": 151,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.4392178907896392,
+            "lateMeanHunger": 0.5167038563858162,
+            "foodIntake": 26.399999999999615,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 68
+            },
+            "meanFirstFoodTick": 20.75,
+            "heardEvents": 3686,
+            "unseenHeardEvents": 2975,
+            "towardSourceFraction": 0.5902688860435339,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.01,
+            "closeFraction": 0.5723333333333334,
+            "vocalizations": 1307,
+            "minimumHealth": 0.3695886224417019,
+            "arrivalDelay": 0.9776984126984127,
+            "patchesFound": 14,
+            "patchesShared": 11,
+            "spawns": 54,
+            "foodCalls": 368
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88113,
+            "foodVoices": {
+              "D": {
+                "openness": 0.46715804262409294,
+                "resonance": 0.6081559926553718,
+                "count": 46
+              },
+              "B": {
+                "openness": 0.5898155611397441,
+                "resonance": 0.18516952020781627,
+                "count": 45
+              },
+              "C": {
+                "openness": 0.43850740240423675,
+                "resonance": 0.5663386768363371,
+                "count": 24
+              },
+              "A": {
+                "openness": 0.7692482737502461,
+                "resonance": 0.653938556210948,
+                "count": 3
+              }
+            },
+            "foodVoiceSpread": 0.30040162711374685,
+            "foodVoiceCentroid": {
+              "openness": 0.4984936687226913,
+              "resonance": 0.4532213965665084
+            },
+            "foodVoiceDispersion": 0.25272769696777037,
+            "lateMeanCold": 0.2989213572540144,
+            "warmthVoiceDispersion": 0.09057661630545634,
+            "warmthVoiceCentroid": {
+              "openness": 0.16955495888568112,
+              "resonance": 0.4325116714275074
+            },
+            "warmthCalls": 122,
+            "otherVoiceCentroid": {
+              "openness": 0.26795107560330217,
+              "resonance": 0.3874151781055982
+            },
+            "otherCalls": 427,
+            "poisonIntake": 0.43999999999999995,
+            "latePoisonIntake": 0.08,
+            "poisonings": 10,
+            "latePoisonings": 2,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 5,
+              "warned": 0
+            },
+            "desperateFraction": 0.0545,
+            "badVoiceDispersion": 0.02455449998135277,
+            "badVoiceCentroid": {
+              "openness": 0.08717549451023311,
+              "resonance": 0.15969945159909738
+            },
+            "badCalls": 39,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.4433071563464786,
+            "lateMeanHunger": 0.4832619925091879,
+            "foodIntake": 26.839999999999606,
+            "firstFoodTick": {
+              "C": 4,
+              "A": 5,
+              "B": 6,
+              "D": 30
+            },
+            "meanFirstFoodTick": 11.25,
+            "heardEvents": 2745,
+            "unseenHeardEvents": 1915,
+            "towardSourceFraction": 0.6485933503836318,
+            "foodAfterHearingFraction": 0.5,
+            "contactTicks": 0.074,
+            "closeFraction": 0.8593333333333333,
+            "vocalizations": 921,
+            "minimumHealth": 0.774745720333708,
+            "arrivalDelay": 0.7749999999999999,
+            "patchesFound": 12,
+            "patchesShared": 11,
+            "spawns": 54,
+            "foodCalls": 365
+          }
+        },
+        {
+          "seed": 88114,
+          "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+          "sound": {
+            "condition": "sound",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88114,
+            "foodVoices": {
+              "A": {
+                "openness": 0.1860540931515619,
+                "resonance": 0.415488504105634,
+                "count": 45
+              },
+              "C": {
+                "openness": 0.19846062520203314,
+                "resonance": 0.43111070188016287,
+                "count": 45
+              },
+              "D": {
+                "openness": 0.23996148057066524,
+                "resonance": 0.43448979348653155,
+                "count": 45
+              },
+              "B": {
+                "openness": 0.21406946151152575,
+                "resonance": 0.4153343219049134,
+                "count": 36
+              }
+            },
+            "foodVoiceSpread": 0.033527010961881876,
+            "foodVoiceCentroid": {
+              "openness": 0.2096364151089465,
+              "resonance": 0.4241058303443105
+            },
+            "foodVoiceDispersion": 0.0470446429000524,
+            "lateMeanCold": 0.29145856964381234,
+            "warmthVoiceDispersion": 0.10436107790666847,
+            "warmthVoiceCentroid": {
+              "openness": 0.5068711452295985,
+              "resonance": 0.4363581638019595
+            },
+            "warmthCalls": 154,
+            "otherVoiceCentroid": {
+              "openness": 0.5340867536773524,
+              "resonance": 0.43728630325640583
+            },
+            "otherCalls": 634,
+            "poisonIntake": 0.08,
+            "latePoisonIntake": 0.04,
+            "poisonings": 2,
+            "latePoisonings": 1,
+            "poisoningKinds": {
+              "first": 1,
+              "simultaneous": 0,
+              "unwarned": 1,
+              "warned": 0
+            },
+            "desperateFraction": 0,
+            "badVoiceDispersion": 1,
+            "badVoiceCentroid": null,
+            "badCalls": 12,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.2771996868136801,
+            "lateMeanHunger": 0.2813338390604298,
+            "foodIntake": 28.199999999999577,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 31
+            },
+            "meanFirstFoodTick": 11.25,
+            "heardEvents": 3888,
+            "unseenHeardEvents": 1655,
+            "towardSourceFraction": 0.5425268373245252,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.075,
+            "closeFraction": 0.9783333333333334,
+            "vocalizations": 1298,
+            "minimumHealth": 0.99415,
+            "arrivalDelay": 0.7624074074074074,
+            "patchesFound": 6,
+            "patchesShared": 4,
+            "spawns": 54,
+            "foodCalls": 509
+          },
+          "muted": {
+            "condition": "muted",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88114,
+            "foodVoices": {
+              "B": {
+                "openness": 0.429620452234783,
+                "resonance": 0.3700453644141326,
+                "count": 40
+              },
+              "A": {
+                "openness": 0.3470926463454874,
+                "resonance": 0.4127792518993171,
+                "count": 45
+              },
+              "C": {
+                "openness": 0.3879727504218394,
+                "resonance": 0.5044674010506345,
+                "count": 24
+              },
+              "D": {
+                "openness": 0.39935571082491433,
+                "resonance": 0.4824445238096991,
+                "count": 21
+              }
+            },
+            "foodVoiceSpread": 0.09372225818743907,
+            "foodVoiceCentroid": {
+              "openness": 0.391010389956756,
+              "resonance": 0.44243413529344583
+            },
+            "foodVoiceDispersion": 0.27870418801682817,
+            "lateMeanCold": 0.30013806888170486,
+            "warmthVoiceDispersion": 0.25057206308756946,
+            "warmthVoiceCentroid": {
+              "openness": 0.3656172542876877,
+              "resonance": 0.39297385553859365
+            },
+            "warmthCalls": 94,
+            "otherVoiceCentroid": {
+              "openness": 0.32191767277660716,
+              "resonance": 0.40961279196510075
+            },
+            "otherCalls": 833,
+            "poisonIntake": 4.800000000000003,
+            "latePoisonIntake": 2.080000000000001,
+            "poisonings": 11,
+            "latePoisonings": 5,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 6,
+              "warned": 0
+            },
+            "desperateFraction": 0.05466666666666667,
+            "badVoiceDispersion": 0.05501995622775181,
+            "badVoiceCentroid": {
+              "openness": 0.07770186397112623,
+              "resonance": 0.18708035697761544
+            },
+            "badCalls": 248,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.342240986195181,
+            "lateMeanHunger": 0.36430179327133544,
+            "foodIntake": 27.239999999999597,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 38
+            },
+            "meanFirstFoodTick": 13,
+            "heardEvents": 0,
+            "unseenHeardEvents": 0,
+            "towardSourceFraction": 0,
+            "foodAfterHearingFraction": 0,
+            "contactTicks": 0.015666666666666666,
+            "closeFraction": 0.41333333333333333,
+            "vocalizations": 1439,
+            "minimumHealth": 0.49992519409485575,
+            "arrivalDelay": 0.9668055555555555,
+            "patchesFound": 16,
+            "patchesShared": 10,
+            "spawns": 54,
+            "foodCalls": 429
+          },
+          "misdirected": {
+            "condition": "misdirected",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88114,
+            "foodVoices": {
+              "C": {
+                "openness": 0.4617856293609968,
+                "resonance": 0.4778251211538367,
+                "count": 48
+              },
+              "A": {
+                "openness": 0.12423093666533282,
+                "resonance": 0.467216851114249,
+                "count": 44
+              },
+              "B": {
+                "openness": 0.2768769350863808,
+                "resonance": 0.4046745681003066,
+                "count": 5
+              }
+            },
+            "foodVoiceSpread": 0.23384508263206882,
+            "foodVoiceCentroid": {
+              "openness": 0.28763116703757013,
+              "resonance": 0.4499055134561307
+            },
+            "foodVoiceDispersion": 0.17790957732109114,
+            "lateMeanCold": 0.32592541054110236,
+            "warmthVoiceDispersion": 0.08581691809327703,
+            "warmthVoiceCentroid": {
+              "openness": 0.19473401569068394,
+              "resonance": 0.48493988483648137
+            },
+            "warmthCalls": 110,
+            "otherVoiceCentroid": {
+              "openness": 0.37161729137318683,
+              "resonance": 0.456050082059399
+            },
+            "otherCalls": 532,
+            "poisonIntake": 5.440000000000004,
+            "latePoisonIntake": 2.320000000000001,
+            "poisonings": 19,
+            "latePoisonings": 7,
+            "poisoningKinds": {
+              "first": 6,
+              "simultaneous": 0,
+              "unwarned": 13,
+              "warned": 0
+            },
+            "desperateFraction": 0.19325,
+            "badVoiceDispersion": 0.045729336137364435,
+            "badVoiceCentroid": {
+              "openness": 0.09335972978195692,
+              "resonance": 0.25428733342102894
+            },
+            "badCalls": 184,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.5366470861214687,
+            "lateMeanHunger": 0.5926413924358171,
+            "foodIntake": 24.27999999999966,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 54
+            },
+            "meanFirstFoodTick": 17,
+            "heardEvents": 2651,
+            "unseenHeardEvents": 2447,
+            "towardSourceFraction": 0.5775814467145224,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.005333333333333333,
+            "closeFraction": 0.21566666666666667,
+            "vocalizations": 1030,
+            "minimumHealth": 0.19626241391732085,
+            "arrivalDelay": 0.9691851851851853,
+            "patchesFound": 15,
+            "patchesShared": 10,
+            "spawns": 54,
+            "foodCalls": 311
+          },
+          "scrambled": {
+            "condition": "scrambled",
+            "model": "valence-alarm-ceiling-0.12.0-experimental.5",
+            "seed": 88114,
+            "foodVoices": {
+              "B": {
+                "openness": 0.5896621726538629,
+                "resonance": 0.7611000897165228,
+                "count": 10
+              }
+            },
+            "foodVoiceSpread": 1,
+            "foodVoiceCentroid": {
+              "openness": 0.5896621726538629,
+              "resonance": 0.7611000897165228
+            },
+            "foodVoiceDispersion": 0.03236308230377623,
+            "lateMeanCold": 0.3499404307390634,
+            "warmthVoiceDispersion": 1,
+            "warmthVoiceCentroid": null,
+            "warmthCalls": 82,
+            "otherVoiceCentroid": {
+              "openness": 0.15924301079823522,
+              "resonance": 0.27883219679190835
+            },
+            "otherCalls": 441,
+            "poisonIntake": 7.120000000000005,
+            "latePoisonIntake": 5.840000000000004,
+            "poisonings": 15,
+            "latePoisonings": 14,
+            "poisoningKinds": {
+              "first": 5,
+              "simultaneous": 0,
+              "unwarned": 10,
+              "warned": 0
+            },
+            "desperateFraction": 0.17342403628117914,
+            "badVoiceDispersion": 0.05772214711663434,
+            "badVoiceCentroid": {
+              "openness": 0.1803075667336701,
+              "resonance": 0.265013738164165
+            },
+            "badCalls": 303,
+            "newcomerDistance": 1,
+            "newcomerLateHunger": 0,
+            "newcomerCalls": [],
+            "earlyVoiceCentroid": null,
+            "earlyCalls": 0,
+            "meanHunger": 0.6858992332338896,
+            "lateMeanHunger": 0.9084496487183552,
+            "foodIntake": 22.91999999999969,
+            "firstFoodTick": {
+              "C": 3,
+              "A": 5,
+              "B": 6,
+              "D": 204
+            },
+            "meanFirstFoodTick": 54.5,
+            "heardEvents": 2259,
+            "unseenHeardEvents": 1345,
+            "towardSourceFraction": 0.6864666258420086,
+            "foodAfterHearingFraction": 0.25,
+            "contactTicks": 0.19233333333333333,
+            "closeFraction": 0.8646666666666667,
+            "vocalizations": 813,
+            "minimumHealth": 0,
+            "arrivalDelay": 0.8207070707070706,
+            "patchesFound": 11,
+            "patchesShared": 9,
+            "spawns": 54,
+            "foodCalls": 195
+          }
+        }
+      ],
+      "checks": [
+        {
+          "id": "forage-benefit",
+          "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+          "minimum": -0.02,
+          "values": [
+            -0.1261834884304184,
+            0.01253534482535662,
+            0.05277955734265993,
+            0.08296795421090564
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.005524841987125946,
+            "sd": 0.0924241584681901,
+            "interval95": [
+              -0.08144272698714883,
+              0.06787375577678278
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "direction-dependence",
+          "minimum": null,
+          "values": [
+            0.25398623707433454,
+            0.11252923358788247,
+            0.24170891974140923,
+            0.31130755337538735
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.22988298594475337,
+            "sd": 0.08391003674309407,
+            "interval95": [
+              0.1478934844594955,
+              0.29390789496689285
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "shape-dependence",
+          "minimum": null,
+          "values": [
+            0.10676430389052771,
+            0.3143104962318175,
+            0.20826705586478095,
+            0.6271158096579255
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.3141144164112629,
+            "sd": 0.22521666865388865,
+            "interval95": [
+              0.15751567987765433,
+              0.5489144813013984
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-benefit",
+          "minimum": null,
+          "values": [
+            0.004583333333333333,
+            0.0011666666666666668,
+            0.011916666666666667,
+            0.0005833333333333334
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.004562500000000001,
+            "sd": 0.0052105550816836455,
+            "interval95": [
+              0.0008750000000000001,
+              0.009229166666666667
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-direction",
+          "minimum": null,
+          "values": [
+            0.01375,
+            0.00375,
+            0.0031666666666666666,
+            0.0019166666666666666
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.005645833333333333,
+            "sd": 0.005456636716811855,
+            "interval95": [
+              0.0022291666666666666,
+              0.011104166666666667
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "latency-shape",
+          "minimum": null,
+          "values": [
+            0.00225,
+            0,
+            0,
+            0.014416666666666666
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.004166666666666667,
+            "sd": 0.006915160478574914,
+            "interval95": [
+              0,
+              0.0108125
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-benefit",
+          "minimum": null,
+          "values": [
+            0.0655257936507938,
+            0.046723646723646484,
+            0.03222222222222204,
+            0.20439814814814805
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.0872174526862026,
+            "sd": 0.07930125504633816,
+            "interval95": [
+              0.03947293447293426,
+              0.16497952279202266
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-direction",
+          "minimum": null,
+          "values": [
+            0.06968253968253979,
+            0.07947089947089936,
+            0.08880952380952378,
+            0.20677777777777784
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.11118518518518519,
+            "sd": 0.06420508672126965,
+            "interval95": [
+              0.07446428571428579,
+              0.17495105820105822
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arrival-shape",
+          "minimum": null,
+          "values": [
+            0.09198412698412717,
+            0.010185185185184964,
+            -0.11388888888888904,
+            0.058299663299663185
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.01164502164502157,
+            "sd": 0.0901700638627482,
+            "interval95": [
+              -0.08287037037037054,
+              0.07514189514189518
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "call-suppression",
+          "minimum": null,
+          "values": [
+            0.1576923076923077,
+            0.08163265306122448,
+            -0.09236947791164658,
+            -0.1864801864801865
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.009881175909575227,
+            "sd": 0.1575300858048721,
+            "interval95": [
+              -0.13942483219591653,
+              0.11966248037676608
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "convergence-gain",
+          "label": "良い食料の声は聞き合えると一つに集まる",
+          "minimum": 0.12,
+          "values": [
+            0.14910605818534747,
+            0.1358411543095085,
+            0.13231298206436004,
+            0.23165954511677578
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.16222993491899795,
+            "sd": 0.0468476207965706,
+            "interval95": [
+              0.13407706818693427,
+              0.20770494741495896
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "arbitrariness",
+          "label": "良い食料の声の収束先はシードごとに異なる",
+          "minimum": 0.08,
+          "values": [
+            0.042832774655457775,
+            0.08001320086619784,
+            0.04758423485062588,
+            0.047835966516046616
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.05456654422208203,
+            "sd": 0.017119842318411953,
+            "interval95": [
+              0.044020639704249805,
+              0.07196889227866003
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "convergence-warmth",
+          "minimum": null,
+          "values": [
+            0.12188739885719033,
+            0.09254733391983463,
+            0.02802817916083289,
+            0.14621098518090098
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.0971684742796897,
+            "sd": 0.051048762489446266,
+            "interval95": [
+              0.05149298408492225,
+              0.13404919201904564
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "arbitrariness-warmth",
+          "minimum": null,
+          "values": [
+            0.11548061009219897,
+            0.08420259984449745,
+            0.06964476896745826,
+            0.04988199341860533
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.07980249308069,
+            "sd": 0.027632738024603882,
+            "interval95": [
+              0.05846214502507836,
+              0.09984160496834821
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "distinctness",
+          "minimum": null,
+          "values": [
+            0.26289023720168825,
+            0.19905769838484433,
+            0.11369313448221358,
+            0.29748715008392257
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.2182820550381672,
+            "sd": 0.08077077687079397,
+            "interval95": [
+              0.15099241016208226,
+              0.288837921863364
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "warmth-specificity",
+          "minimum": null,
+          "values": [
+            0.013116922447098863,
+            0.04767658986073686,
+            0.021064023004220115,
+            0.027231430113535165
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.02727224135639775,
+            "sd": 0.014778973035773264,
+            "interval95": [
+              0.016645549363707938,
+              0.042565299923936435
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "cold-benefit",
+          "minimum": null,
+          "values": [
+            0.004699622323600161,
+            -0.005700063018501456,
+            -0.003499949593817775,
+            0.008679499237892518
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.0010447772372933622,
+            "sd": 0.006777272919519215,
+            "interval95": [
+              -0.005150034662330535,
+              0.00668956078074634
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "cold-shape-dependence",
+          "minimum": null,
+          "values": [
+            -0.0027557025013666414,
+            0.0010632108511237637,
+            0.012852341848712645,
+            0.05848186109525105
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.017410427823430205,
+            "sd": 0.028175302978382232,
+            "interval95": [
+              -0.0008462458251214389,
+              0.04412719853421923
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "adoption-gain",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "adoption-rate-gain",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "newcomer-benefit",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "newcomer-shape",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "lineage-continuity",
+          "minimum": null,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "convergence-bad",
+          "label": "悪い食料の声は聞き合えると一つに集まる",
+          "minimum": 0.12,
+          "values": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0,
+            "sd": 0,
+            "interval95": [
+              0,
+              0
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "valence-distinctness",
+          "label": "良い声と悪い声が別の音（重心間の距離）",
+          "minimum": 0.25,
+          "values": [
+            0.2812893422463486,
+            0,
+            0,
+            0
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.07032233556158715,
+            "sd": 0.1406446711231743,
+            "interval95": [
+              0,
+              0.21096700668476145
+            ]
+          },
+          "status": "fail"
+        },
+        {
+          "id": "poison-benefit",
+          "minimum": null,
+          "values": [
+            -30.400000000000013,
+            1,
+            1,
+            0.9807692307692307
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -6.854807692307696,
+            "sd": 15.696797489614896,
+            "interval95": [
+              -22.554807692307705,
+              1
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-shape",
+          "minimum": null,
+          "values": [
+            -25.600000000000012,
+            4.333333333333333,
+            0.16666666666666669,
+            2.788461538461539
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -4.577884615384618,
+            "sd": 14.119879167329238,
+            "interval95": [
+              -18.502884615384623,
+              3.560897435897436
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-benefit-units",
+          "minimum": null,
+          "values": [
+            -1.5200000000000007,
+            0.12,
+            0.4799999999999999,
+            2.040000000000001
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 0.28,
+            "sd": 1.4609585894199746,
+            "interval95": [
+              -1.0200000000000005,
+              1.2600000000000005
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poison-shape-units",
+          "minimum": null,
+          "values": [
+            -1.2800000000000007,
+            0.5199999999999999,
+            0.08,
+            5.800000000000004
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 1.280000000000001,
+            "sd": 3.109212118849406,
+            "interval95": [
+              -0.9400000000000005,
+              4.030000000000003
+            ]
+          },
+          "status": "reported"
+        },
+        {
+          "id": "poisoning-benefit",
+          "label": "聞き合えると毒に当たる回数（個体×毒の場所）が減る（後ろ3分の1）",
+          "minimum": 1,
+          "values": [
+            -1,
+            3,
+            2,
+            4
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 2,
+            "sd": 2.160246899469287,
+            "interval95": [
+              0,
+              3.75
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "poisoning-shape",
+          "label": "音の特徴をでたらめにすると毒に当たる回数が増える（後ろ3分の1）",
+          "minimum": 1,
+          "values": [
+            5,
+            7,
+            2,
+            13
+          ],
+          "summary": {
+            "n": 4,
+            "mean": 6.75,
+            "sd": 4.645786621588784,
+            "interval95": [
+              3.25,
+              11
+            ]
+          },
+          "status": "pass"
+        },
+        {
+          "id": "contact-side-effect",
+          "minimum": null,
+          "values": [
+            -0.018,
+            -0.069,
+            -0.019000000000000003,
+            -0.059333333333333335
+          ],
+          "summary": {
+            "n": 4,
+            "mean": -0.04133333333333333,
+            "sd": 0.026662499674428297,
+            "interval95": [
+              -0.06416666666666668,
+              -0.018500000000000003
+            ]
+          },
+          "status": "reported"
+        }
+      ],
+      "established": false
+    }
+  ],
+  "paired": [
+    {
+      "id": "comprehension-benefit",
+      "label": "聞き手の寄与: 同じ声を出す聞かない対照より毒に当たる回数が少ない（音あり、後ろ3分の1）",
+      "candidate": "valence-assoc-0.12.0-experimental.9",
+      "reference": "valence-assoc-private-0.12.0-experimental.9",
+      "field": "latePoisonings",
+      "condition": "sound",
+      "minimum": 1,
+      "values": [],
+      "summary": {
+        "n": 1,
+        "mean": 0,
+        "sd": 0,
+        "interval95": [
+          0,
+          0
+        ]
+      },
+      "status": "skipped"
+    },
+    {
+      "id": "comprehension-benefit-all",
+      "label": "聞き手の寄与（実行全体）",
+      "candidate": "valence-assoc-0.12.0-experimental.9",
+      "reference": "valence-assoc-private-0.12.0-experimental.9",
+      "field": "poisonings",
+      "condition": "sound",
+      "values": [],
+      "summary": {
+        "n": 1,
+        "mean": 0,
+        "sd": 0,
+        "interval95": [
+          0,
+          0
+        ]
+      },
+      "status": "skipped"
+    },
+    {
+      "id": "ceiling-gap",
+      "label": "上限対照との差: 上限対照 − 候補 の毒に当たる回数（音あり、後ろ3分の1）",
+      "candidate": "valence-assoc-0.12.0-experimental.9",
+      "reference": "valence-alarm-ceiling-0.12.0-experimental.5",
+      "field": "latePoisonings",
+      "condition": "sound",
+      "values": [],
+      "summary": {
+        "n": 1,
+        "mean": 0,
+        "sd": 0,
+        "interval95": [
+          0,
+          0
+        ]
+      },
+      "status": "skipped"
+    }
+  ],
+  "established": {
+    "human-0.2.0": false,
+    "valence-aversion-0.12.0-experimental.2": false,
+    "valence-alarm-ceiling-0.12.0-experimental.5": false
+  },
+  "decision": "diagnostics-of-registered-models-not-default-promotion"
+}
