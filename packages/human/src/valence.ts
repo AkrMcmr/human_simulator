@@ -76,11 +76,21 @@ export const MIRROR = { radius: 0.18 };
  * SEPARATION.minimumGap from the own good voice (and vice versa) when it is reused.
  */
 export const VALENCE_MIRROR2_VERSION = "0.12.0-experimental.7";
+/**
+ * 0.12.0-experimental.8 (research decision 0045, chosen by the owner): strict associative comprehension. Production
+ * is experimental.5's (taste aversion, restrained disgust calls every 10 ticks, imitation with separation). The only
+ * way a heard category becomes a warning is the individual's own experience: it heard a sound of that category,
+ * then ate within VALENCE.visitRadius of the sound's source within the sound memory window and was poisoned. Each
+ * such meal counts one poisoned or one safe outcome per category; the category warns while it has at least one
+ * poisoned outcome and more poisoned than safe outcomes. No comparison with the individual's own voice, no
+ * learning-rate estimate, no innate meaning. "assoc-private" is the deaf control.
+ */
+export const VALENCE_ASSOC_VERSION = "0.12.0-experimental.8";
 export const AVERSION = { ticks: 600, desperateAbove: 0.95 };
 export const DISGUST = { refractory: 50 };
 export const DISGUST_FAST = { refractory: 10 };
 export const ALARM = { shape: { openness: 0.1, resonance: 0.1 }, radius: 0.18 };
-export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private" | "onset-fast" | "onset-fast-private" | "alarm" | "mirror" | "mirror-private" | "mirror2" | "mirror2-private";
+export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private" | "onset-fast" | "onset-fast-private" | "alarm" | "mirror" | "mirror-private" | "mirror2" | "mirror2-private" | "assoc" | "assoc-private";
 export const VALENCE = { visitRadius: 3, memoryTicks: REFERENT.memoryTicks, maxRecent: REFERENT.maxRecent, badCall: FOOD_CALL.utility, warnAbove: 0.3 };
 export type Valence = "good" | "bad";
 type ValenceState = HumanState & {
@@ -91,7 +101,14 @@ type ValenceState = HumanState & {
   aversions?: { x: number; y: number; tick: number; firsthand?: boolean }[];
   lastDisgustCall?: number;
   ownVoices?: Partial<Record<Valence, SoundShape>>;
+  /** experimental.8: per heard category, meals within the visit radius of a remembered source of that category that poisoned or did not. */
+  warnings?: Record<number, { poisoned: number; safe: number }>;
 };
+/** experimental.8: a category warns after the individual's own experience of being poisoned where it was heard, more often than not. */
+export function isWarningCategory(human: HumanState, category: number): boolean {
+  const w = (human as ValenceState).warnings?.[category];
+  return !!w && w.poisoned >= 1 && w.poisoned > w.safe;
+}
 /** The valence of the last meal only (what eating did), used to judge remembered sound sources. */
 export function mealValenceOf(human: HumanState): Valence | null {
   const h = human as ValenceState;
@@ -143,12 +160,13 @@ export function selectSafeFood(human: HumanState, sounds: HeardSound[], random: 
 export function decideValence(previous: HumanState, observation: Observation, random: RandomSource, mode: ValenceMode = "drop") {
   const human: ValenceState = structuredClone(previous);
   const self = observation.selfPosition;
+  const assocMode = mode === "assoc" || mode === "assoc-private";
   const mirror2 = mode === "mirror2" || mode === "mirror2-private";
   const mirrorMode = mode === "mirror" || mode === "mirror-private" || mirror2;
-  const fastMode = mode === "onset-fast" || mode === "onset-fast-private" || mode === "alarm" || mirrorMode;
+  const fastMode = mode === "onset-fast" || mode === "onset-fast-private" || mode === "alarm" || mirrorMode || assocMode;
   const onsetMode = mode === "onset" || mode === "onset-private" || fastMode;
   const disgustMode = mode === "disgust" || mode === "disgust-private" || onsetMode;
-  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private" && mode !== "onset-fast-private" && mode !== "mirror-private" && mode !== "mirror2-private";
+  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private" && mode !== "onset-fast-private" && mode !== "mirror-private" && mode !== "mirror2-private" && mode !== "assoc-private";
   const refractory = fastMode ? DISGUST_FAST.refractory : DISGUST.refractory;
   const near = (a: { x: number; y: number }, b: { x: number; y: number }) => magnitude({ x: a.x - b.x, y: a.y - b.y }) <= VALENCE.visitRadius;
   const remember = (place: { x: number; y: number }, firsthand: boolean) => { if (mode !== "drop") (human.aversions ??= []).push({ x: place.x, y: place.y, tick: observation.tick, ...(onsetMode ? { firsthand } : {}) }); };
@@ -165,6 +183,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   for (const m of human.recentSounds ?? []) {
     if (observation.tick - m.tick > VALENCE.memoryTicks) continue;
     if (meal && magnitude({ x: m.x - self.x, y: m.y - self.y }) <= VALENCE.visitRadius) {
+      if (assocMode) { const w = (human.warnings ??= {})[m.category] ??= { poisoned: 0, safe: 0 }; if (meal === "bad") w.poisoned++; else w.safe++; }
       if (human.heardSounds.some(c => c.id === m.category) && human.parameters.learningRate > 0) {
         human.valenceReferents ??= { good: {}, bad: {} };
         for (const kind of ["good", "bad"] as Valence[]) {
@@ -197,14 +216,15 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   // Hearing a bad-food voice from near a remembered food place drops that place as a target (not in the private variants).
   // experimental.3 also understands a heard sound in the category it would itself use as its bad voice (and not as its good voice).
   // In experimental.3 a sound in the category of the individual's own good voice is never a warning (valence-v3 showed learned bad estimates leaking onto the good voice and breaking it).
-  const ownBad = disgustMode && listens ? valenceCategory(human, "bad") : null, ownGood = disgustMode && listens ? valenceCategory(human, "good") : null;
+  const ownBad = disgustMode && listens && !assocMode ? valenceCategory(human, "bad") : null, ownGood = disgustMode && listens && !assocMode ? valenceCategory(human, "good") : null;
   // The alarm ceiling (valence-v7 pilot 2) must not mistake its own group's good voice for the alarm: a sound counts as an alarm only when it is nearer the alarm shape than the individual's good voice.
   const ceilingGood = mode === "alarm" ? valenceVoice(human, "good") : null;
   if (listens) for (const s of observation.sounds) {
     const category = nearestHeardCategory(human, s);
     if (disgustMode && ownGood !== null && category === ownGood) continue;
     const e = category === null ? undefined : human.valenceReferents?.bad?.[category];
-    const learned = !!e && e.samples > 0 && e.mean > VALENCE.warnAbove;
+    const learned = !assocMode && !!e && e.samples > 0 && e.mean > VALENCE.warnAbove;
+    const associated = assocMode && category !== null && isWarningCategory(human, category);
     const mirrored = ownBad !== null && category === ownBad;
     const toAlarm = Math.hypot(s.shape.openness - ALARM.shape.openness, s.shape.resonance - ALARM.shape.resonance);
     const alarmed = mode === "alarm" && toAlarm < ALARM.radius && (!ceilingGood || toAlarm < Math.hypot(s.shape.openness - ceilingGood.openness, s.shape.resonance - ceilingGood.resonance));
@@ -212,7 +232,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
     const toBad = own?.bad ? Math.hypot(s.shape.openness - own.bad.openness, s.shape.resonance - own.bad.resonance) : Infinity;
     const toGood = own?.good ? Math.hypot(s.shape.openness - own.good.openness, s.shape.resonance - own.good.resonance) : Infinity;
     const selfHeard = mirrorMode && toBad < MIRROR.radius && toBad < toGood;
-    if (!learned && !mirrored && !alarmed && !selfHeard) continue;
+    if (!learned && !mirrored && !alarmed && !selfHeard && !associated) continue;
     const source = { x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y };
     for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, source)) place.strength = 0;
     remember(source, false);
@@ -242,7 +262,8 @@ export function decideValence(previous: HumanState, observation: Observation, ra
       }
       : mirrorMode ? (h) => { const context = valenceOf(h); const own = (h as ValenceState).ownVoices?.[context ?? "good"]; return chooseValenceVoice(h) ?? (context && own ? { ...own } : null); }
       : (h) => chooseValenceVoice(h),
-    soundOrienting: listens ? (h, sounds, r) => selectSafeFood(h, sounds, r) : (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food"),
+    soundOrienting: listens && assocMode ? (h, sounds, r) => selectByEstimates(h, sounds.filter(s => { const c = nearestHeardCategory(h, s); return c === null || !isWarningCategory(h, c); }), (h as ValenceState).valenceReferents?.good, r, "valence-food")
+      : listens ? (h, sounds, r) => selectSafeFood(h, sounds, r) : (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food"),
     ...(disgustMode && (human.lastDisgust ?? 0) > 0 && (!onsetMode || observation.tick - (human.lastDisgustCall ?? -Infinity) >= refractory) ? { callUrge: VALENCE.badCall } : {}),
   });
   const next = result.human as ValenceState;
@@ -272,3 +293,5 @@ export const decideValenceMirror = (h: HumanState, o: Observation, r: RandomSour
 export const decideValenceMirrorPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "mirror-private");
 export const decideValenceMirror2 = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "mirror2");
 export const decideValenceMirror2Private = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "mirror2-private");
+export const decideValenceAssoc = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "assoc");
+export const decideValenceAssocPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "assoc-private");
