@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHuman } from "../../packages/human/src/index.ts";
 import { applyWithIntake } from "../../packages/human/src/forager-listener.ts";
-import { decideValenceAssoc, decideValenceAssocPrivate, isWarningCategory } from "../../packages/human/src/valence.ts";
+import { decideValenceAssoc, decideValenceAssocPrivate, decideValenceAssoc2, decideValenceAssoc2Private, isWarningCategory, ASSOCIATION } from "../../packages/human/src/valence.ts";
 import { protocol as valence } from "../../research/studies/valence-v1.ts";
 import { protocol as valence2 } from "../../research/studies/valence-v2.ts";
 import { protocol as valence3 } from "../../research/studies/valence-v3.ts";
@@ -12,10 +12,11 @@ import { protocol as valence6 } from "../../research/studies/valence-v6.ts";
 import { protocol as valence7 } from "../../research/studies/valence-v7.ts";
 import { protocol as valence8 } from "../../research/studies/valence-v8.ts";
 import { protocol as valence9 } from "../../research/studies/valence-v9.ts";
+import { protocol as valence10 } from "../../research/studies/valence-v10.ts";
 import { seedsFor, referentialConfig } from "../../research/studies/referential-v1.ts";
 import { HUMAN_MODELS, runExperiment } from "../../packages/simulation/src/index.ts";
 
-type V = ReturnType<typeof createHuman> & { lastIntake?: number; lastPoison?: number; warnings?: Record<number, { poisoned: number; safe: number }>; aversions?: { x: number; y: number; tick: number }[]; valenceHeard?: unknown; ownVoices?: unknown };
+type V = ReturnType<typeof createHuman> & { lastIntake?: number; lastPoison?: number; warnings?: Record<number, { poisoned: number; safe: number }>; aversions?: { x: number; y: number; tick: number }[]; recentSounds?: { category: number; x: number; y: number; tick: number }[]; valenceHeard?: unknown; ownVoices?: unknown };
 const effect = (foodIntake: number, poison = 0) => ({ ambientCold: .3, foodIntake, exertion: 0, resting: false, collision: 0, ...(poison ? { poison } : {}) });
 const patch = { id: "f", kind: "food" as const, strength: 1, relativePosition: { x: 1, y: 0 } };
 const shape = { openness: .7, resonance: .6 };
@@ -61,4 +62,32 @@ test("valence-v9 reuses the valence-v7 world on fresh seeds and registers the as
   assert.equal(new Set([...used, ...v9]).size, used.length + v9.length);
   const run = runExperiment({ ...referentialConfig(v9[0], "valence-assoc-0.12.0-experimental.8", true, valence9), horizon: 200 });
   assert.equal(run.frames.length, 201);
+});
+test("episode counting: a peer calling every tick while the listener eats counts one safe outcome per place and visit, not one per tick", () => {
+  let h8 = listener(), h9 = listener();
+  // Ten ticks: hear the call (source 2u away) and eat at the patch each tick.
+  for (let t = 0; t < 10; t++) {
+    const fed8 = applyWithIntake(h8, effect(.04)) as V, fed9 = applyWithIntake(h9, effect(.04)) as V;
+    h8 = decideValenceAssoc(fed8, at(t, [patch], [call]), () => 0.5).human as V;
+    h9 = decideValenceAssoc2(fed9, at(t, [patch], [call]), () => 0.5).human as V;
+  }
+  assert.ok((h8.warnings?.[1]?.safe ?? 0) >= 8, `experimental.8 counts nearly every tick (${h8.warnings?.[1]?.safe})`);
+  assert.equal(h9.warnings?.[1]?.safe, 1, "experimental.9 counts the visit once");
+  assert.equal(h9.recentSounds!.filter(m => m.category === 1).length, 1, "one memory per category and place");
+  // After the cooldown the same place can be counted again.
+  const later = applyWithIntake({ ...h9 } as V, effect(.04)) as V;
+  const again = decideValenceAssoc2(later, at(10 + ASSOCIATION.cooldownTicks + 1, [patch], [call]), () => 0.5).human as V;
+  const again2 = decideValenceAssoc2(applyWithIntake(again, effect(.04)) as V, at(12 + ASSOCIATION.cooldownTicks, [patch], [call]), () => 0.5).human as V;
+  assert.equal(again2.warnings?.[1]?.safe, 2, "a new visit after the cooldown counts once more");
+  // A poisoning where the category was heard still makes it a warning, and the deaf control ignores it.
+  const p = listener(); p.warnings = { 1: { poisoned: 1, safe: 0 } };
+  assert.notEqual(decideValenceAssoc2(p, at(5, [patch], [call]), () => 0.5).action.kind, "forage");
+  assert.equal(decideValenceAssoc2Private(p, at(5, [patch], [call]), () => 0.5).action.kind, "forage");
+  assert.equal(HUMAN_MODELS["valence-assoc-0.12.0-experimental.9"].role, "candidate");
+  const w10 = valence10.world as { foodSpawn?: { toxicEvery?: number } };
+  assert.equal(w10.foodSpawn!.toxicEvery, 2);
+  assert.deepEqual({ ...w10, foodSpawn: { ...w10.foodSpawn!, toxicEvery: 3 } }, valence9.world);
+  const used = [valence, valence2, valence3, valence4, valence5, valence6, valence7, valence8, valence9].flatMap(q => [q.pilotSeeds, seedsFor("development", q, "1"), seedsFor("validation", q, "1")].flat());
+  const v10 = [valence10.pilotSeeds, seedsFor("development", valence10, "1"), seedsFor("validation", valence10, "1")].flat();
+  assert.equal(new Set([...used, ...v10]).size, used.length + v10.length);
 });
