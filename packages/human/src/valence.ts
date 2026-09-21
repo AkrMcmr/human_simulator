@@ -38,8 +38,18 @@ export const VALENCE_AVERSION_VERSION = "0.12.0-experimental.2";
  * estimate rule. "disgust-private" produces the same disgust calls but ignores heard bad voices as a listener.
  */
 export const VALENCE_DISGUST_VERSION = "0.12.0-experimental.3";
+/**
+ * 0.12.0-experimental.4 (research decision 0041): disgust with restraint. In valence-v4 the disgusted individual
+ * called on every tick it stood in sight of an aversive patch (900 calls per run), calling displaced foraging, and
+ * second-hand aversions (from heard warnings) fed back into further warnings. Here disgust arises only from
+ * first-hand aversions (the individual's own poisoning), and the urge to call comes at most once per
+ * DISGUST.refractory ticks. Avoidance still follows both first-hand and heard aversions. "onset-private" is the
+ * matching deaf control.
+ */
+export const VALENCE_ONSET_VERSION = "0.12.0-experimental.4";
 export const AVERSION = { ticks: 600, desperateAbove: 0.95 };
-export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private";
+export const DISGUST = { refractory: 50 };
+export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private";
 export const VALENCE = { visitRadius: 3, memoryTicks: REFERENT.memoryTicks, maxRecent: REFERENT.maxRecent, badCall: FOOD_CALL.utility, warnAbove: 0.3 };
 export type Valence = "good" | "bad";
 type ValenceState = HumanState & {
@@ -47,7 +57,8 @@ type ValenceState = HumanState & {
   recentSounds?: { category: number; x: number; y: number; tick: number }[];
   valenceReferents?: Record<Valence, Record<number, Estimate>>;
   valenceHeard?: Record<Valence, Record<number, number>>;
-  aversions?: { x: number; y: number; tick: number }[];
+  aversions?: { x: number; y: number; tick: number; firsthand?: boolean }[];
+  lastDisgustCall?: number;
 };
 /** The valence of the last meal only (what eating did), used to judge remembered sound sources. */
 export function mealValenceOf(human: HumanState): Valence | null {
@@ -100,13 +111,15 @@ export function selectSafeFood(human: HumanState, sounds: HeardSound[], random: 
 export function decideValence(previous: HumanState, observation: Observation, random: RandomSource, mode: ValenceMode = "drop") {
   const human: ValenceState = structuredClone(previous);
   const self = observation.selfPosition;
-  const disgustMode = mode === "disgust" || mode === "disgust-private";
-  const listens = mode !== "private" && mode !== "disgust-private";
+  const onsetMode = mode === "onset" || mode === "onset-private";
+  const disgustMode = mode === "disgust" || mode === "disgust-private" || onsetMode;
+  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private";
   const near = (a: { x: number; y: number }, b: { x: number; y: number }) => magnitude({ x: a.x - b.x, y: a.y - b.y }) <= VALENCE.visitRadius;
-  const remember = (place: { x: number; y: number }) => { if (mode !== "drop") (human.aversions ??= []).push({ x: place.x, y: place.y, tick: observation.tick }); };
+  const remember = (place: { x: number; y: number }, firsthand: boolean) => { if (mode !== "drop") (human.aversions ??= []).push({ x: place.x, y: place.y, tick: observation.tick, ...(onsetMode ? { firsthand } : {}) }); };
   // experimental.3: food in sight at a place already known as aversive is disgusting — a bad context without eating.
+  // experimental.4: only first-hand aversions (own poisoning) disgust; heard warnings are avoided but not re-broadcast.
   if (disgustMode) {
-    const live = (human.aversions ?? []).filter(a => observation.tick - a.tick <= AVERSION.ticks);
+    const live = (human.aversions ?? []).filter(a => observation.tick - a.tick <= AVERSION.ticks && (!onsetMode || a.firsthand));
     human.lastDisgust = live.length && observation.resources.some(r => r.kind === "food" && live.some(a => near(a, { x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y }))) ? 1 : 0;
   }
   const context = valenceOf(human);
@@ -136,8 +149,8 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   human.recentSounds = kept;
   // A poisoned meal marks the place itself as no good in the eater's own memory.
   if (meal === "bad") {
-    for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, self)) { place.strength = 0; remember(place.position); }
-    remember(self);
+    for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, self)) { place.strength = 0; remember(place.position, true); }
+    remember(self, true);
   }
   if (context) {
     for (const s of observation.sounds) {
@@ -158,7 +171,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
     if (!learned && !mirrored) continue;
     const source = { x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y };
     for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, source)) place.strength = 0;
-    remember(source);
+    remember(source, false);
   }
   // experimental.2: aversive places keep nearby food out of the forage targets even when it is in sight.
   let perceived = observation;
@@ -174,10 +187,11 @@ export function decideValence(previous: HumanState, observation: Observation, ra
     stateCoupling: CONVENTION.stateCoupling, satiationCall: FOOD_CALL.utility,
     chooseSound: (h) => chooseValenceVoice(h),
     soundOrienting: listens ? (h, sounds, r) => selectSafeFood(h, sounds, r) : (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food"),
-    ...(disgustMode && (human.lastDisgust ?? 0) > 0 ? { callUrge: VALENCE.badCall } : {}),
+    ...(disgustMode && (human.lastDisgust ?? 0) > 0 && (!onsetMode || observation.tick - (human.lastDisgustCall ?? -Infinity) >= DISGUST.refractory) ? { callUrge: VALENCE.badCall } : {}),
   });
   const next = result.human as ValenceState;
   if (disgustMode) next.lastDisgust = human.lastDisgust ?? 0;
+  if (onsetMode && (human.lastDisgust ?? 0) > 0 && result.action.kind === "vocalize") next.lastDisgustCall = observation.tick;
   next.recentSounds = [...(human.recentSounds ?? [])];
   for (const s of observation.sounds) {
     const category = nearestHeardCategory(next, s);
@@ -191,3 +205,5 @@ export const decideValenceAversion = (h: HumanState, o: Observation, r: RandomSo
 export const decideValencePrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "private");
 export const decideValenceDisgust = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "disgust");
 export const decideValenceDisgustPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "disgust-private");
+export const decideValenceOnset = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "onset");
+export const decideValenceOnsetPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "onset-private");
