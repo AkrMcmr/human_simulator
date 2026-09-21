@@ -35,6 +35,10 @@ test("the fast caller has a 10-tick refractory period while the restrained one k
   const alarm = { visibleSourceId: null, shape: { ...ALARM.shape }, loudness: .8, relativePosition: { x: 2, y: 0 } };
   const heard = decideValenceAlarm(listener, at(5, [patch], [alarm]), () => 0.5);
   assert.notEqual(heard.action.kind, "forage", "the ceiling listener avoids food at the alarm's source without any learning");
+  const withGood = { ...listener, heardSounds: [{ id: 1, shape: { openness: .3, resonance: .1 }, samples: 5 }], valenceHeard: { good: { 1: 6 }, bad: {} } } as V & { valenceHeard: unknown };
+  const nearOwnGood = { ...alarm, shape: { openness: .22, resonance: .1 } };
+  assert.equal(decideValenceAlarm(withGood as V, at(5, [patch], [nearOwnGood]), () => 0.5).action.kind, "forage", "a sound nearer the group's good voice than the alarm shape is not an alarm (pilot-2 guard)");
+  assert.notEqual(decideValenceAlarm(withGood as V, at(5, [patch], [alarm]), () => 0.5).action.kind, "forage", "the exact alarm shape still warns");
   assert.equal(decideValenceOnsetFast(listener, at(5, [patch], [alarm]), () => 0.5).action.kind, "forage", "the learning candidate has no bad category yet and eats");
 });
 test("paired checks compare two models on the same seeds and condition, and valence-v6 is registered on fresh seeds", () => {
