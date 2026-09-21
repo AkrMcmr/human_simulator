@@ -50,6 +50,7 @@ test("valence-v5 differs from v4 only in the toxic ratio, uses fresh seeds, and 
   assert.equal(w5.foodSpawn!.toxicEvery, 3);
   assert.deepEqual(valence5.checks.map(c => c.id), ["convergence-gain", "arbitrariness", "convergence-bad", "valence-distinctness", "poisoning-benefit", "poisoning-shape", "forage-benefit"]);
   assert.deepEqual(valence5.checks.filter(c => !c.id.startsWith("poisoning")), valence4.checks.filter(c => !c.id.startsWith("poison")));
+  assert.deepEqual(valence5.checks.filter(c => c.id.startsWith("poisoning")).map(c => c.minimum), [1, 1]);
   const used = [valence, valence2, valence3, valence4].flatMap(p => [p.pilotSeeds, seedsFor("development", p, "1"), seedsFor("validation", p, "1")].flat());
   const v5 = [valence5.pilotSeeds, seedsFor("development", valence5, "1"), seedsFor("validation", valence5, "1")].flat();
   assert.equal(new Set([...used, ...v5]).size, used.length + v5.length);
