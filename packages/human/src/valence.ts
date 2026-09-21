@@ -47,9 +47,19 @@ export const VALENCE_DISGUST_VERSION = "0.12.0-experimental.3";
  * matching deaf control.
  */
 export const VALENCE_ONSET_VERSION = "0.12.0-experimental.4";
+/**
+ * 0.12.0-experimental.5 (research decision 0042): the restrained caller with a shorter refractory period (10 ticks),
+ * so that a bad voice has occasions comparable to the good one without the flood of experimental.3. The "alarm"
+ * control is a ceiling, not a candidate: its bad voice is an innate fixed sound (ALARM.shape, coupled to being
+ * poisoned or disgusted) and any heard sound near that shape marks its source aversive. It measures how much
+ * poisoning a perfectly shared, perfectly understood warning could prevent in this world.
+ */
+export const VALENCE_FAST_VERSION = "0.12.0-experimental.5";
 export const AVERSION = { ticks: 600, desperateAbove: 0.95 };
 export const DISGUST = { refractory: 50 };
-export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private";
+export const DISGUST_FAST = { refractory: 10 };
+export const ALARM = { shape: { openness: 0.1, resonance: 0.1 }, radius: 0.18 };
+export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private" | "onset-fast" | "onset-fast-private" | "alarm";
 export const VALENCE = { visitRadius: 3, memoryTicks: REFERENT.memoryTicks, maxRecent: REFERENT.maxRecent, badCall: FOOD_CALL.utility, warnAbove: 0.3 };
 export type Valence = "good" | "bad";
 type ValenceState = HumanState & {
@@ -111,9 +121,11 @@ export function selectSafeFood(human: HumanState, sounds: HeardSound[], random: 
 export function decideValence(previous: HumanState, observation: Observation, random: RandomSource, mode: ValenceMode = "drop") {
   const human: ValenceState = structuredClone(previous);
   const self = observation.selfPosition;
-  const onsetMode = mode === "onset" || mode === "onset-private";
+  const fastMode = mode === "onset-fast" || mode === "onset-fast-private" || mode === "alarm";
+  const onsetMode = mode === "onset" || mode === "onset-private" || fastMode;
   const disgustMode = mode === "disgust" || mode === "disgust-private" || onsetMode;
-  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private";
+  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private" && mode !== "onset-fast-private";
+  const refractory = fastMode ? DISGUST_FAST.refractory : DISGUST.refractory;
   const near = (a: { x: number; y: number }, b: { x: number; y: number }) => magnitude({ x: a.x - b.x, y: a.y - b.y }) <= VALENCE.visitRadius;
   const remember = (place: { x: number; y: number }, firsthand: boolean) => { if (mode !== "drop") (human.aversions ??= []).push({ x: place.x, y: place.y, tick: observation.tick, ...(onsetMode ? { firsthand } : {}) }); };
   // experimental.3: food in sight at a place already known as aversive is disgusting — a bad context without eating.
@@ -168,7 +180,8 @@ export function decideValence(previous: HumanState, observation: Observation, ra
     const e = category === null ? undefined : human.valenceReferents?.bad?.[category];
     const learned = !!e && e.samples > 0 && e.mean > VALENCE.warnAbove;
     const mirrored = ownBad !== null && category === ownBad;
-    if (!learned && !mirrored) continue;
+    const alarmed = mode === "alarm" && Math.hypot(s.shape.openness - ALARM.shape.openness, s.shape.resonance - ALARM.shape.resonance) < ALARM.radius;
+    if (!learned && !mirrored && !alarmed) continue;
     const source = { x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y };
     for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, source)) place.strength = 0;
     remember(source, false);
@@ -185,9 +198,9 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   }
   const result = decideWithSenderOptions(human, perceived, random, {
     stateCoupling: CONVENTION.stateCoupling, satiationCall: FOOD_CALL.utility,
-    chooseSound: (h) => chooseValenceVoice(h),
+    chooseSound: mode === "alarm" ? (h) => valenceOf(h) === "bad" ? { ...ALARM.shape } : chooseValenceVoice(h) : (h) => chooseValenceVoice(h),
     soundOrienting: listens ? (h, sounds, r) => selectSafeFood(h, sounds, r) : (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food"),
-    ...(disgustMode && (human.lastDisgust ?? 0) > 0 && (!onsetMode || observation.tick - (human.lastDisgustCall ?? -Infinity) >= DISGUST.refractory) ? { callUrge: VALENCE.badCall } : {}),
+    ...(disgustMode && (human.lastDisgust ?? 0) > 0 && (!onsetMode || observation.tick - (human.lastDisgustCall ?? -Infinity) >= refractory) ? { callUrge: VALENCE.badCall } : {}),
   });
   const next = result.human as ValenceState;
   if (disgustMode) next.lastDisgust = human.lastDisgust ?? 0;
@@ -207,3 +220,6 @@ export const decideValenceDisgust = (h: HumanState, o: Observation, r: RandomSou
 export const decideValenceDisgustPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "disgust-private");
 export const decideValenceOnset = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "onset");
 export const decideValenceOnsetPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "onset-private");
+export const decideValenceOnsetFast = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "onset-fast");
+export const decideValenceOnsetFastPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "onset-fast-private");
+export const decideValenceAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "alarm");

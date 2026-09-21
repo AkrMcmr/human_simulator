@@ -306,3 +306,23 @@ export function runReferentialPartition(name: "development" | "validation" | "pi
   const results = seeds.map(seed => runSeed(modelId, seed, protocol));
   return { name, protocol: protocol.id, round, seeds, model: modelId, results, ...assessSeeds(name + "/" + round + "/" + modelId, results, protocol) };
 }
+
+/**
+ * valence-v6: a paired check compares two models on the same seeds and condition — typically a candidate against a
+ * control that produces the same voices but does not use them as a listener — so the listener's contribution is
+ * measured without the production side and without the sound-versus-muted attraction penalty. The value per seed
+ * is reference minus candidate of a numeric run field (lower is better for the fields it is meant for).
+ */
+export type PairedSpec = { id: string; label?: string; candidate: string; reference: string; field: string; condition: Condition; minimum?: number };
+export type PairedResult = PairedSpec & { values: number[]; summary: Summary; status: "pass" | "fail" | "reported" | "skipped" };
+export function assessPaired(protocol: ReferentialProtocol, partitions: { model: string; results: SeedResult[] }[]): PairedResult[] {
+  const specs = (protocol as unknown as { paired?: PairedSpec[] }).paired ?? [];
+  return specs.map(spec => {
+    const cand = partitions.find(p => p.model === spec.candidate), ref = partitions.find(p => p.model === spec.reference);
+    if (!cand || !ref) return { ...spec, values: [], summary: summarizeSamples([0], protocol.id + "/paired/" + spec.id), status: "skipped" as const };
+    const values = cand.results.map(c => { const r = ref.results.find(x => x.seed === c.seed)!; return (r[spec.condition] as unknown as Record<string, number>)[spec.field] - (c[spec.condition] as unknown as Record<string, number>)[spec.field]; });
+    const summary = summarizeSamples(values, protocol.id + "/paired/" + spec.id);
+    const status = spec.minimum === undefined ? "reported" as const : summary.mean >= spec.minimum ? "pass" as const : "fail" as const;
+    return { ...spec, values, summary, status };
+  });
+}

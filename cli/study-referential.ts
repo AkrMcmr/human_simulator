@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { runReferentialPartition, protocol as protocolV1, type ReferentialProtocol } from "../research/studies/referential-v1.ts";
+import { runReferentialPartition, protocol as protocolV1, type ReferentialProtocol, assessPaired } from "../research/studies/referential-v1.ts";
 import protocolV2 from "../research/protocols/referential-v2.json" with { type: "json" };
 import protocolV3 from "../research/protocols/referential-v3.json" with { type: "json" };
 import protocolV4 from "../research/protocols/referential-v4.json" with { type: "json" };
@@ -23,6 +23,7 @@ import protocolValence2 from "../research/protocols/valence-v2.json" with { type
 import protocolValence3 from "../research/protocols/valence-v3.json" with { type: "json" };
 import protocolValence4 from "../research/protocols/valence-v4.json" with { type: "json" };
 import protocolValence5 from "../research/protocols/valence-v5.json" with { type: "json" };
+import protocolValence6 from "../research/protocols/valence-v6.json" with { type: "json" };
 import { HUMAN_MODELS, versionsFor, VERSIONS } from "../packages/simulation/src/index.ts";
 
 /** Information-asymmetry foraging diagnostics for one or more registered models. */
@@ -37,7 +38,7 @@ for (let i = 0; i < args.length; i++) {
   options.set(args[i], args[++i]);
 }
 const protocolName = options.get("--protocol") ?? "v1";
-const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol, convention: protocolConvention as unknown as ReferentialProtocol, convention2: protocolConvention2 as unknown as ReferentialProtocol, lexicon: protocolLexicon as unknown as ReferentialProtocol, lexicon2: protocolLexicon2 as unknown as ReferentialProtocol, lexicon3: protocolLexicon3 as unknown as ReferentialProtocol, transmission: protocolTransmission as unknown as ReferentialProtocol, transmission2: protocolTransmission2 as unknown as ReferentialProtocol, generations: protocolGenerations as unknown as ReferentialProtocol, generations2: protocolGenerations2 as unknown as ReferentialProtocol, valence: protocolValence as unknown as ReferentialProtocol, valence2: protocolValence2 as unknown as ReferentialProtocol, valence3: protocolValence3 as unknown as ReferentialProtocol, valence4: protocolValence4 as unknown as ReferentialProtocol, valence5: protocolValence5 as unknown as ReferentialProtocol };
+const protocols: Record<string, ReferentialProtocol> = { v1: protocolV1, v2: protocolV2 as unknown as ReferentialProtocol, v3: protocolV3 as unknown as ReferentialProtocol, v4: protocolV4 as unknown as ReferentialProtocol, v5: protocolV5 as unknown as ReferentialProtocol, caller: protocolCaller as unknown as ReferentialProtocol, convention: protocolConvention as unknown as ReferentialProtocol, convention2: protocolConvention2 as unknown as ReferentialProtocol, lexicon: protocolLexicon as unknown as ReferentialProtocol, lexicon2: protocolLexicon2 as unknown as ReferentialProtocol, lexicon3: protocolLexicon3 as unknown as ReferentialProtocol, transmission: protocolTransmission as unknown as ReferentialProtocol, transmission2: protocolTransmission2 as unknown as ReferentialProtocol, generations: protocolGenerations as unknown as ReferentialProtocol, generations2: protocolGenerations2 as unknown as ReferentialProtocol, valence: protocolValence as unknown as ReferentialProtocol, valence2: protocolValence2 as unknown as ReferentialProtocol, valence3: protocolValence3 as unknown as ReferentialProtocol, valence4: protocolValence4 as unknown as ReferentialProtocol, valence5: protocolValence5 as unknown as ReferentialProtocol, valence6: protocolValence6 as unknown as ReferentialProtocol };
 if (!Object.hasOwn(protocols, protocolName)) throw new Error("--protocol must be one of " + Object.keys(protocols).join(", "));
 const protocol: ReferentialProtocol = protocols[protocolName];
 const split = options.get("--split") ?? "development";
@@ -56,13 +57,14 @@ function hash(paths: string[]) {
 const provenance = {
   commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), dirty: git("status", "--porcelain") !== "",
   modelHash: hash([...files("packages/human/src"), "packages/simulation/src/models.ts"]),
-  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "research/protocols/convention-v1.json", "research/protocols/convention-v2.json", "research/protocols/lexicon-v1.json", "research/protocols/lexicon-v2.json", "research/protocols/lexicon-v3.json", "research/protocols/transmission-v1.json", "research/protocols/transmission-v2.json", "research/protocols/generations-v1.json", "research/protocols/generations-v2.json", "research/protocols/valence-v1.json", "research/protocols/valence-v2.json", "research/protocols/valence-v3.json", "research/protocols/valence-v4.json", "research/protocols/valence-v5.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
+  evaluatorHash: hash(["research/studies/referential-v1.ts", "research/protocols/referential-v1.json", "research/protocols/referential-v2.json", "research/protocols/referential-v3.json", "research/protocols/referential-v4.json", "research/protocols/referential-v5.json", "research/protocols/caller-cost-v1.json", "research/protocols/convention-v1.json", "research/protocols/convention-v2.json", "research/protocols/lexicon-v1.json", "research/protocols/lexicon-v2.json", "research/protocols/lexicon-v3.json", "research/protocols/transmission-v1.json", "research/protocols/transmission-v2.json", "research/protocols/generations-v1.json", "research/protocols/generations-v2.json", "research/protocols/valence-v1.json", "research/protocols/valence-v2.json", "research/protocols/valence-v3.json", "research/protocols/valence-v4.json", "research/protocols/valence-v5.json", "research/protocols/valence-v6.json", "packages/evaluation/src/index.ts", "cli/study-referential.ts"]),
   environmentHash: hash([...files("packages/contracts/src"), ...files("packages/world/src"), "packages/simulation/src/index.ts", "packages/simulation/src/random.ts"]),
   dependencyLockHash: hash(["package-lock.json"]), runtime: `Node ${process.version} / ${process.platform} / ${process.arch}`, versions: VERSIONS,
 };
 const round = options.get("--round") ?? "1";
 const partitions = modelIds.map(id => runReferentialPartition(split, id, protocol, round));
-const output = { format: "human-world-lab/referential-study", schemaVersion: 1, protocol, provenance, round, seedUse: split === "pilot" ? "pilot seeds: scale check only, not a gate" : split, models: Object.fromEntries(modelIds.map(id => [id, versionsFor(id).human])), partitions, established: Object.fromEntries(partitions.map(p => [p.model, p.established])), decision: "diagnostics-of-registered-models-not-default-promotion" };
+const paired = assessPaired(protocol, partitions);
+const output = { format: "human-world-lab/referential-study", schemaVersion: 1, protocol, provenance, round, seedUse: split === "pilot" ? "pilot seeds: scale check only, not a gate" : split, models: Object.fromEntries(modelIds.map(id => [id, versionsFor(id).human])), partitions, paired, established: Object.fromEntries(partitions.map(p => [p.model, p.established])), decision: "diagnostics-of-registered-models-not-default-promotion" };
 mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, JSON.stringify(output, null, 2) + "\n");
 const f = (x: number, d = 4) => x.toFixed(d);
 const spawn = (protocol.world as unknown as { foodSpawn?: { amount: number; positions: unknown[] } }).foodSpawn;
@@ -96,6 +98,11 @@ for (const p of partitions) {
     `| 接触ステップ割合 | ${s("sound", r => r.contactTicks)} | ${s("muted", r => r.contactTicks)} | ${s("misdirected", r => r.contactTicks)} | ${s("scrambled", r => r.contactTicks)} |`,
     `| 4u未満の割合 | ${s("sound", r => r.closeFraction)} | ${s("muted", r => r.closeFraction)} | ${s("misdirected", r => r.closeFraction)} | ${s("scrambled", r => r.closeFraction)} |`,
     `| 最低健康 | ${s("sound", r => r.minimumHealth)} | ${s("muted", r => r.minimumHealth)} | ${s("misdirected", r => r.minimumHealth)} | ${s("scrambled", r => r.minimumHealth)} |`, "");
+}
+if (paired.length) {
+  lines.push("## 対比較（同じシード・同じ条件で、参照モデル − 候補モデル）", "", "| 項目 | 候補 | 参照 | 指標 | 平均 ± SD | 閾値 | 判定 |", "| --- | --- | --- | --- | ---: | ---: | --- |");
+  for (const c of paired) lines.push(`| ${c.label ?? c.id} | ${c.candidate} | ${c.reference} | ${c.condition}.${c.field} | ${f(c.summary.mean)} ± ${f(c.summary.sd)} | ${c.minimum ?? "報告のみ"} | ${c.status} |`);
+  lines.push("");
 }
 lines.push("## 解釈の範囲", "", `音に意味・正解・成功ラベルを与えない自由worldでの診断。方向への定位は生得の知覚と探索傾向。成立の判定は事前登録した${protocol.checks.length}項目で、音の種類への依存（でたらめ特徴で利益が減る）がなければ「定位による手掛かり利用」に留まる。人間の言語や意図の再現ではない。`, "");
 writeFileSync(target.replace(/\.json$/, ".md"), lines.join("\n"));
