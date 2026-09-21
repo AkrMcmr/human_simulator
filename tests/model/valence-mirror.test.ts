@@ -45,6 +45,8 @@ test("valence-v7 differs from v6 in food amount only, uses fresh seeds, register
   const w7 = valence7.world as { foodSpawn?: { amount: number } };
   assert.deepEqual({ ...w7, foodSpawn: { ...w7.foodSpawn!, amount: 4 } }, valence6.world);
   assert.ok(valence7.resources.filter(r => r.kind === "food").every(r => r.amount === 6));
+  assert.equal(valence7.resources.filter(r => r.kind === "food").length, 5, "five live food slots");
+  assert.deepEqual(valence7.resources.filter(r => r.kind === "food").slice(0, 3).map(r => [r.position.x, r.position.y, (r as { toxic?: boolean }).toxic ?? false]), valence6.resources.filter(r => r.kind === "food").map(r => [r.position.x, r.position.y, (r as { toxic?: boolean }).toxic ?? false]), "the original three patches are unchanged");
   assert.deepEqual(valence7.checks, valence6.checks);
   const used = [valence, valence2, valence3, valence4, valence5, valence6].flatMap(p => [p.pilotSeeds, seedsFor("development", p, "1"), seedsFor("validation", p, "1")].flat());
   const v7 = [valence7.pilotSeeds, seedsFor("development", valence7, "1"), seedsFor("validation", valence7, "1")].flat();
