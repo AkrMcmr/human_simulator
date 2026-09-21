@@ -33,7 +33,7 @@ export type RunResult = {
   /** lexicon-v1: late calls made in neither context (not eating, not sheltered), pooled. A second voice used for everything outside food would coincide with the warmth voice; a warmth-specific voice would not. */
   otherVoiceCentroid: { openness: number; resonance: number } | null; otherCalls: number;
   /** valence-v1: poisoned intake summed over the run and over the last third; late calls made while poisoned (bad voice), pooled. */
-  poisonIntake: number; latePoisonIntake: number; /** valence-v5: distinct (individual, toxic patch) pairs with poisoned intake, over the run and over the last third. */ poisonings: number; latePoisonings: number; badVoiceDispersion: number; badVoiceCentroid: { openness: number; resonance: number } | null; badCalls: number;
+  poisonIntake: number; latePoisonIntake: number; /** valence-v5: distinct (individual, toxic patch) pairs with poisoned intake, over the run and over the last third. */ poisonings: number; latePoisonings: number; /** valence-v6 diagnostic: each new poisoning classified by what preceded it at that patch — nobody poisoned there before (first), someone at the same tick (simultaneous), earlier poisonings but no bad-food call from the patch reached this eater within 600 ticks (unwarned), or such a call did reach it (warned). */ poisoningKinds: { first: number; simultaneous: number; unwarned: number; warned: number }; badVoiceDispersion: number; badVoiceCentroid: { openness: number; resonance: number } | null; badCalls: number;
   /** transmission-v1: with a newcomer replaced mid-run, the distance between its late food voice and the incumbents' pooled late food voice (1 when either is missing), and its own late hunger. */
   newcomerDistance: number; newcomerLateHunger: number;
   /** transmission-v2: the newcomer's late food calls themselves, so adoption can be judged against the incumbents' voice of another condition. */
@@ -75,6 +75,10 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const lateBadCalls: { openness: number; resonance: number }[] = [];
   let badCalls = 0, poisonIntake = 0, latePoisonIntake = 0;
   const poisonedPairs = new Set<string>(), latePoisonedPairs = new Set<string>();
+  const poisoningKinds = { first: 0, simultaneous: 0, unwarned: 0, warned: 0 };
+  const firstPoisonedAt = new Map<string, number>(); // toxic patch id -> tick of the first poisoning there
+  const warnedAbout: Record<string, Record<string, number>> = {}; // listener id -> toxic patch id -> tick a bad-food call from that patch was within hearing
+  const hearingRadius = (protocol.world as unknown as { hearingRadius?: number }).hearingRadius ?? 24;
   const lateColds: number[] = [];
   let warmthCalls = 0;
   const heardBeforeFood: Record<string, boolean> = {};
@@ -112,7 +116,16 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         vocalizations++;
         // valence-v4: a disgust call (experimental.3, lastDisgust set by the decision itself) counts as a bad-food voice like a poisoned one.
         const poisoned = ((h as HumanState & { lastPoison?: number }).lastPoison ?? 0) > 0 || ((result.human as HumanState & { lastDisgust?: number }).lastDisgust ?? 0) > 0;
-        if (poisoned) { badCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateBadCalls.push({ ...result.action.sound }); }
+        if (poisoned) {
+          badCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateBadCalls.push({ ...result.action.sound });
+          // Diagnostic: a bad-food call made within the visit radius of a toxic patch warns every other living individual within hearing (sound condition only: muted/misdirected/scrambled listeners are not credited).
+          if (condition === "sound") {
+            const caller = before.get(h.id)!;
+            for (const patch of state.world.resources) if (patch.kind === "food" && patch.toxic && Math.hypot(patch.position.x - caller.x, patch.position.y - caller.y) <= 3) {
+              for (const other of state.world.animals) if (other.id !== h.id && Math.hypot(other.position.x - caller.x, other.position.y - caller.y) <= hearingRadius) (warnedAbout[other.id] ??= {})[patch.id] = tick;
+            }
+          }
+        }
         if ((h as HumanState & { lastWarm?: boolean }).lastWarm && ((h as HumanState & { lastIntake?: number }).lastIntake ?? 0) <= 0) {
           warmthCalls++;
           if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateWarmthCalls.push({ ...result.action.sound });
@@ -146,6 +159,12 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         const eater = advanced.world.animals.find(a => a.id === id)!;
         const patch = advanced.world.resources.find(r => r.kind === "food" && r.toxic && Math.hypot(r.position.x - eater.position.x, r.position.y - eater.position.y) <= r.radius);
         const key = id + ":" + (patch?.id ?? "?");
+        if (!poisonedPairs.has(key) && patch) {
+          const first = firstPoisonedAt.get(patch.id);
+          if (first === undefined) { poisoningKinds.first++; firstPoisonedAt.set(patch.id, tick); }
+          else if (first === tick) poisoningKinds.simultaneous++;
+          else { const warned = warnedAbout[id]?.[patch.id]; if (warned !== undefined && tick - warned <= 600) poisoningKinds.warned++; else poisoningKinds.unwarned++; }
+        }
         poisonedPairs.add(key); if (tick >= protocol.horizon * 2 / 3) latePoisonedPairs.add(key);
       }
     }
@@ -195,7 +214,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
     otherVoiceCentroid: otherPool.centroid, otherCalls,
-    poisonIntake, latePoisonIntake, poisonings: poisonedPairs.size, latePoisonings: latePoisonedPairs.size, badVoiceDispersion: badPool.dispersion, badVoiceCentroid: badPool.centroid, badCalls,
+    poisonIntake, latePoisonIntake, poisonings: poisonedPairs.size, latePoisonings: latePoisonedPairs.size, poisoningKinds, badVoiceDispersion: badPool.dispersion, badVoiceCentroid: badPool.centroid, badCalls,
     newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0, newcomerCalls: incomerCalls,
     earlyVoiceCentroid: earlyPool.centroid, earlyCalls: earlyCalls.length,
     meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),

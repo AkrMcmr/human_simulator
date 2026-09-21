@@ -63,6 +63,12 @@ test("poisonings count distinct (individual, toxic patch) pairs: a patch eaten o
   const run = runCondition("human-0.2.0", 1, "muted", lone);
   assert.ok(run.poisonIntake > 0.2, "the toxic patch was eaten repeatedly");
   assert.equal(run.poisonings, 1, "but it counts as one poisoning");
+  assert.deepEqual(run.poisoningKinds, { first: 1, simultaneous: 0, unwarned: 0, warned: 0 }, "a lone eater's poisoning is a first poisoning");
+  const group = runCondition("valence-alarm-ceiling-0.12.0-experimental.5", 80001, "sound", { ...valence5, horizon: 1500 } as typeof valence5);
+  const k = group.poisoningKinds;
+  assert.equal(k.first + k.simultaneous + k.unwarned + k.warned, group.poisonings, "every poisoning is classified exactly once");
+  const mutedGroup = runCondition("valence-alarm-ceiling-0.12.0-experimental.5", 80001, "muted", { ...valence5, horizon: 1500 } as typeof valence5);
+  assert.equal(mutedGroup.poisoningKinds.warned, 0, "nobody is warned when muted");
   assert.ok(run.latePoisonings <= 1);
   const mk = (late: number) => ({ latePoisonings: late }) as unknown as SeedResult["sound"];
   const r = { seed: 1, model: "m", sound: mk(2), muted: mk(5), misdirected: mk(5), scrambled: mk(4) } as SeedResult;
