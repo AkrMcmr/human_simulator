@@ -86,8 +86,12 @@ test("valence-v11 adds only the poison delay to the valence-v10 world, on fresh 
   assert.equal(HUMAN_MODELS["valence-alarm-ceiling-0.12.0-experimental.10"].role, "control");
   const w11 = valence11.world as { poisonDelay?: number };
   assert.equal(w11.poisonDelay, 40);
-  const { poisonDelay: _d, ...rest } = w11; void _d;
-  assert.deepEqual(rest, valence10.world); assert.deepEqual(valence11.resources, valence10.resources); assert.deepEqual(valence11.checks, valence10.checks);
+  const { poisonDelay: _d, ...rest } = w11 as { poisonDelay?: number; foodSpawn: { positions: { x: number; y: number }[]; toxicEvery: number } }; void _d;
+  const w10 = valence10.world as { foodSpawn: { positions: { x: number; y: number }[] } };
+  assert.equal(rest.foodSpawn.positions.length, 13, "thirteen spawn positions, coprime with toxicEvery 2, so a position alternates between toxic and wholesome");
+  assert.deepEqual(rest.foodSpawn.positions.slice(0, 12), w10.foodSpawn.positions);
+  assert.deepEqual({ ...rest, foodSpawn: { ...rest.foodSpawn, positions: w10.foodSpawn.positions } }, valence10.world);
+  assert.deepEqual(valence11.resources, valence10.resources); assert.deepEqual(valence11.checks, valence10.checks);
   const used = [valence, valence2, valence3, valence4, valence5, valence6, valence7, valence8, valence9, valence10].flatMap(q => [q.pilotSeeds, seedsFor("development", q, "1"), seedsFor("validation", q, "1")].flat());
   const v11 = [valence11.pilotSeeds, seedsFor("development", valence11, "1"), seedsFor("validation", valence11, "1")].flat();
   assert.equal(new Set([...used, ...v11]).size, used.length + v11.length);
