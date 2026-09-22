@@ -73,6 +73,7 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
         || !Array.isArray(wc.positions) || wc.positions.length < 1 || wc.positions.length > 64 || !wc.positions.every(inBounds)
         || (wc.count !== undefined && (!Number.isInteger(wc.count) || (wc.count as number) < 1 || (wc.count as number) > 8))) throw new Error("暖かい場所の移り変わりの設定が不正です。");
   }
+  if (value.world.poisonDelay !== undefined && (!Number.isInteger(value.world.poisonDelay) || (value.world.poisonDelay as number) < 0 || (value.world.poisonDelay as number) > 1000)) throw new Error("毒の潜伏の設定が不正です。");
   if (value.world.foodSpawn !== undefined) {
     const sp = value.world.foodSpawn;
     if (!object(sp) || !foodAmount(sp.amount) || !finite(sp.radius) || (sp.radius as number) <= 0 || (sp.radius as number) > 100 || !unit(sp.depletedBelow)

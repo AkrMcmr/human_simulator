@@ -95,11 +95,24 @@ export const VALENCE_ASSOC_VERSION = "0.12.0-experimental.8";
  */
 export const VALENCE_ASSOC2_VERSION = "0.12.0-experimental.9";
 export const ASSOCIATION = { cooldownTicks: 300 };
+/**
+ * 0.12.0-experimental.10 (research decision 0047, chosen by the owner): latent poison. With world 0.7.0 the poison
+ * of a toxic bite arrives later, so the eater cannot tell at the meal whether the food was toxic and keeps calling
+ * its good-food voice there — the absence of a good voice no longer marks toxic patches (valence-v10). The eater
+ * remembers its recent meals (place, tick, sound categories heard near the place). When poison arrives, every meal
+ * still open within DIGEST.window becomes a first-hand aversion and its categories count one poisoned outcome; a
+ * meal that stays open past the window counts its categories safe. The bad-voice context is disgust at an aversive
+ * place in sight, not the mere arrival of poison (which may come far from the patch). Comprehension is the strict
+ * association of experimental.9. "assoc3-private" is the deaf control; "alarm2" is the ceiling with the same
+ * retroactive aversion and the innate alarm.
+ */
+export const VALENCE_LATENT_VERSION = "0.12.0-experimental.10";
+export const DIGEST = { window: 100, mergeTicks: 20 };
 export const AVERSION = { ticks: 600, desperateAbove: 0.95 };
 export const DISGUST = { refractory: 50 };
 export const DISGUST_FAST = { refractory: 10 };
 export const ALARM = { shape: { openness: 0.1, resonance: 0.1 }, radius: 0.18 };
-export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private" | "onset-fast" | "onset-fast-private" | "alarm" | "mirror" | "mirror-private" | "mirror2" | "mirror2-private" | "assoc" | "assoc-private" | "assoc2" | "assoc2-private";
+export type ValenceMode = "drop" | "aversion" | "private" | "disgust" | "disgust-private" | "onset" | "onset-private" | "onset-fast" | "onset-fast-private" | "alarm" | "mirror" | "mirror-private" | "mirror2" | "mirror2-private" | "assoc" | "assoc-private" | "assoc2" | "assoc2-private" | "assoc3" | "assoc3-private" | "alarm2";
 export const VALENCE = { visitRadius: 3, memoryTicks: REFERENT.memoryTicks, maxRecent: REFERENT.maxRecent, badCall: FOOD_CALL.utility, warnAbove: 0.3 };
 export type Valence = "good" | "bad";
 type ValenceState = HumanState & {
@@ -114,6 +127,8 @@ type ValenceState = HumanState & {
   warnings?: Record<number, { poisoned: number; safe: number }>;
   /** experimental.9: (category, place) pairs whose outcome was counted recently, so one visit counts once. */
   associated?: { category: number; x: number; y: number; tick: number }[];
+  /** experimental.10: recent meals awaiting the verdict of latent poison. */
+  recentMeals?: { x: number; y: number; tick: number; categories: number[]; resolved: boolean }[];
 };
 /** experimental.8: a category warns after the individual's own experience of being poisoned where it was heard, more often than not. */
 export function isWarningCategory(human: HumanState, category: number): boolean {
@@ -153,7 +168,9 @@ export function valenceVoice(human: HumanState, kind: Valence): SoundShape | nul
   return c ? { ...c.shape } : null;
 }
 export function chooseValenceVoice(human: HumanState): SoundShape | null {
-  const context = valenceOf(human);
+  return chooseValenceVoiceFor(human, valenceOf(human));
+}
+export function chooseValenceVoiceFor(human: HumanState, context: Valence | null): SoundShape | null {
   const good = valenceVoice(human, "good"), bad = valenceVoice(human, "bad");
   if (context === "good") return good && bad ? separateFrom(good, bad) : good;
   if (context === "bad") return bad && good ? separateFrom(bad, good) : bad;
@@ -171,25 +188,56 @@ export function selectSafeFood(human: HumanState, sounds: HeardSound[], random: 
 export function decideValence(previous: HumanState, observation: Observation, random: RandomSource, mode: ValenceMode = "drop") {
   const human: ValenceState = structuredClone(previous);
   const self = observation.selfPosition;
-  const episodeMode = mode === "assoc2" || mode === "assoc2-private";
+  const delayAware = mode === "assoc3" || mode === "assoc3-private" || mode === "alarm2";
+  const alarmMode = mode === "alarm" || mode === "alarm2";
+  const episodeMode = mode === "assoc2" || mode === "assoc2-private" || mode === "assoc3" || mode === "assoc3-private";
   const assocMode = mode === "assoc" || mode === "assoc-private" || episodeMode;
   const mirror2 = mode === "mirror2" || mode === "mirror2-private";
   const mirrorMode = mode === "mirror" || mode === "mirror-private" || mirror2;
-  const fastMode = mode === "onset-fast" || mode === "onset-fast-private" || mode === "alarm" || mirrorMode || assocMode;
+  const fastMode = mode === "onset-fast" || mode === "onset-fast-private" || alarmMode || mirrorMode || assocMode;
   const onsetMode = mode === "onset" || mode === "onset-private" || fastMode;
   const disgustMode = mode === "disgust" || mode === "disgust-private" || onsetMode;
-  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private" && mode !== "onset-fast-private" && mode !== "mirror-private" && mode !== "mirror2-private" && mode !== "assoc-private" && mode !== "assoc2-private";
+  const listens = mode !== "private" && mode !== "disgust-private" && mode !== "onset-private" && mode !== "onset-fast-private" && mode !== "mirror-private" && mode !== "mirror2-private" && mode !== "assoc-private" && mode !== "assoc2-private" && mode !== "assoc3-private";
   const refractory = fastMode ? DISGUST_FAST.refractory : DISGUST.refractory;
   const near = (a: { x: number; y: number }, b: { x: number; y: number }) => magnitude({ x: a.x - b.x, y: a.y - b.y }) <= VALENCE.visitRadius;
   const remember = (place: { x: number; y: number }, firsthand: boolean) => { if (mode !== "drop") (human.aversions ??= []).push({ x: place.x, y: place.y, tick: observation.tick, ...(onsetMode ? { firsthand } : {}) }); };
+  // experimental.10: latent poison — meals are judged when the poison arrives (or fails to arrive), not at the bite.
+  if (delayAware) {
+    human.recentMeals = (human.recentMeals ?? []).filter(m => observation.tick - m.tick <= DIGEST.window + 1);
+    const count = (category: number, kind: "poisoned" | "safe", place: { x: number; y: number }) => {
+      if (!assocMode) return;
+      const recent = (human.associated ?? []).filter(a => observation.tick - a.tick <= ASSOCIATION.cooldownTicks);
+      human.associated = recent;
+      if (recent.some(a => a.category === category && near(a, place))) return;
+      const w = (human.warnings ??= {})[category] ??= { poisoned: 0, safe: 0 }; w[kind]++;
+      human.associated.push({ category, x: place.x, y: place.y, tick: observation.tick });
+    };
+    if ((human.lastPoison ?? 0) > 0) {
+      const open = human.recentMeals.filter(m => !m.resolved);
+      if (open.length) for (const m of open) {
+        m.resolved = true; remember(m, true);
+        for (const place of Object.values(human.places)) if (place.kind === "food" && near(place.position, m)) place.strength = 0;
+        for (const c of m.categories) count(c, "poisoned", m);
+      } else if (!human.recentMeals.some(m => m.resolved)) remember(self, true);
+    }
+    for (const m of human.recentMeals) if (!m.resolved && observation.tick - m.tick > DIGEST.window) { m.resolved = true; for (const c of m.categories) count(c, "safe", m); }
+    if ((human.lastIntake ?? 0) > 0 && (human.lastPoison ?? 0) === 0) {
+      const heardHere = [...new Set((human.recentSounds ?? []).filter(s => near(s, self)).map(s => s.category))];
+      const last = human.recentMeals.at(-1);
+      if (last && !last.resolved && near(last, self) && observation.tick - last.tick <= DIGEST.mergeTicks) { last.tick = observation.tick; for (const c of heardHere) if (!last.categories.includes(c)) last.categories.push(c); }
+      else human.recentMeals.push({ x: self.x, y: self.y, tick: observation.tick, categories: heardHere, resolved: false });
+      if (human.recentMeals.length > 40) human.recentMeals = human.recentMeals.slice(-40);
+    }
+  }
   // experimental.3: food in sight at a place already known as aversive is disgusting — a bad context without eating.
   // experimental.4: only first-hand aversions (own poisoning) disgust; heard warnings are avoided but not re-broadcast.
   if (disgustMode) {
     const live = (human.aversions ?? []).filter(a => observation.tick - a.tick <= AVERSION.ticks && (!onsetMode || a.firsthand));
     human.lastDisgust = live.length && observation.resources.some(r => r.kind === "food" && live.some(a => near(a, { x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y }))) ? 1 : 0;
   }
-  const context = valenceOf(human);
-  const meal = mealValenceOf(human);
+  // experimental.10: the bad-voice context is disgust in sight, and eating is good until proven otherwise; meals are not judged at the bite.
+  const context: Valence | null = delayAware ? ((human.lastDisgust ?? 0) > 0 ? "bad" : (human.lastIntake ?? 0) > 0 ? "good" : null) : valenceOf(human);
+  const meal = delayAware ? null : mealValenceOf(human);
   // Eating resolves remembered sound sources nearby: good or bad by what this meal did.
   const kept: NonNullable<ValenceState["recentSounds"]> = [];
   for (const m of human.recentSounds ?? []) {
@@ -237,7 +285,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   // In experimental.3 a sound in the category of the individual's own good voice is never a warning (valence-v3 showed learned bad estimates leaking onto the good voice and breaking it).
   const ownBad = disgustMode && listens && !assocMode ? valenceCategory(human, "bad") : null, ownGood = disgustMode && listens && !assocMode ? valenceCategory(human, "good") : null;
   // The alarm ceiling (valence-v7 pilot 2) must not mistake its own group's good voice for the alarm: a sound counts as an alarm only when it is nearer the alarm shape than the individual's good voice.
-  const ceilingGood = mode === "alarm" ? valenceVoice(human, "good") : null;
+  const ceilingGood = alarmMode ? valenceVoice(human, "good") : null;
   if (listens) for (const s of observation.sounds) {
     const category = nearestHeardCategory(human, s);
     if (disgustMode && ownGood !== null && category === ownGood) continue;
@@ -246,7 +294,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
     const associated = assocMode && category !== null && isWarningCategory(human, category);
     const mirrored = ownBad !== null && category === ownBad;
     const toAlarm = Math.hypot(s.shape.openness - ALARM.shape.openness, s.shape.resonance - ALARM.shape.resonance);
-    const alarmed = mode === "alarm" && toAlarm < ALARM.radius && (!ceilingGood || toAlarm < Math.hypot(s.shape.openness - ceilingGood.openness, s.shape.resonance - ceilingGood.resonance));
+    const alarmed = alarmMode && toAlarm < ALARM.radius && (!ceilingGood || toAlarm < Math.hypot(s.shape.openness - ceilingGood.openness, s.shape.resonance - ceilingGood.resonance));
     const own = mirrorMode ? human.ownVoices : undefined;
     const toBad = own?.bad ? Math.hypot(s.shape.openness - own.bad.openness, s.shape.resonance - own.bad.resonance) : Infinity;
     const toGood = own?.good ? Math.hypot(s.shape.openness - own.good.openness, s.shape.resonance - own.good.resonance) : Infinity;
@@ -269,7 +317,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
   let chosenShape: SoundShape | null = null;
   const result = decideWithSenderOptions(human, perceived, random, {
     stateCoupling: CONVENTION.stateCoupling, satiationCall: FOOD_CALL.utility,
-    chooseSound: mode === "alarm" ? (h) => valenceOf(h) === "bad" ? { ...ALARM.shape } : chooseValenceVoice(h)
+    chooseSound: alarmMode ? (h) => (delayAware ? ((h as ValenceState).lastDisgust ?? 0) > 0 : valenceOf(h) === "bad") ? { ...ALARM.shape } : chooseValenceVoice(h)
       : mirror2 ? (h) => {
         const context = valenceOf(h); const voices = (h as ValenceState).ownVoices ?? {};
         const target = chooseValenceVoice(h);
@@ -280,6 +328,7 @@ export function decideValence(previous: HumanState, observation: Observation, ra
         return chosenShape;
       }
       : mirrorMode ? (h) => { const context = valenceOf(h); const own = (h as ValenceState).ownVoices?.[context ?? "good"]; return chooseValenceVoice(h) ?? (context && own ? { ...own } : null); }
+      : delayAware ? (h) => chooseValenceVoiceFor(h, ((h as ValenceState).lastDisgust ?? 0) > 0 ? "bad" : ((h as ValenceState).lastIntake ?? 0) > 0 ? "good" : null)
       : (h) => chooseValenceVoice(h),
     soundOrienting: listens && assocMode ? (h, sounds, r) => selectByEstimates(h, sounds.filter(s => { const c = nearestHeardCategory(h, s); return c === null || !isWarningCategory(h, c); }), (h as ValenceState).valenceReferents?.good, r, "valence-food")
       : listens ? (h, sounds, r) => selectSafeFood(h, sounds, r) : (h, sounds, r) => selectByEstimates(h, sounds, (h as ValenceState).valenceReferents?.good, r, "valence-food"),
@@ -318,3 +367,6 @@ export const decideValenceAssoc = (h: HumanState, o: Observation, r: RandomSourc
 export const decideValenceAssocPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "assoc-private");
 export const decideValenceAssoc2 = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "assoc2");
 export const decideValenceAssoc2Private = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "assoc2-private");
+export const decideValenceLatent = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "assoc3");
+export const decideValenceLatentPrivate = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "assoc3-private");
+export const decideValenceLatentAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideValence(h, o, r, "alarm2");

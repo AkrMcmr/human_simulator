@@ -1,6 +1,6 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.6.0";
+export const WORLD_VERSION = "0.7.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
@@ -8,6 +8,8 @@ export type WorldParameters = {
   foodRegeneration?: number;
   /** 0.3.0: when a food patch falls to `depletedBelow` it is marked spent (still visible, never regrows) and a fresh patch appears at the next position of this fixed sequence. Omitted: no spawning (0.2.0 behavior). */
   foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[]; /** 0.5.0: every n-th spawned patch is toxic (1-based count; omitted: none). */ toxicEvery?: number; /** 0.6.0: a patch alive this many ticks without being depleted rots (spent, nothing left) and the next patch appears, so an avoided patch does not hold a slot forever. Omitted: patches last until eaten (0.5.0 behavior). */ lifetime?: number };
+  /** 0.7.0: poison from toxic food reaches the eater this many ticks after the bite (0 or omitted: the same tick, the 0.5.0 behavior). While it is latent the eater neither feels it nor knows the food was toxic. */
+  poisonDelay?: number;
   /** 0.4.0: every `lifetime` ticks the warm place goes out (stays visible, spent, gives no warmth) and a fresh one appears at the next fixed position. Omitted: warm places are permanent (0.3.0 behavior). */
   warmthCycle?: { lifetime: number; radius: number; positions: Vec2[]; /** Warm places alive after each cycle (default 1). */ count?: number };
 };
@@ -21,6 +23,8 @@ export type WorldState = {
   spawned?: number;
   /** Number of warm places cycled so far (0.4.0, only with warmthCycle). */
   warmed?: number;
+  /** 0.7.0: poison eaten but not yet felt (only with poisonDelay). */
+  pendingPoison?: { id: string; due: number; amount: number }[];
 };
 export const DEFAULT_WORLD: WorldParameters = {
   width: 40, height: 28, visionRadius: 16, hearingRadius: 20,
@@ -133,7 +137,10 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
     for (const eater of eaters) {
       const portion = total / eaters.length;
       effects[eater.id].foodIntake += portion;
-      if (resource.toxic && portion > 0) effects[eater.id].poison = (effects[eater.id].poison ?? 0) + portion;
+      if (resource.toxic && portion > 0) {
+        if (p.poisonDelay) (world.pendingPoison ??= []).push({ id: eater.id, due: tick + 1 + p.poisonDelay, amount: portion });
+        else effects[eater.id].poison = (effects[eater.id].poison ?? 0) + portion;
+      }
       if (portion > 0) events.push({ tick: tick + 1, kind: "food", actorId: eater.id, value: portion });
     }
     if (resource.spent) { resource.amount = 0; continue; }
@@ -162,6 +169,12 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
       world.warmed = n + 1;
       events.push({ tick: tick + 1, kind: "spawn", actorId: "warm-cycle-" + (n + 1), value: 1 });
     }
+  }
+  // 0.7.0: latent poison comes due.
+  if (world.pendingPoison?.length) {
+    const due = world.pendingPoison.filter((q) => q.due <= tick + 1);
+    world.pendingPoison = world.pendingPoison.filter((q) => q.due > tick + 1);
+    for (const q of due) if (effects[q.id]) effects[q.id].poison = (effects[q.id].poison ?? 0) + q.amount;
   }
   return { world, effects, events };
 }

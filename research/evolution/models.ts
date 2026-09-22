@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
-import { decideValence, decideValenceAversion, decideValencePrivate, decideValenceDisgust, decideValenceDisgustPrivate, decideValenceOnset, decideValenceOnsetPrivate, decideValenceOnsetFast, decideValenceOnsetFastPrivate, decideValenceAlarm, decideValenceMirror, decideValenceMirrorPrivate, decideValenceMirror2, decideValenceMirror2Private, decideValenceAssoc, decideValenceAssocPrivate, decideValenceAssoc2, decideValenceAssoc2Private } from "../../packages/human/src/valence.ts";
+import { decideValence, decideValenceAversion, decideValencePrivate, decideValenceDisgust, decideValenceDisgustPrivate, decideValenceOnset, decideValenceOnsetPrivate, decideValenceOnsetFast, decideValenceOnsetFastPrivate, decideValenceAlarm, decideValenceMirror, decideValenceMirrorPrivate, decideValenceMirror2, decideValenceMirror2Private, decideValenceAssoc, decideValenceAssocPrivate, decideValenceAssoc2, decideValenceAssoc2Private, decideValenceLatent, decideValenceLatentPrivate, decideValenceLatentAlarm } from "../../packages/human/src/valence.ts";
 import { decideLexicon, decideLexiconTransient, decideLexiconMemory, decideLexiconSeparate, decideLexiconFine } from "../../packages/human/src/lexicon.ts";
 import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, decideConvention, decideConventionNoImitation, decideConventionContrast, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
 import { createHuman, decideHuman, decideLegacyHuman, applyPhysicalEffect } from "../../packages/human/src/index.ts";
@@ -66,4 +66,7 @@ export const models: Record<string, ModelAdapter> = {
   "valence-assoc-private-0.12.0-experimental.8": { create: createHuman, decide: decideValenceAssocPrivate, apply: applyWithIntake },
   "valence-assoc-0.12.0-experimental.9": { create: createHuman, decide: decideValenceAssoc2, apply: applyWithIntake },
   "valence-assoc-private-0.12.0-experimental.9": { create: createHuman, decide: decideValenceAssoc2Private, apply: applyWithIntake },
+  "valence-assoc-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatent, apply: applyWithIntake },
+  "valence-assoc-private-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatentPrivate, apply: applyWithIntake },
+  "valence-alarm-ceiling-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatentAlarm, apply: applyWithIntake },
 };

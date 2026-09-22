@@ -154,13 +154,13 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         if (Math.hypot(dx, dy) > 1e-9) { towardChecks++; if (dx * direction.x + dy * direction.y > 0) towardHits++; }
       }
     }
-    for (const id of Object.keys(advanced.effects)) {
-      const p = advanced.effects[id].poison ?? 0; poisonIntake += p; if (tick >= protocol.horizon * 2 / 3) latePoisonIntake += p;
-      if (p > 0) {
-        // Which toxic patch: the one the eater stands in after this step (the world moves animals, then feeds them).
-        const eater = advanced.world.animals.find(a => a.id === id)!;
-        const patch = advanced.world.resources.find(r => r.kind === "food" && r.toxic && Math.hypot(r.position.x - eater.position.x, r.position.y - eater.position.y) <= r.radius);
-        const key = id + ":" + (patch?.id ?? "?");
+    for (const id of Object.keys(advanced.effects)) { const p = advanced.effects[id].poison ?? 0; poisonIntake += p; if (tick >= protocol.horizon * 2 / 3) latePoisonIntake += p; }
+    // A poisoning is a bite of toxic food, counted when it is eaten (world 0.7.0 may deliver the poison later): the eater stands in the patch after this step (the world moves animals, then feeds them).
+    for (const id of new Set(advanced.events.filter(e => e.kind === "food").map(e => e.actorId))) {
+      const eater = advanced.world.animals.find(a => a.id === id)!;
+      const patch = advanced.world.resources.find(r => r.kind === "food" && r.toxic && Math.hypot(r.position.x - eater.position.x, r.position.y - eater.position.y) <= r.radius);
+      if (patch) {
+        const key = id + ":" + patch.id;
         if (!poisonedPairs.has(key) && patch) {
           const first = firstPoisonedAt.get(patch.id);
           if (first === undefined) { poisoningKinds.first++; firstPoisonedAt.set(patch.id, tick); }
