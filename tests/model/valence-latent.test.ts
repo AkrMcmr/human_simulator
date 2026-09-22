@@ -41,7 +41,7 @@ test("world 0.7.0: with poisonDelay the poison of a toxic bite arrives that many
 test("the evaluator counts a poisoning when toxic food is eaten, so a latent world still attributes it to the patch", () => {
   const lone = { ...valence11, horizon: 300, agents: { A: { x: 33, y: 23 } }, body: { hunger: .9, fatigue: 0, cold: 0 } } as typeof valence11;
   const run = runCondition("human-0.2.0", 1, "muted", lone);
-  assert.equal(run.poisonings, 1, "one poisoning at the toxic patch even though the poison arrives 40 ticks later");
+  assert.equal(run.poisonings, 1, "one poisoning at the toxic patch even though the poison arrives later");
   assert.ok(run.poisonIntake > 0.2);
 });
 test("the latent-aware eater blames the meal, not the place where the poison strikes, and counts the categories heard at the meal", () => {
@@ -85,7 +85,7 @@ test("valence-v11 adds only the poison delay to the valence-v10 world, on fresh 
   assert.equal(HUMAN_MODELS["valence-assoc-0.12.0-experimental.10"].role, "candidate");
   assert.equal(HUMAN_MODELS["valence-alarm-ceiling-0.12.0-experimental.10"].role, "control");
   const w11 = valence11.world as { poisonDelay?: number };
-  assert.equal(w11.poisonDelay, 40);
+  assert.equal(w11.poisonDelay, 15);
   const { poisonDelay: _d, ...rest } = w11 as { poisonDelay?: number; foodSpawn: { positions: { x: number; y: number }[]; toxicEvery: number } }; void _d;
   const w10 = valence10.world as { foodSpawn: { positions: { x: number; y: number }[] } };
   assert.equal(rest.foodSpawn.positions.length, 13, "thirteen spawn positions, coprime with toxicEvery 2, so a position alternates between toxic and wholesome");
