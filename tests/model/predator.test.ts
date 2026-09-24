@@ -44,7 +44,8 @@ test("the evaluator counts attacks, late attacks, foreseeable attacks and threat
   const p1 = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1")].flat();
   assert.equal(new Set([...used, ...p1]).size, used.length + p1.length);
   const run = runCondition("human-0.2.0", predator.pilotSeeds[0], "muted", { ...predator, horizon: 600 } as typeof predator);
-  assert.ok(run.attacks >= 0 && run.lateAttacks <= run.attacks && run.foreseeableAttacks <= run.attacks && run.attackHarm >= run.attacks * 5 - 1e-9);
+  const harm = (predator.world as unknown as { predators: { harm: number }[] }).predators[0].harm;
+  assert.ok(run.attacks >= 0 && run.lateAttacks <= run.attacks && run.foreseeableAttacks <= run.attacks && Math.abs(run.attackHarm - run.attacks * harm) < 1e-6);
   const frames = runExperiment({ ...referentialConfig(predator.pilotSeeds[0], "human-0.2.0", true, predator), horizon: 50 }).frames;
   assert.ok(frames.every(f => f.world.animals.some(a => a.kind === "predator")), "the predator is part of every frame");
   assert.equal(frames.at(-1)!.agents.length, 4, "the predator is not an agent");

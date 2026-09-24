@@ -34,7 +34,7 @@ export type RunResult = {
   otherVoiceCentroid: { openness: number; resonance: number } | null; otherCalls: number;
   /** valence-v1: poisoned intake summed over the run and over the last third; late calls made while poisoned (bad voice), pooled. */
   poisonIntake: number; latePoisonIntake: number; /** valence-v5: distinct (individual, toxic patch) pairs with poisoned intake, over the run and over the last third. */ poisonings: number; latePoisonings: number; /** valence-v6 diagnostic: each new poisoning classified by what preceded it at that patch — nobody poisoned there before (first), someone at the same tick (simultaneous), earlier poisonings but no bad-food call from the patch reached this eater within 600 ticks (unwarned), or such a call did reach it (warned). */ poisoningKinds: { first: number; simultaneous: number; unwarned: number; warned: number };
-  /** predator-v1 (world 0.8.0): attack events on humans (contact ticks with a predator) over the run and the last third, their summed harm, attacks that another living human could have warned about (it had the predator in sight within the previous 30 ticks while the victim had not), and calls made with a predator in sight. */
+  /** predator-v1 (world 0.8.0): attack events on humans (contact ticks with a predator) over the run and the last third, their summed harm, attacks that another living human could have warned about (it had the predator in sight at least 15 ticks before the victim's own current sighting began, within the last 60 ticks), and calls made with a predator in sight. */
   attacks: number; lateAttacks: number; attackHarm: number; lateAttackHarm: number; foreseeableAttacks: number; threatCalls: number;
   /** valence-v7: share of living individual-ticks with hunger at or above 0.95 (the taste-aversion models eat known-toxic food only then). */ desperateFraction: number; badVoiceDispersion: number; badVoiceCentroid: { openness: number; resonance: number } | null; badCalls: number;
   /** transmission-v1: with a newcomer replaced mid-run, the distance between its late food voice and the incumbents' pooled late food voice (1 when either is missing), and its own late hunger. */
@@ -81,7 +81,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const poisoningKinds = { first: 0, simultaneous: 0, unwarned: 0, warned: 0 };
   let livingTicks = 0, desperateTicks = 0;
   let attacks = 0, lateAttacks = 0, attackHarm = 0, lateAttackHarm = 0, foreseeableAttacks = 0, threatCalls = 0;
-  const lastSawPredator: Record<string, number> = {};
+  const lastSawPredator: Record<string, number> = {}, sawSince: Record<string, number> = {};
   const firstPoisonedAt = new Map<string, number>(); // toxic patch id -> tick of the first poisoning there
   const warnedAbout: Record<string, Record<string, number>> = {}; // listener id -> toxic patch id -> tick a bad-food call from that patch was within hearing
   const hearingRadius = (protocol.world as unknown as { hearingRadius?: number }).hearingRadius ?? 24;
@@ -109,7 +109,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       if (h.body.health <= 0) return structuredClone(h);
       livingTicks++; if (h.body.hunger >= 0.95) desperateTicks++;
       const observation = senseWorld(state.world, h.id, tick, keyedRandom(seed, "senses/" + h.id, tick));
-      if (observation.animals.some(a => a.morphologySimilarity < 0.7)) lastSawPredator[h.id] = tick;
+      if (observation.animals.some(a => a.morphologySimilarity < 0.7)) { if (lastSawPredator[h.id] !== tick - 1) sawSince[h.id] = tick; lastSawPredator[h.id] = tick; }
       if (condition === "misdirected") observation.sounds = observation.sounds.map((s, i) => { const length = Math.hypot(s.relativePosition.x, s.relativePosition.y); const angle = intervene("dir-" + h.id + "-" + tick, i) * Math.PI * 2; return { ...s, relativePosition: { x: Math.cos(angle) * length, y: Math.sin(angle) * length } }; });
       if (condition === "scrambled") observation.sounds = observation.sounds.map((s, i) => ({ ...s, shape: { openness: intervene("o-" + h.id + "-" + tick, i), resonance: intervene("r-" + h.id + "-" + tick, i) } }));
       const result = model.decide(h, observation, keyedRandom(seed, "mind/" + h.id, tick));
@@ -179,8 +179,9 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     }
     for (const e of advanced.events) if (e.kind === "attack") {
       attacks++; attackHarm += e.value; if (tick >= protocol.horizon * 2 / 3) { lateAttacks++; lateAttackHarm += e.value; }
-      const victimSaw = lastSawPredator[e.actorId]; const victimBlind = victimSaw === undefined || tick - victimSaw > 30;
-      if (victimBlind && state.humans.some(o => o.id !== e.actorId && o.body.health > 0 && lastSawPredator[o.id] !== undefined && tick - lastSawPredator[o.id] <= 30)) foreseeableAttacks++;
+      // Foreseeable: a living peer's current or recent sighting (within 60 ticks) began at least 15 ticks before the victim's own current sighting (or the victim never saw it coming).
+      const victimFirst = lastSawPredator[e.actorId] !== undefined && tick - lastSawPredator[e.actorId] <= 1 ? sawSince[e.actorId] : tick;
+      if (state.humans.some(o => o.id !== e.actorId && o.body.health > 0 && lastSawPredator[o.id] !== undefined && tick - lastSawPredator[o.id] <= 60 && sawSince[o.id] <= victimFirst - 15)) foreseeableAttacks++;
     }
     for (const e of advanced.events) {
       if (e.kind === "spawn") spawns++;
