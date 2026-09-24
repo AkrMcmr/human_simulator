@@ -87,7 +87,7 @@ test("valence-v11 adds only the poison delay to the valence-v10 world, on fresh 
   const w11 = valence11.world as { poisonDelay?: number };
   assert.equal(w11.poisonDelay, 15);
   const { poisonDelay: _d, ...rest } = w11 as { poisonDelay?: number; foodSpawn: { positions: { x: number; y: number }[]; toxicEvery: number } }; void _d;
-  const w10 = valence10.world as { foodSpawn: { positions: { x: number; y: number }[] } };
+  const w10 = valence10.world as unknown as { foodSpawn: { positions: { x: number; y: number }[] } };
   assert.equal(rest.foodSpawn.positions.length, 13, "thirteen spawn positions, coprime with toxicEvery 2, so a position alternates between toxic and wholesome");
   assert.deepEqual(rest.foodSpawn.positions.slice(0, 12), w10.foodSpawn.positions);
   assert.deepEqual({ ...rest, foodSpawn: { ...rest.foodSpawn, positions: w10.foodSpawn.positions } }, valence10.world);

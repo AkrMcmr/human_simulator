@@ -52,3 +52,38 @@ export function decisionHistory(frames: Frame[], id: string, peerId?: string) {
     }];
   });
 }
+
+/**
+ * Two voices: every sound emitted in the frames, labelled with the valence context its caller was in when it
+ * decided to call (the frame before the sound appears). Pooled centroid and dispersion per context, so a viewer can
+ * see whether a group's good-food voice and bad-food voice sit apart. Display only; nothing here feeds a human.
+ */
+export type VoicePoint = { tick: number; id: string; openness: number; resonance: number; context: "good" | "bad" | "other" };
+export type VoiceCluster = { context: "good" | "bad" | "other"; count: number; centroid: { openness: number; resonance: number } | null; dispersion: number };
+export function voicePoints(frames: Frame[], id?: string): VoicePoint[] {
+  const points: VoicePoint[] = [];
+  for (let i = 1; i < frames.length; i++) {
+    const frame = frames[i], previous = frames[i - 1];
+    for (const s of frame.world.sounds) {
+      if (s.tick !== frame.tick || (id && s.sourceId !== id)) continue;
+      const caller = previous.agents.find(a => a.id === s.sourceId);
+      const context = caller?.valence === "good" ? "good" : caller?.valence === "bad" ? "bad" : "other";
+      points.push({ tick: frame.tick, id: s.sourceId, openness: s.shape.openness, resonance: s.shape.resonance, context });
+    }
+  }
+  return points;
+}
+export function voiceClusters(points: VoicePoint[]): VoiceCluster[] {
+  return (["good", "bad", "other"] as const).map(context => {
+    const p = points.filter(x => x.context === context);
+    if (!p.length) return { context, count: 0, centroid: null, dispersion: 0 };
+    const centroid = { openness: p.reduce((a, x) => a + x.openness, 0) / p.length, resonance: p.reduce((a, x) => a + x.resonance, 0) / p.length };
+    const dispersion = p.reduce((a, x) => a + Math.hypot(x.openness - centroid.openness, x.resonance - centroid.resonance), 0) / p.length;
+    return { context, count: p.length, centroid, dispersion };
+  });
+}
+/** Distance between the good and bad centroids (the "distinctness" the studies gate on), or null when either voice is missing. */
+export function voiceDistinctness(clusters: VoiceCluster[]): number | null {
+  const good = clusters.find(c => c.context === "good")?.centroid, bad = clusters.find(c => c.context === "bad")?.centroid;
+  return good && bad ? Math.hypot(good.openness - bad.openness, good.resonance - bad.resonance) : null;
+}

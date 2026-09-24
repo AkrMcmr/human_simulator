@@ -32,6 +32,8 @@ export type AgentView = {
   /** Observer-only snapshot after learning/decision, before the next observation. Not fed to humans. */
   memorySnapshot?: { peers: HumanState["peers"]; pending: HumanState["pending"] };
   peerEvidence: { id: string; harmEstimate: number; closeEvidence: number }[];
+  /** Observer-only: the valence context the individual was in when this frame was taken (candidates that record intake/poison/disgust; null otherwise). Read for display, never fed back. */
+  valence?: "good" | "bad" | null;
 };
 export type Frame = {
   tick: number; world: WorldState; agents: AgentView[]; distance: number | null; events: WorldEvent[];
@@ -138,6 +140,13 @@ export function stepSimulation(previous: SimulatorState): SimulatorState {
     world: advanced.world, traces, events: advanced.events,
   };
 }
+/** Observer-only reading of a candidate's valence context: poisoned or disgusted is "bad", eating is "good", otherwise null (the default model records none of these). */
+export function valenceOf(h: HumanState): "good" | "bad" | null {
+  const v = h as HumanState & { lastIntake?: number; lastPoison?: number; lastDisgust?: number };
+  if ((v.lastPoison ?? 0) > 0 || (v.lastDisgust ?? 0) > 0) return "bad";
+  if ((v.lastIntake ?? 0) > 0) return "good";
+  return null;
+}
 export function observeSimulation(state: SimulatorState): Frame {
   return {
     tick: state.tick, world: structuredClone(state.world), events: structuredClone(state.events),
@@ -150,6 +159,7 @@ export function observeSimulation(state: SimulatorState): Frame {
       peerEvidence: Object.entries(h.peers).map(([id, m]) => ({
         id, harmEstimate: m.harmAlpha / (m.harmAlpha + m.harmBeta), closeEvidence: m.harmAlpha + m.harmBeta - 2,
       })),
+      valence: valenceOf(h),
     })),
   };
 }

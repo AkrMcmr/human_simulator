@@ -261,6 +261,40 @@ table.sr{position:absolute;left:-9999px}
 <div class="limits"><h3>言えないこと</h3><p>候補モデルです。事前に決めた継続性の基準（元の音から0.15以内）は16シード中6シードでしか満たされず、この基準では不成立と判定します。慣習が「残る」ことと「同じ形で残る」ことは別で、後者は確認できていません。</p></div>
 </section>
 
+<section class="finding">
+<p class="eyebrow">M3 · 2つの価値を持つ声（判断記録0037〜0042）</p>
+<h2>発見13: 「良い食料の声」と「悪い食料の声」の2語は、教えなくてもできる</h2>
+<div class="prose">
+<p>見た目では区別できないが食べると健康を失う「毒の食料」を世界に置きました（現れる食料の2〜3つに1つ）。毒かどうかは食べた本人の身体にしか現れません。食べて良かった直後と、毒の場所を見て嫌悪した時に別の声を真似る個体の集団では、聞き合える条件で「良い声」と「悪い声」が別々の音に集まり、両方のシード群で事前の基準（重心の距離0.25以上）を越えました。7ラウンド試して分かれなかった「暖かい場所の声」と違い、同じ「食べる」場面の中で結果が正反対になる対象は、声を2つに分ける圧力を生みます。</p>
+</div>
+<figure>
+<p class="fig-title">良い声と悪い声の重心の距離（確認シード群、実行の後ろ3分の1）</p>
+<p class="fig-sub">基準0.25 · 判断記録0042（valence-v6）と0041（valence-v5）</p>
+<table class="simple-table" style="width:100%;border-collapse:collapse;font-size:14px">
+<thead><tr><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule);color:var(--ink2);font-weight:500">個体のモデル</th><th style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--rule);color:var(--ink2);font-weight:500">距離</th></tr></thead>
+<tbody>
+<tr><td style="padding:6px 8px;border-bottom:1px solid var(--grid)">2つの声を真似る候補（嫌悪の声を10ステップに1回まで）</td><td style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--grid);font-family:'IBM Plex Mono',ui-monospace,monospace">0.33（開発群 0.41）</td></tr>
+<tr><td style="padding:6px 8px;border-bottom:1px solid var(--grid)">同じ声を出すが聞かない対照</td><td style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--grid);font-family:'IBM Plex Mono',ui-monospace,monospace">0.33</td></tr>
+<tr><td style="padding:6px 8px">1つの声しか持たない対照（発見10の個体）</td><td style="text-align:right;padding:6px 8px;font-family:'IBM Plex Mono',ui-monospace,monospace">0.03</td></tr>
+</tbody>
+</table>
+<figcaption>1つの声の個体は毒を食べた直後も同じ声を出すので、距離はほぼ0です。2つの声の個体では、良い声と悪い声が別の音として集団ごとに共有されます。</figcaption>
+</figure>
+<div class="insight"><h3>示唆</h3><p>意味を与えなくても、経験と真似だけで「2語」の産出は繰り返し成立します。分かれる条件は、同じ行動の結果が良い／悪いに割れることでした。</p></div>
+<div class="limits"><h3>言えないこと</h3><p>候補モデルです。分かれたのは産出（出す側）で、その声を聞いた仲間が毒を避けられたかは発見14のとおり未成立です。語彙・文法・意図の再現ではありません。</p></div>
+</section>
+
+<section class="finding">
+<p class="eyebrow">M3 · 警告の言葉が根づかない理由（判断記録0043〜0047）</p>
+<h2>発見14: 「悪い声」を聞いて身を守る個体は、まだできていない——飢えるか、要らないか</h2>
+<div class="prose">
+<p>悪い声を聞いた仲間が毒を避けられたかを、同じ声を出すが聞かない対照との差（聞き手の寄与）で測りました。8つの候補・11の課題のどこでも、寄与は基準（後半で毒に当たる回数が1回減る）に届きませんでした。原因を毒に当たった一件一件までたどると、二つの壁に挟まれていました。</p>
+<p>無毒の食料が乏しい世界では、毒を避ける集団が飢え、飢えると知りながら毒を食べます。無毒の食料が豊かな世界では、良い声は無毒の食料でしか上がらないので「良い声のする所へ行く」だけで毒の場所を訪れなくなり、悪い声の出番がありません。良い声の不在が、そのまま危険の印になっていました。毒の効果を遅らせて良い声の不在を印でなくしても、警告は「その場所の今の状態」を伝えられず、聞き手の唯一の応答「場所を避ける」は、毒の位置が入れ替わる世界では裏目に出ました。</p>
+</div>
+<div class="insight"><h3>示唆</h3><p>警告の言葉が価値を持つには、（1）聞き手が自力で危険に向かってしまう状況が残っていて、（2）避けても飢えず、（3）警告が「今」を伝え、聞き手がそれを自分の記憶より優先できる、の三つが同時に要ります。今の世界と個体はそのどれかを欠いていました。</p></div>
+<div class="limits"><h3>言えないこと</h3><p>「聞き手が悪い声を使えない」ことが人間についての事実だとは言えません。これは、この実験室の世界の作りの中で見つかった構造的な条件です。完全な警戒声を生まれつき持つ「上限」の個体を置くと、余地の有無を世界ごとに測れるようになりました（判断記録0042以降）。</p></div>
+</section>
+
 <div class="try">
 <h3>自分で試す</h3>
 <p class="prose" style="margin-bottom:6px">同じシードなら誰が実行しても同じ記録になります。違うシードや条件で何が変わり、何が変わらないかを見るのが、この実験室の楽しみ方です。</p>
