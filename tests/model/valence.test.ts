@@ -14,7 +14,7 @@ type V = ReturnType<typeof createHuman> & { lastIntake?: number; lastPoison?: nu
 const effect = (foodIntake: number, poison = 0) => ({ ambientCold: .3, foodIntake, exertion: 0, resting: false, collision: 0, ...(poison ? { poison } : {}) });
 
 test("world 0.5.0: a toxic patch poisons its eaters, spawned patches are toxic every n-th time, wholesome food never sets poison", () => {
-  assert.equal(WORLD_VERSION, "0.7.0"); assert.equal(VERSIONS.contracts, "0.3.0");
+  assert.equal(WORLD_VERSION, "0.8.0"); assert.equal(VERSIONS.contracts, "0.3.0");
   const animals = [{ id: "A", position: { x: 7, y: 5 } }];
   const toxic = createWorld(animals, { foodRegeneration: 0, foodSpawn: { amount: 1, radius: 2, depletedBelow: 0.01, positions: [{ x: 20, y: 3 }, { x: 5, y: 22 }], toxicEvery: 2 } }, [{ id: "f", kind: "food", position: { x: 7, y: 5 }, amount: 0.05, radius: 2, toxic: true }]);
   const step1 = advanceWorld(toxic, { A: { kind: "forage" } }, 0);

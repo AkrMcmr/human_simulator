@@ -75,6 +75,13 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
         || !Array.isArray(wc.positions) || wc.positions.length < 1 || wc.positions.length > 64 || !wc.positions.every(inBounds)
         || (wc.count !== undefined && (!Number.isInteger(wc.count) || (wc.count as number) < 1 || (wc.count as number) > 8))) throw new Error("暖かい場所の移り変わりの設定が不正です。");
   }
+  if (value.world.predators !== undefined) {
+    const ps = value.world.predators;
+    if (!Array.isArray(ps) || ps.length > 4 || !ps.every((q: unknown) => object(q) && typeof q.id === "string" && Array.isArray(q.waypoints) && q.waypoints.length >= 1 && q.waypoints.length <= 16 && q.waypoints.every(inBounds)
+        && finite(q.speed) && (q.speed as number) >= 0 && (q.speed as number) <= 2 && finite(q.chaseRadius) && (q.chaseRadius as number) >= 0 && (q.chaseRadius as number) <= 50 && finite(q.harm) && (q.harm as number) >= 0 && (q.harm as number) <= 20)) throw new Error("危険な動物の設定が不正です。");
+    const ids = new Set([...(ps as { id: string }[]).map(q => q.id), ...value.agents.map((a: { id: string }) => a.id)]);
+    if (ids.size !== ps.length + value.agents.length) throw new Error("危険な動物のIDが重複しています。");
+  }
   if (value.world.poisonDelay !== undefined && (!Number.isInteger(value.world.poisonDelay) || (value.world.poisonDelay as number) < 0 || (value.world.poisonDelay as number) > 1000)) throw new Error("毒の潜伏の設定が不正です。");
   if (value.world.foodSpawn !== undefined) {
     const sp = value.world.foodSpawn;

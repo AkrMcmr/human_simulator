@@ -1,6 +1,6 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.7.0";
+export const WORLD_VERSION = "0.8.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
@@ -8,15 +8,17 @@ export type WorldParameters = {
   foodRegeneration?: number;
   /** 0.3.0: when a food patch falls to `depletedBelow` it is marked spent (still visible, never regrows) and a fresh patch appears at the next position of this fixed sequence. Omitted: no spawning (0.2.0 behavior). */
   foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[]; /** 0.5.0: every n-th spawned patch is toxic (1-based count; omitted: none). */ toxicEvery?: number; /** 0.6.0: a patch alive this many ticks without being depleted rots (spent, nothing left) and the next patch appears, so an avoided patch does not hold a slot forever. Omitted: patches last until eaten (0.5.0 behavior). */ lifetime?: number };
+  /** 0.8.0: scripted dangerous animals. Each patrols its waypoints in order (no randomness); when a human is within chaseRadius it moves toward the nearest one instead. A human within contact distance takes `harm` as collision each tick and an "attack" event is recorded. Humans see it as an animal of low morphological similarity. Omitted: no predators (the 0.7.0 behavior). */
+  predators?: { id: string; waypoints: Vec2[]; speed: number; chaseRadius: number; harm: number }[];
   /** 0.7.0: poison from toxic food reaches the eater this many ticks after the bite (0 or omitted: the same tick, the 0.5.0 behavior). While it is latent the eater neither feels it nor knows the food was toxic. */
   poisonDelay?: number;
   /** 0.4.0: every `lifetime` ticks the warm place goes out (stays visible, spent, gives no warmth) and a fresh one appears at the next fixed position. Omitted: warm places are permanent (0.3.0 behavior). */
   warmthCycle?: { lifetime: number; radius: number; positions: Vec2[]; /** Warm places alive after each cycle (default 1). */ count?: number };
 };
-export type PhysicalAnimal = { id: string; position: Vec2; velocity: Vec2 };
+export type PhysicalAnimal = { id: string; position: Vec2; velocity: Vec2; /** 0.8.0: scripted dangerous animal; omitted means a human. */ kind?: "predator" };
 export type Resource = { id: string; kind: "food" | "warmth"; position: Vec2; amount: number; radius: number; spent?: boolean; /** 0.5.0: eating here poisons (looks like any other food). */ toxic?: boolean; /** 0.6.0: tick the patch appeared (initial patches: 0). */ since?: number };
 export type SoundEmission = { sourceId: string; position: Vec2; shape: SoundShape; tick: number };
-export type WorldEvent = { tick: number; kind: "sound" | "contact" | "food" | "spawn"; actorId: string; value: number };
+export type WorldEvent = { tick: number; kind: "sound" | "contact" | "food" | "spawn" | "attack"; actorId: string; value: number };
 export type WorldState = {
   parameters: WorldParameters; animals: PhysicalAnimal[]; resources: Resource[]; sounds: SoundEmission[];
   /** Number of food patches spawned so far (0.3.0, only with foodSpawn). */
@@ -25,6 +27,8 @@ export type WorldState = {
   warmed?: number;
   /** 0.7.0: poison eaten but not yet felt (only with poisonDelay). */
   pendingPoison?: { id: string; due: number; amount: number }[];
+  /** 0.8.0: next waypoint index per predator. */
+  predatorProgress?: Record<string, number>;
 };
 export const DEFAULT_WORLD: WorldParameters = {
   width: 40, height: 28, visionRadius: 16, hearingRadius: 20,
@@ -34,7 +38,7 @@ export function createWorld(animals: { id: string; position: Vec2 }[], parameter
   const p = { ...DEFAULT_WORLD, ...parameters };
   return {
     parameters: p,
-    animals: animals.map((a) => ({ ...structuredClone(a), velocity: { x: 0, y: 0 } })).sort((a, b) => a.id.localeCompare(b.id)),
+    animals: [...animals.map((a) => ({ ...structuredClone(a), velocity: { x: 0, y: 0 } })), ...(p.predators ?? []).map((s) => ({ id: s.id, position: { ...s.waypoints[0] }, velocity: { x: 0, y: 0 }, kind: "predator" as const }))].sort((a, b) => a.id.localeCompare(b.id)),
     resources: resources ? structuredClone(resources) : [
       { id: "food-nw", kind: "food", position: { x: 7, y: 7 }, amount: 1, radius: 1.6 },
       { id: "food-se", kind: "food", position: { x: 33, y: 21 }, amount: 1, radius: 1.6 },
@@ -55,7 +59,7 @@ export function senseWorld(world: WorldState, id: string, tick: number, random: 
       trackId: a.id,
       relativePosition: { x: a.position.x - self.position.x, y: a.position.y - self.position.y },
       relativeVelocity: { x: a.velocity.x - self.velocity.x, y: a.velocity.y - self.velocity.y },
-      morphologySimilarity: 0.98,
+      morphologySimilarity: a.kind === "predator" ? 0.2 : 0.98,
     })),
     resources: world.resources.filter((r) => distance(r.position, self.position) <= world.parameters.visionRadius)
       .map((r) => ({ id: r.id, kind: r.kind, relativePosition: { x: r.position.x - self.position.x, y: r.position.y - self.position.y }, strength: r.amount })),
@@ -85,7 +89,31 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
   const before = new Map(previous.animals.map((a) => [a.id, a]));
   world.animals.sort((a, b) => a.id.localeCompare(b.id));
   world.sounds = [];
+  // 0.8.0: predators move first, by script — toward the nearest human within reach, otherwise along their waypoints.
+  for (const pred of world.animals) {
+    if (pred.kind !== "predator") continue;
+    const spec = p.predators?.find((s) => s.id === pred.id);
+    if (!spec) continue;
+    const humans = world.animals.filter((a) => a.kind !== "predator");
+    const nearest = humans.map((h) => ({ h, d: distance(h.position, pred.position) })).sort((a, b) => a.d - b.d || a.h.id.localeCompare(b.h.id))[0];
+    let target: Vec2;
+    if (nearest && nearest.d <= spec.chaseRadius) target = nearest.h.position;
+    else {
+      const progress = world.predatorProgress ??= {};
+      let i = progress[pred.id] ?? 0;
+      if (distance(pred.position, spec.waypoints[i % spec.waypoints.length]) < 0.6) i = (i + 1) % spec.waypoints.length;
+      progress[pred.id] = i;
+      target = spec.waypoints[i % spec.waypoints.length];
+    }
+    const dx = target.x - pred.position.x, dy = target.y - pred.position.y, length = Math.hypot(dx, dy);
+    if (length > 1e-9) {
+      const speed = Math.min(length, spec.speed);
+      pred.position.x = clamp(pred.position.x + dx / length * speed, 0.6, p.width - 0.6);
+      pred.position.y = clamp(pred.position.y + dy / length * speed, 0.6, p.height - 0.6);
+    }
+  }
   for (const animal of world.animals) {
+    if (animal.kind === "predator") continue;
     const action = actions[animal.id] ?? { kind: "observe" };
     effects[animal.id] = { ambientCold: p.ambientCold, foodIntake: 0, exertion: 0, resting: action.kind === "rest", collision: 0 };
     if (action.target) {
@@ -111,8 +139,13 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
       const force = (1.1 - d) / 2;
       corrections.get(a.id)!.x += unit.x * force; corrections.get(a.id)!.y += unit.y * force;
       corrections.get(b.id)!.x -= unit.x * force; corrections.get(b.id)!.y -= unit.y * force;
-      effects[a.id].collision += force; effects[b.id].collision += force;
-      events.push({ tick: tick + 1, kind: "contact", actorId: a.id, value: force }, { tick: tick + 1, kind: "contact", actorId: b.id, value: force });
+      if (effects[a.id]) effects[a.id].collision += force; if (effects[b.id]) effects[b.id].collision += force;
+      if (a.kind !== "predator" && b.kind !== "predator") events.push({ tick: tick + 1, kind: "contact", actorId: a.id, value: force }, { tick: tick + 1, kind: "contact", actorId: b.id, value: force });
+      // 0.8.0: a predator in contact with a human hurts it.
+      for (const [pred, human] of [[a, b], [b, a]] as const) if (pred.kind === "predator" && human.kind !== "predator") {
+        const harm = p.predators?.find((s) => s.id === pred.id)?.harm ?? 0;
+        if (harm > 0) { effects[human.id].collision += harm; events.push({ tick: tick + 1, kind: "attack", actorId: human.id, value: harm }); }
+      }
     }
   }
   for (const animal of world.animals) {
@@ -121,6 +154,7 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
     animal.position.y = clamp(animal.position.y + c.y, 0.6, p.height - 0.6);
     const old = before.get(animal.id)!;
     animal.velocity = { x: animal.position.x - old.position.x, y: animal.position.y - old.position.y };
+    if (animal.kind === "predator") continue;
     const action = actions[animal.id];
     if (action?.kind === "vocalize" && action.sound) {
       effects[animal.id].exertion += 0.15;

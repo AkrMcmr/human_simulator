@@ -33,7 +33,10 @@ export type RunResult = {
   /** lexicon-v1: late calls made in neither context (not eating, not sheltered), pooled. A second voice used for everything outside food would coincide with the warmth voice; a warmth-specific voice would not. */
   otherVoiceCentroid: { openness: number; resonance: number } | null; otherCalls: number;
   /** valence-v1: poisoned intake summed over the run and over the last third; late calls made while poisoned (bad voice), pooled. */
-  poisonIntake: number; latePoisonIntake: number; /** valence-v5: distinct (individual, toxic patch) pairs with poisoned intake, over the run and over the last third. */ poisonings: number; latePoisonings: number; /** valence-v6 diagnostic: each new poisoning classified by what preceded it at that patch — nobody poisoned there before (first), someone at the same tick (simultaneous), earlier poisonings but no bad-food call from the patch reached this eater within 600 ticks (unwarned), or such a call did reach it (warned). */ poisoningKinds: { first: number; simultaneous: number; unwarned: number; warned: number }; /** valence-v7: share of living individual-ticks with hunger at or above 0.95 (the taste-aversion models eat known-toxic food only then). */ desperateFraction: number; badVoiceDispersion: number; badVoiceCentroid: { openness: number; resonance: number } | null; badCalls: number;
+  poisonIntake: number; latePoisonIntake: number; /** valence-v5: distinct (individual, toxic patch) pairs with poisoned intake, over the run and over the last third. */ poisonings: number; latePoisonings: number; /** valence-v6 diagnostic: each new poisoning classified by what preceded it at that patch — nobody poisoned there before (first), someone at the same tick (simultaneous), earlier poisonings but no bad-food call from the patch reached this eater within 600 ticks (unwarned), or such a call did reach it (warned). */ poisoningKinds: { first: number; simultaneous: number; unwarned: number; warned: number };
+  /** predator-v1 (world 0.8.0): attack events on humans (contact ticks with a predator) over the run and the last third, their summed harm, attacks that another living human could have warned about (it had the predator in sight within the previous 30 ticks while the victim had not), and calls made with a predator in sight. */
+  attacks: number; lateAttacks: number; attackHarm: number; lateAttackHarm: number; foreseeableAttacks: number; threatCalls: number;
+  /** valence-v7: share of living individual-ticks with hunger at or above 0.95 (the taste-aversion models eat known-toxic food only then). */ desperateFraction: number; badVoiceDispersion: number; badVoiceCentroid: { openness: number; resonance: number } | null; badCalls: number;
   /** transmission-v1: with a newcomer replaced mid-run, the distance between its late food voice and the incumbents' pooled late food voice (1 when either is missing), and its own late hunger. */
   newcomerDistance: number; newcomerLateHunger: number;
   /** transmission-v2: the newcomer's late food calls themselves, so adoption can be judged against the incumbents' voice of another condition. */
@@ -77,6 +80,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const poisonedPairs = new Set<string>(), latePoisonedPairs = new Set<string>();
   const poisoningKinds = { first: 0, simultaneous: 0, unwarned: 0, warned: 0 };
   let livingTicks = 0, desperateTicks = 0;
+  let attacks = 0, lateAttacks = 0, attackHarm = 0, lateAttackHarm = 0, foreseeableAttacks = 0, threatCalls = 0;
+  const lastSawPredator: Record<string, number> = {};
   const firstPoisonedAt = new Map<string, number>(); // toxic patch id -> tick of the first poisoning there
   const warnedAbout: Record<string, Record<string, number>> = {}; // listener id -> toxic patch id -> tick a bad-food call from that patch was within hearing
   const hearingRadius = (protocol.world as unknown as { hearingRadius?: number }).hearingRadius ?? 24;
@@ -104,6 +109,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       if (h.body.health <= 0) return structuredClone(h);
       livingTicks++; if (h.body.hunger >= 0.95) desperateTicks++;
       const observation = senseWorld(state.world, h.id, tick, keyedRandom(seed, "senses/" + h.id, tick));
+      if (observation.animals.some(a => a.morphologySimilarity < 0.7)) lastSawPredator[h.id] = tick;
       if (condition === "misdirected") observation.sounds = observation.sounds.map((s, i) => { const length = Math.hypot(s.relativePosition.x, s.relativePosition.y); const angle = intervene("dir-" + h.id + "-" + tick, i) * Math.PI * 2; return { ...s, relativePosition: { x: Math.cos(angle) * length, y: Math.sin(angle) * length } }; });
       if (condition === "scrambled") observation.sounds = observation.sounds.map((s, i) => ({ ...s, shape: { openness: intervene("o-" + h.id + "-" + tick, i), resonance: intervene("r-" + h.id + "-" + tick, i) } }));
       const result = model.decide(h, observation, keyedRandom(seed, "mind/" + h.id, tick));
@@ -116,6 +122,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       if (observation.sounds.length) { const loudest = [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0]; pendingDirections[h.id] = { ...loudest.relativePosition }; }
       if (result.action.kind === "vocalize") {
         vocalizations++;
+        if (observation.animals.some(a => a.morphologySimilarity < 0.7)) threatCalls++;
         // valence-v4: a disgust call (experimental.3, lastDisgust set by the decision itself) counts as a bad-food voice like a poisoned one.
         const poisoned = ((h as HumanState & { lastPoison?: number }).lastPoison ?? 0) > 0 || ((result.human as HumanState & { lastDisgust?: number }).lastDisgust ?? 0) > 0;
         if (poisoned) {
@@ -170,6 +177,11 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         poisonedPairs.add(key); if (tick >= protocol.horizon * 2 / 3) latePoisonedPairs.add(key);
       }
     }
+    for (const e of advanced.events) if (e.kind === "attack") {
+      attacks++; attackHarm += e.value; if (tick >= protocol.horizon * 2 / 3) { lateAttacks++; lateAttackHarm += e.value; }
+      const victimSaw = lastSawPredator[e.actorId]; const victimBlind = victimSaw === undefined || tick - victimSaw > 30;
+      if (victimBlind && state.humans.some(o => o.id !== e.actorId && o.body.health > 0 && lastSawPredator[o.id] !== undefined && tick - lastSawPredator[o.id] <= 30)) foreseeableAttacks++;
+    }
     for (const e of advanced.events) {
       if (e.kind === "spawn") spawns++;
       if (e.kind !== "food") continue;
@@ -216,6 +228,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
     otherVoiceCentroid: otherPool.centroid, otherCalls,
+    attacks, lateAttacks, attackHarm, lateAttackHarm, foreseeableAttacks, threatCalls,
     poisonIntake, latePoisonIntake, poisonings: poisonedPairs.size, latePoisonings: latePoisonedPairs.size, poisoningKinds, desperateFraction: livingTicks ? desperateTicks / livingTicks : 0, badVoiceDispersion: badPool.dispersion, badVoiceCentroid: badPool.centroid, badCalls,
     newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0, newcomerCalls: incomerCalls,
     earlyVoiceCentroid: earlyPool.centroid, earlyCalls: earlyCalls.length,
@@ -231,7 +244,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "poison-benefit-units", "poison-shape-units", "poisoning-benefit", "poisoning-shape", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "poison-benefit-units", "poison-shape-units", "poisoning-benefit", "poisoning-shape", "attack-benefit", "attack-shape", "attack-benefit-all", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -284,6 +297,10 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     // valence-v5: the same contrasts as counts of distinct (individual, toxic patch) poisonings in the late third — one first bite is one event, however much was eaten.
     case "poisoning-benefit": return r.muted.latePoisonings - r.sound.latePoisonings;
     case "poisoning-shape": return r.scrambled.latePoisonings - r.sound.latePoisonings;
+    // predator-v1: fewer attack ticks with voices audible than muted (late third), more again with scrambled shapes; and over the whole run.
+    case "attack-benefit": return r.muted.lateAttacks - r.sound.lateAttacks;
+    case "attack-shape": return r.scrambled.lateAttacks - r.sound.lateAttacks;
+    case "attack-benefit-all": return r.muted.attacks - r.sound.attacks;
     case "lineage-continuity": {
       const early = r.sound.earlyVoiceCentroid, late = r.sound.foodVoiceCentroid;
       if (!early || !late || r.sound.foodVoiceDispersion > ADOPTION_RADIUS) return 0;

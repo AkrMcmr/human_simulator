@@ -1,0 +1,283 @@
+{
+  "id": "predator-v1",
+  "version": "1.0.0",
+  "evidence": "free-world-predator-warning-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 危険な動物（世界0.8.0）。決まった経路を巡回し、近くの人間を追い、接触で害を与える捕食者を1体置く。見た者と見ていない者の非対称（視界5u・聴覚24u）の中で、危険を見た時の声が仲間の被害を減らすかを測る課題の土台。まずパイロットで既定の被害の水準と非対称（仲間が見ていた襲撃の割合）を確認する。判断0049",
+  "models": {
+    "baseline": "human-0.2.0"
+  },
+  "pilotSeeds": [
+    92101,
+    92102,
+    92103,
+    92104
+  ],
+  "pilotUse": "既定human-0.2.0だけで、(1) 後ろ3分の1の襲撃（接触ステップ）が実行あたり4回以上（防ぐ余地）、(2) 襲撃のうち『仲間が30ステップ以内に捕食者を見ていて、被害者は見ていなかった』割合が30%以上（非対称）、(3) 音なしの非常時3%未満・死亡が実行の半数未満、を確認する。満たさなければ世界を再調整し、候補を設計する",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        92001,
+        92002,
+        92003,
+        92004,
+        92005,
+        92006,
+        92007,
+        92008
+      ],
+      "validationSeeds": [
+        93001,
+        93002,
+        93003,
+        93004,
+        93005,
+        93006,
+        93007,
+        93008
+      ],
+      "status": "reserved for the predator-warning comparison (decision 0049); candidates not yet registered"
+    }
+  },
+  "developmentSeeds": [
+    92001,
+    92002,
+    92003,
+    92004,
+    92005,
+    92006,
+    92007,
+    92008
+  ],
+  "validationSeeds": [
+    93001,
+    93002,
+    93003,
+    93004,
+    93005,
+    93006,
+    93007,
+    93008
+  ],
+  "horizon": 3000,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 6,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ],
+      "lifetime": 500
+    },
+    "predators": [
+      {
+        "id": "P",
+        "waypoints": [
+          {
+            "x": 8,
+            "y": 8
+          },
+          {
+            "x": 32,
+            "y": 8
+          },
+          {
+            "x": 32,
+            "y": 20
+          },
+          {
+            "x": 8,
+            "y": 20
+          }
+        ],
+        "speed": 0.35,
+        "chaseRadius": 6,
+        "harm": 5
+      }
+    ]
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-4",
+      "kind": "food",
+      "position": {
+        "x": 10,
+        "y": 26
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-5",
+      "kind": "food",
+      "position": {
+        "x": 30,
+        "y": 3
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-6",
+      "kind": "food",
+      "position": {
+        "x": 36,
+        "y": 13
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-7",
+      "kind": "food",
+      "position": {
+        "x": 4,
+        "y": 14
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。襲撃＝捕食者と接触した人間のステップ数（1ステップ1回、害5を衝突として受け、健康を約0.03失う）。後ろ3分の1は実行の後ろ1000ステップ。仲間が見ていた襲撃＝被害者が30ステップ以内に捕食者を見ておらず、生きている他の個体が30ステップ以内に見ていた襲撃。危険の声＝捕食者が見えている時の発声",
+  "checks": [],
+  "reported": [
+    "attacks",
+    "lateAttacks",
+    "attackHarm",
+    "lateAttackHarm",
+    "foreseeableAttacks",
+    "threatCalls",
+    "attack-benefit",
+    "attack-shape",
+    "attack-benefit-all",
+    "forage-benefit",
+    "desperateFraction",
+    "minimumHealth"
+  ],
+  "notAClaim": "捕食者は決まった規則で動き、意図も学習もない。音に意味・正解を与えない。語・文法・意図の再現ではない",
+  "thresholdBasis": "閾値は未設定（パイロットで既定の被害の水準と非対称を見てから、候補の設計とともに固定する。判断0049）",
+  "establishedIf": "候補未登録。候補の登録時に、対比較（聞かない対照 − 候補、音あり後ろ3分の1の襲撃）を主ゲートとして定める",
+  "hungerWindow": "late"
+}

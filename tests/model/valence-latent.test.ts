@@ -26,7 +26,7 @@ const call = { visibleSourceId: null, shape, loudness: .8, relativePosition: { x
 const at = (tick: number, self = { x: 10, y: 14 }, resources: (typeof patch)[] = [patch], sounds: (typeof call)[] = []) => ({ tick, selfPosition: self, animals: [], resources, sounds });
 
 test("world 0.7.0: with poisonDelay the poison of a toxic bite arrives that many ticks later; without it the 0.5.0 behavior holds", () => {
-  assert.equal(WORLD_VERSION, "0.7.0");
+  assert.equal(WORLD_VERSION, "0.8.0");
   const animals = [{ id: "A", position: { x: 7, y: 5 } }];
   const toxic = [{ id: "f", kind: "food" as const, position: { x: 7, y: 5 }, amount: 6, radius: 2, toxic: true }];
   let w = createWorld(animals, { foodRegeneration: 0, poisonDelay: 3 }, toxic);
