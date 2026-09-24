@@ -78,7 +78,7 @@ export function validateConfig(value: unknown): asserts value is ExperimentConfi
   if (value.world.predators !== undefined) {
     const ps = value.world.predators;
     if (!Array.isArray(ps) || ps.length > 4 || !ps.every((q: unknown) => object(q) && typeof q.id === "string" && Array.isArray(q.waypoints) && q.waypoints.length >= 1 && q.waypoints.length <= 16 && q.waypoints.every(inBounds)
-        && finite(q.speed) && (q.speed as number) >= 0 && (q.speed as number) <= 2 && finite(q.chaseRadius) && (q.chaseRadius as number) >= 0 && (q.chaseRadius as number) <= 50 && finite(q.harm) && (q.harm as number) >= 0 && (q.harm as number) <= 20)) throw new Error("危険な動物の設定が不正です。");
+        && finite(q.speed) && (q.speed as number) >= 0 && (q.speed as number) <= 2 && finite(q.chaseRadius) && (q.chaseRadius as number) >= 0 && (q.chaseRadius as number) <= 50 && finite(q.harm) && (q.harm as number) >= 0 && (q.harm as number) <= 20 && (q.cooldown === undefined || (Number.isInteger(q.cooldown) && (q.cooldown as number) >= 0 && (q.cooldown as number) <= 10000)))) throw new Error("危険な動物の設定が不正です。");
     const ids = new Set([...(ps as { id: string }[]).map(q => q.id), ...value.agents.map((a: { id: string }) => a.id)]);
     if (ids.size !== ps.length + value.agents.length) throw new Error("危険な動物のIDが重複しています。");
   }

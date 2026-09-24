@@ -23,6 +23,12 @@ test("world 0.8.0: a predator patrols its waypoints by script, chases a human wi
   let harmed = 0, attackEvents = 0;
   for (let t = 0; t < 12; t++) { const step = advanceWorld(chase, { A: { kind: "rest" } }, t); chase = step.world; harmed += step.effects.A.collision; attackEvents += step.events.filter(e => e.kind === "attack" && e.actorId === "A").length; }
   assert.ok(attackEvents >= 1 && harmed >= 5, `the predator reached and hurt the resting human (${attackEvents} attack ticks, collision ${harmed.toFixed(1)})`);
+  // With a cooldown the predator bites once and returns to its patrol for that many ticks.
+  let calm = createWorld([{ id: "A", position: { x: 8, y: 5 } }], { predators: [{ ...spec, cooldown: 30 }] }, []);
+  const bites: number[] = [];
+  for (let t = 0; t < 60; t++) { const step = advanceWorld(calm, { A: { kind: "rest" } }, t); calm = step.world; if (step.events.some(e => e.kind === "attack")) bites.push(t); }
+  assert.ok(bites.length >= 1 && bites.length <= 2, `one bite, then a pause of 30 ticks (${bites.join(",")})`);
+  if (bites.length === 2) assert.ok(bites[1] - bites[0] > 30);
   const seen = senseWorld(chase, "A", 12, keyedRandom(1, "s", 0));
   assert.deepEqual(seen.animals.map(a => [a.trackId, a.morphologySimilarity]), [["P", 0.2]], "the predator is seen as a dissimilar animal");
   const plain = createWorld([{ id: "A", position: { x: 8, y: 5 } }], {}, []);
