@@ -31,6 +31,11 @@ test("world 0.8.0: a predator patrols its waypoints by script, chases a human wi
   if (bites.length === 2) assert.ok(bites[1] - bites[0] > 30);
   const seen = senseWorld(chase, "A", 12, keyedRandom(1, "s", 0));
   assert.deepEqual(seen.animals.map(a => [a.trackId, a.morphologySimilarity]), [["P", 0.2]], "the predator is seen as a dissimilar animal");
+  // A stalking predator (visibility 2) is unseen at 4 units even though the world's vision radius is larger.
+  const stalk = createWorld([{ id: "A", position: { x: 9, y: 5 } }], { visionRadius: 5, predators: [{ ...spec, visibility: 2 }] }, []);
+  assert.equal(senseWorld(stalk, "A", 0, keyedRandom(1, "s", 0)).animals.length, 0, "4 units away: unseen");
+  const close = createWorld([{ id: "A", position: { x: 6.5, y: 5 } }], { visionRadius: 5, predators: [{ ...spec, visibility: 2 }] }, []);
+  assert.equal(senseWorld(close, "A", 0, keyedRandom(1, "s", 0)).animals.length, 1, "1.5 units away: seen");
   const plain = createWorld([{ id: "A", position: { x: 8, y: 5 } }], {}, []);
   assert.equal(plain.animals.length, 1, "no predators: the 0.7.0 world");
   assert.throws(() => createSimulation({ ...referentialConfig(1, "human-0.2.0", true, predator), world: { ...predator.world, predators: [{ ...spec, harm: -1 }] } } as Parameters<typeof createSimulation>[0]), /危険な動物/);

@@ -9,7 +9,7 @@ export type WorldParameters = {
   /** 0.3.0: when a food patch falls to `depletedBelow` it is marked spent (still visible, never regrows) and a fresh patch appears at the next position of this fixed sequence. Omitted: no spawning (0.2.0 behavior). */
   foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[]; /** 0.5.0: every n-th spawned patch is toxic (1-based count; omitted: none). */ toxicEvery?: number; /** 0.6.0: a patch alive this many ticks without being depleted rots (spent, nothing left) and the next patch appears, so an avoided patch does not hold a slot forever. Omitted: patches last until eaten (0.5.0 behavior). */ lifetime?: number };
   /** 0.8.0: scripted dangerous animals. Each patrols its waypoints in order (no randomness); when a human is within chaseRadius it moves toward the nearest one instead. A human within contact distance takes `harm` as collision each tick and an "attack" event is recorded. Humans see it as an animal of low morphological similarity. Omitted: no predators (the 0.7.0 behavior). */
-  predators?: { id: string; waypoints: Vec2[]; speed: number; chaseRadius: number; harm: number; /** After an attack the predator ignores humans and patrols for this many ticks (omitted: 0, it keeps pressing). */ cooldown?: number }[];
+  predators?: { id: string; waypoints: Vec2[]; speed: number; chaseRadius: number; harm: number; /** After an attack the predator ignores humans and patrols for this many ticks (omitted: 0, it keeps pressing). */ cooldown?: number; /** Distance within which humans can see this predator (omitted: the world's vision radius). A stalking predator is seen only up close. */ visibility?: number }[];
   /** 0.7.0: poison from toxic food reaches the eater this many ticks after the bite (0 or omitted: the same tick, the 0.5.0 behavior). While it is latent the eater neither feels it nor knows the food was toxic. */
   poisonDelay?: number;
   /** 0.4.0: every `lifetime` ticks the warm place goes out (stays visible, spent, gives no warmth) and a fresh one appears at the next fixed position. Omitted: warm places are permanent (0.3.0 behavior). */
@@ -54,7 +54,8 @@ export function createWorld(animals: { id: string; position: Vec2 }[], parameter
 export function senseWorld(world: WorldState, id: string, tick: number, random: RandomSource): Observation {
   const self = world.animals.find((a) => a.id === id);
   if (!self) throw new Error("Unknown physical animal: " + id);
-  const visible = world.animals.filter((a) => a.id !== id && distance(a.position, self.position) <= world.parameters.visionRadius).sort((a, b) => a.id.localeCompare(b.id));
+  const range = (a: PhysicalAnimal) => a.kind === "predator" ? Math.min(world.parameters.visionRadius, world.parameters.predators?.find((s) => s.id === a.id)?.visibility ?? Infinity) : world.parameters.visionRadius;
+  const visible = world.animals.filter((a) => a.id !== id && distance(a.position, self.position) <= range(a)).sort((a, b) => a.id.localeCompare(b.id));
   const observation: Observation = {
     tick, selfPosition: { ...self.position },
     animals: visible.map((a) => ({

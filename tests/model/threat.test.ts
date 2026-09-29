@@ -72,9 +72,10 @@ test("predator-v2 keeps the predator-v1 world, gates on threat-voice convergence
   assert.equal(HUMAN_MODELS["threat-0.13.0-experimental.1"].role, "candidate");
   assert.equal(HUMAN_MODELS["threat-deaf-0.13.0-experimental.1"].role, "control");
   assert.equal(HUMAN_MODELS["threat-alarm-ceiling-0.13.0-experimental.1"].role, "control");
-  const w2 = predator2.world as unknown as { predators: { speed: number }[] }, w1 = predator.world as unknown as { predators: { speed: number }[] };
-  assert.equal(w2.predators[0].speed, 0.75, "the predator outruns a withdrawing human (0.65)");
-  assert.deepEqual({ ...w2, predators: [{ ...w2.predators[0], speed: w1.predators[0].speed }] }, predator.world); assert.deepEqual(predator2.resources, predator.resources);
+  const w2 = predator2.world as unknown as { predators: { speed: number; chaseRadius: number; visibility?: number; harm: number; cooldown?: number }[] }, w1 = predator.world as unknown as { predators: { speed: number; chaseRadius: number; harm: number; cooldown?: number }[] };
+  assert.deepEqual([w2.predators[0].speed, w2.predators[0].chaseRadius, w2.predators[0].visibility], [0.2, 3, 2], "a stalking predator: slow, seen only up close, chasing only up close");
+  assert.deepEqual([w2.predators[0].harm, w2.predators[0].cooldown], [w1.predators[0].harm, w1.predators[0].cooldown]);
+  assert.deepEqual({ ...w2, predators: [w1.predators[0]] }, predator.world); assert.deepEqual(predator2.resources, predator.resources);
   assert.deepEqual(predator2.checks.map(c => c.id), ["convergence-gain", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "attack-benefit-all", "forage-benefit"]);
   const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1")].flat();
   const p2 = [predator2.pilotSeeds, seedsFor("development", predator2, "1"), seedsFor("validation", predator2, "1")].flat();
