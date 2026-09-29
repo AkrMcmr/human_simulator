@@ -20,14 +20,14 @@ import { ALARM } from "./valence.ts";
  * withdrawal from any alarm-shaped sound.
  */
 export const THREAT_VERSION = "0.13.0-experimental.1";
-export const THREAT = { reach: 6, callUrge: FOOD_CALL.utility, associationTicks: 30, fleeTicks: 20, heardMemory: 40 };
+export const THREAT = { reach: 6, callUrge: FOOD_CALL.utility, associationTicks: 30, fleeTicks: 20, heardMemory: 40, /** Ticks between urged threat calls, so a threat in sight does not displace flight and foraging with a call every tick (predator-v2 pilot 1: ~990 calls per run). */ callRefractory: 10 };
 export type ThreatMode = "full" | "deaf" | "alarm";
 type ThreatState = HumanState & {
   lastIntake?: number; lastPain: number;
   eatingHeard?: Record<number, number>; threatHeard?: Record<number, number>;
   heardLog?: { category: number; x: number; y: number; tick: number; resolved: boolean }[];
   alarms?: Record<number, { hit: number; miss: number }>;
-  fleeFrom?: Vec2 | null; fleeUntil?: number;
+  fleeFrom?: Vec2 | null; fleeUntil?: number; lastThreatCall?: number;
 };
 export function threatOf(observation: Observation): { risk: number; position: Vec2 } | null {
   const seen = observation.animals.filter(a => a.morphologySimilarity < 0.7).map(a => ({ a, d: magnitude(a.relativePosition) })).filter(x => x.d <= THREAT.reach).sort((p, q) => p.d - q.d)[0];
@@ -94,9 +94,12 @@ export function decideThreat(previous: HumanState, observation: Observation, ran
   const fleeing = human.fleeFrom && (human.fleeUntil ?? -1) >= observation.tick ? human.fleeFrom : null;
   if (!fleeing) { human.fleeFrom = null; human.fleeUntil = undefined; }
   const chooseSound = mode === "alarm" ? (h: HumanState) => threat ? { ...ALARM.shape } : chooseThreatVoice(h, false) : (h: HumanState) => chooseThreatVoice(h, !!threat);
-  return decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, {
-    stateCoupling: CONVENTION.stateCoupling, chooseSound, threat, fleeFrom: fleeing, ...(threat ? { callUrge: THREAT.callUrge } : {}),
+  const urged = !!threat && observation.tick - (human.lastThreatCall ?? -Infinity) >= THREAT.callRefractory;
+  const result = decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, {
+    stateCoupling: CONVENTION.stateCoupling, chooseSound, threat, fleeFrom: fleeing, ...(urged ? { callUrge: THREAT.callUrge } : {}),
   });
+  if (threat && result.action.kind === "vocalize") (result.human as ThreatState).lastThreatCall = observation.tick;
+  return result;
 }
 export const decideThreatFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full");
 export const decideThreatDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf");

@@ -9,7 +9,7 @@ import { protocol as predator2 } from "../../research/studies/predator-v2.ts";
 import { seedsFor, referentialConfig, runCondition, checkValue, type SeedResult } from "../../research/studies/referential-v1.ts";
 import { HUMAN_MODELS, runExperiment } from "../../packages/simulation/src/index.ts";
 
-type T = ReturnType<typeof createHuman> & { lastIntake?: number; threatHeard?: Record<number, number>; eatingHeard?: Record<number, number>; alarms?: Record<number, { hit: number; miss: number }>; fleeFrom?: { x: number; y: number } | null; heardLog?: unknown[] };
+type T = ReturnType<typeof createHuman> & { lastIntake?: number; lastThreatCall?: number; threatHeard?: Record<number, number>; eatingHeard?: Record<number, number>; alarms?: Record<number, { hit: number; miss: number }>; fleeFrom?: { x: number; y: number } | null; heardLog?: unknown[] };
 const beast = (x: number, y: number) => ({ trackId: "P", relativePosition: { x, y }, relativeVelocity: { x: 0, y: 0 }, morphologySimilarity: 0.2 });
 const peer = (x: number, y: number) => ({ trackId: "B", relativePosition: { x, y }, relativeVelocity: { x: 0, y: 0 }, morphologySimilarity: 0.98 });
 const shape = { openness: .7, resonance: .6 };
@@ -25,6 +25,10 @@ test("a dissimilar animal in sight is a threat that grows as it nears; the indiv
   const r = decideThreatFull(calm(), at(5, [beast(2, 0)]), () => 0.5);
   assert.equal(r.action.kind, "withdraw"); assert.ok(r.action.target!.x < 10, "away from the beast on the right");
   assert.ok(r.trace.scores.find(s => s.action === "withdraw")!.terms.flight! > 0.9);
+  assert.ok(r.trace.scores.find(s => s.action === "vocalize")!.terms.callUrge! > 0, "a threat in sight urges a call");
+  const justCalled = { ...(r.human as T), lastThreatCall: 5 } as T;
+  assert.equal(decideThreatFull(justCalled, at(5 + THREAT.callRefractory - 1, [beast(2, 0)]), () => 0.5).trace.scores.find(s => s.action === "vocalize")!.terms.callUrge, undefined, "no urge inside the refractory period");
+  assert.ok(decideThreatFull(justCalled, at(5 + THREAT.callRefractory, [beast(2, 0)]), () => 0.5).trace.scores.find(s => s.action === "vocalize")!.terms.callUrge! > 0);
   const plain = decideWithOptions(calm(), at(5, [beast(2, 0)]), () => 0.5, {});
   assert.notEqual(plain.action.kind, "withdraw", "without the hook the default never withdraws from a non-peer");
   assert.equal(plain.trace.scores.find(s => s.action === "withdraw"), undefined);
@@ -68,7 +72,9 @@ test("predator-v2 keeps the predator-v1 world, gates on threat-voice convergence
   assert.equal(HUMAN_MODELS["threat-0.13.0-experimental.1"].role, "candidate");
   assert.equal(HUMAN_MODELS["threat-deaf-0.13.0-experimental.1"].role, "control");
   assert.equal(HUMAN_MODELS["threat-alarm-ceiling-0.13.0-experimental.1"].role, "control");
-  assert.deepEqual(predator2.world, predator.world); assert.deepEqual(predator2.resources, predator.resources);
+  const w2 = predator2.world as unknown as { predators: { speed: number }[] }, w1 = predator.world as unknown as { predators: { speed: number }[] };
+  assert.equal(w2.predators[0].speed, 0.75, "the predator outruns a withdrawing human (0.65)");
+  assert.deepEqual({ ...w2, predators: [{ ...w2.predators[0], speed: w1.predators[0].speed }] }, predator.world); assert.deepEqual(predator2.resources, predator.resources);
   assert.deepEqual(predator2.checks.map(c => c.id), ["convergence-gain", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "attack-benefit-all", "forage-benefit"]);
   const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1")].flat();
   const p2 = [predator2.pilotSeeds, seedsFor("development", predator2, "1"), seedsFor("validation", predator2, "1")].flat();
