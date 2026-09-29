@@ -73,8 +73,8 @@ test("predator-v2 keeps the predator-v1 world, gates on threat-voice convergence
   assert.equal(HUMAN_MODELS["threat-deaf-0.13.0-experimental.1"].role, "control");
   assert.equal(HUMAN_MODELS["threat-alarm-ceiling-0.13.0-experimental.1"].role, "control");
   const w2 = predator2.world as unknown as { predators: { speed: number; chaseSpeed?: number; chaseRadius: number; visibility?: number; harm: number; cooldown?: number }[] }, w1 = predator.world as unknown as { predators: { speed: number; chaseRadius: number; harm: number; cooldown?: number }[] };
-  assert.deepEqual([w2.predators[0].speed, w2.predators[0].chaseSpeed, w2.predators[0].chaseRadius, w2.predators[0].visibility], [0.2, 0.75, 3, 2], "a stalking predator: slow patrol, fast strike, seen and chasing only up close");
-  assert.deepEqual([w2.predators[0].harm, w2.predators[0].cooldown], [w1.predators[0].harm, w1.predators[0].cooldown]);
+  assert.deepEqual([w2.predators[0].speed, w2.predators[0].chaseSpeed, w2.predators[0].chaseRadius, w2.predators[0].visibility], [0.2, 1.2, 3, 2], "a stalking predator: slow patrol, instant strike, seen and chasing only up close");
+  assert.deepEqual([w2.predators[0].harm, w2.predators[0].cooldown], [w1.predators[0].harm, 20], "same harm, a short pause before the next bite");
   assert.deepEqual({ ...w2, predators: [w1.predators[0]] }, predator.world); assert.deepEqual(predator2.resources, predator.resources);
   assert.deepEqual(predator2.checks.map(c => c.id), ["convergence-gain", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "attack-benefit-all", "forage-benefit"]);
   const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1")].flat();
