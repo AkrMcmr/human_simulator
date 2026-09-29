@@ -99,7 +99,11 @@ export type DecideOptions = { outcomeBonus?: OutcomeBonus; forgetting?: Forgetti
   /** Candidate hook (0.8.0-experimental.2): the eating state also leaks into the voice, pulling both features toward the high corner while the individual has just eaten. Requires lastIntake from the candidate's apply. */
   eatingCoupling?: number;
   /** Candidate term (0.12.0-experimental.3): extra vocalize utility the candidate computed for this tick from its own state (e.g. disgust at an aversive place in sight). */
-  callUrge?: number };
+  callUrge?: number;
+  /** Candidate perception (0.13.0-experimental.*): a dissimilar animal in sight, as a risk (0-1) and its absolute position. Adds a flight term to withdrawing, aims withdrawal away from it, and leaks into the voice through the state coupling like peer risk. */
+  threat?: { risk: number; position: Vec2 } | null;
+  /** Candidate hook (0.13.0-experimental.*): a place to withdraw from because of a heard warning, when no threat is in sight. */
+  fleeFrom?: Vec2 | null };
 
 /** Default model (human 0.2.0). Pass another OutcomeBonus for experiments; `() => 0` is the ablated control. */
 export function decideHuman(previous: HumanState, observation: Observation, random: RandomSource, outcomeBonus: OutcomeBonus = predictedSafety) {
@@ -191,6 +195,8 @@ export function decideWithOptions(previous: HumanState, observation: Observation
   const closing = peer && peerDistance && peerDistance > 0
     ? -(peer.relativePosition.x * peer.relativeVelocity.x + peer.relativePosition.y * peer.relativeVelocity.y) / peerDistance : 0;
   const perceivedRisk = peer ? clamp(proximity * harmEstimate + Math.max(0, closing) * 0.2 + (peerDistance! < 1.5 ? 0.25 : 0)) : 0;
+  const threatRisk = options.threat?.risk ?? 0;
+  const dangerRisk = Math.max(perceivedRisk, threatRisk);
   const entries = Object.values(human.places);
   const nearestPlace = (kind: "food" | "warmth") => entries
     .filter((place) => place.kind === kind && place.strength > 0.01)
@@ -228,10 +234,11 @@ export function decideWithOptions(previous: HumanState, observation: Observation
   addScore("rest", { fatigue: human.body.fatigue * 1.45, danger: -perceivedRisk * p.caution * 0.7, continuity: inertia("rest"), cost: -0.25 });
   if (food) addScore("forage", { hunger: human.body.hunger * 1.65, continuity: inertia("forage"), cost: -0.2 });
   if (warmth) addScore("warm", { cold: human.body.cold * 1.6, continuity: inertia("warm"), cost: -0.2 });
-  if (peer) {
-    addScore("approach", { curiosity: p.curiosity * (0.16 + uncertainty * 0.56), danger: -perceivedRisk * p.caution * 1.15, tooClose: peerDistance! < 2.4 ? -0.65 : 0, continuity: inertia("approach"), cost: -0.06 });
-    addScore("withdraw", { danger: perceivedRisk * p.caution * 1.25, personalSpace: peerDistance! < 1.8 ? 0.24 : 0, continuity: inertia("withdraw"), cost: -0.22 });
-  }
+  if (peer) addScore("approach", { curiosity: p.curiosity * (0.16 + uncertainty * 0.56), danger: -perceivedRisk * p.caution * 1.15, tooClose: peerDistance! < 2.4 ? -0.65 : 0, continuity: inertia("approach"), cost: -0.06 });
+  if (peer || options.threat || options.fleeFrom) addScore("withdraw", {
+    danger: perceivedRisk * p.caution * 1.25, personalSpace: peer && peerDistance! < 1.8 ? 0.24 : 0, continuity: inertia("withdraw"), cost: -0.22,
+    ...(options.threat || options.fleeFrom ? { flight: threatRisk * 1.6 + (options.fleeFrom && !options.threat ? 0.9 : 0) } : {}),
+  });
   const voiceResponse = memory?.responses.vocalize;
   addScore("vocalize", {
     vocalExploration: p.curiosity * 0.33,
@@ -258,9 +265,10 @@ export function decideWithOptions(previous: HumanState, observation: Observation
   }
   const action: ActionIntent = { kind: selected };
   if (selected === "approach" && peerPosition) action.target = peerPosition;
-  if (selected === "withdraw" && peerPosition) action.target = {
-    x: observation.selfPosition.x + (observation.selfPosition.x - peerPosition.x) * 3,
-    y: observation.selfPosition.y + (observation.selfPosition.y - peerPosition.y) * 3,
+  const away = options.threat?.position ?? options.fleeFrom ?? peerPosition;
+  if (selected === "withdraw" && away) action.target = {
+    x: observation.selfPosition.x + (observation.selfPosition.x - away.x) * 3,
+    y: observation.selfPosition.y + (observation.selfPosition.y - away.y) * 3,
   };
   if (selected === "forage" && food) action.target = { ...food.position };
   if (selected === "warm" && warmth) action.target = { ...warmth.position };
@@ -274,7 +282,7 @@ export function decideWithOptions(previous: HumanState, observation: Observation
     });
     const coupling = options.stateCoupling ?? 0;
     let expressed = coupling > 0
-      ? { openness: (1 - coupling) * base.openness + coupling * clamp(perceivedRisk * 2), resonance: (1 - coupling) * base.resonance + coupling * bodilyNeed }
+      ? { openness: (1 - coupling) * base.openness + coupling * clamp(dangerRisk * 2), resonance: (1 - coupling) * base.resonance + coupling * bodilyNeed }
       : base;
     const eating = options.eatingCoupling ?? 0;
     if (eating > 0 && ((human as HumanState & { lastIntake?: number }).lastIntake ?? 0) > 0) expressed = { openness: (1 - eating) * expressed.openness + eating * 0.9, resonance: (1 - eating) * expressed.resonance + eating * 0.9 };

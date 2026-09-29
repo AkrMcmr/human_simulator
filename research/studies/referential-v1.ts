@@ -36,6 +36,8 @@ export type RunResult = {
   poisonIntake: number; latePoisonIntake: number; /** valence-v5: distinct (individual, toxic patch) pairs with poisoned intake, over the run and over the last third. */ poisonings: number; latePoisonings: number; /** valence-v6 diagnostic: each new poisoning classified by what preceded it at that patch — nobody poisoned there before (first), someone at the same tick (simultaneous), earlier poisonings but no bad-food call from the patch reached this eater within 600 ticks (unwarned), or such a call did reach it (warned). */ poisoningKinds: { first: number; simultaneous: number; unwarned: number; warned: number };
   /** predator-v1 (world 0.8.0): attack events on humans (contact ticks with a predator) over the run and the last third, their summed harm, attacks that another living human could have warned about (it had the predator in sight at least 15 ticks before the victim's own current sighting began, within the last 60 ticks), and calls made with a predator in sight. */
   attacks: number; lateAttacks: number; attackHarm: number; lateAttackHarm: number; foreseeableAttacks: number; threatCalls: number;
+  /** predator-v2: calls made with a predator in sight in the last third, pooled. */
+  threatVoiceDispersion: number; threatVoiceCentroid: { openness: number; resonance: number } | null;
   /** valence-v7: share of living individual-ticks with hunger at or above 0.95 (the taste-aversion models eat known-toxic food only then). */ desperateFraction: number; badVoiceDispersion: number; badVoiceCentroid: { openness: number; resonance: number } | null; badCalls: number;
   /** transmission-v1: with a newcomer replaced mid-run, the distance between its late food voice and the incumbents' pooled late food voice (1 when either is missing), and its own late hunger. */
   newcomerDistance: number; newcomerLateHunger: number;
@@ -81,6 +83,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const poisoningKinds = { first: 0, simultaneous: 0, unwarned: 0, warned: 0 };
   let livingTicks = 0, desperateTicks = 0;
   let attacks = 0, lateAttacks = 0, attackHarm = 0, lateAttackHarm = 0, foreseeableAttacks = 0, threatCalls = 0;
+  const lateThreatCalls: { openness: number; resonance: number }[] = [];
   const lastSawPredator: Record<string, number> = {}, sawSince: Record<string, number> = {};
   const firstPoisonedAt = new Map<string, number>(); // toxic patch id -> tick of the first poisoning there
   const warnedAbout: Record<string, Record<string, number>> = {}; // listener id -> toxic patch id -> tick a bad-food call from that patch was within hearing
@@ -122,7 +125,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       if (observation.sounds.length) { const loudest = [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0]; pendingDirections[h.id] = { ...loudest.relativePosition }; }
       if (result.action.kind === "vocalize") {
         vocalizations++;
-        if (observation.animals.some(a => a.morphologySimilarity < 0.7)) threatCalls++;
+        if (observation.animals.some(a => a.morphologySimilarity < 0.7)) { threatCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateThreatCalls.push({ ...result.action.sound }); }
         // valence-v4: a disgust call (experimental.3, lastDisgust set by the decision itself) counts as a bad-food voice like a poisoned one.
         const poisoned = ((h as HumanState & { lastPoison?: number }).lastPoison ?? 0) > 0 || ((result.human as HumanState & { lastDisgust?: number }).lastDisgust ?? 0) > 0;
         if (poisoned) {
@@ -220,7 +223,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     const centroid = calls.length >= 5 ? { openness: mean(calls.map(c => c.openness)), resonance: mean(calls.map(c => c.resonance)) } : null;
     return { centroid, dispersion: centroid ? mean(calls.map(c => Math.hypot(c.openness - centroid.openness, c.resonance - centroid.resonance))) : 1 };
   };
-  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls), otherPool = pool(lateOtherCalls), incomerPool = pool(incomerCalls), earlyPool = pool(earlyCalls), badPool = pool(lateBadCalls);
+  const foodPool = pool(lateFoodCalls), warmthPool = pool(lateWarmthCalls), otherPool = pool(lateOtherCalls), incomerPool = pool(incomerCalls), earlyPool = pool(earlyCalls), badPool = pool(lateBadCalls), threatPool = pool(lateThreatCalls);
   // Without a newcomer, lateFoodCalls holds everyone; with one, it holds the incumbents and incomerCalls the newcomer.
   const newcomerDistance = newcomer && incomerPool.centroid && foodPool.centroid ? Math.hypot(incomerPool.centroid.openness - foodPool.centroid.openness, incomerPool.centroid.resonance - foodPool.centroid.resonance) : 1;
   const foodVoiceDispersion = foodPool.dispersion;
@@ -229,7 +232,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     foodVoices, foodVoiceSpread: pairs.length ? mean(pairs) : 1, foodVoiceCentroid, foodVoiceDispersion,
     lateMeanCold: lateColds.length ? mean(lateColds) : 0, warmthVoiceDispersion: warmthPool.dispersion, warmthVoiceCentroid: warmthPool.centroid, warmthCalls,
     otherVoiceCentroid: otherPool.centroid, otherCalls,
-    attacks, lateAttacks, attackHarm, lateAttackHarm, foreseeableAttacks, threatCalls,
+    attacks, lateAttacks, attackHarm, lateAttackHarm, foreseeableAttacks, threatCalls, threatVoiceDispersion: threatPool.dispersion, threatVoiceCentroid: threatPool.centroid,
     poisonIntake, latePoisonIntake, poisonings: poisonedPairs.size, latePoisonings: latePoisonedPairs.size, poisoningKinds, desperateFraction: livingTicks ? desperateTicks / livingTicks : 0, badVoiceDispersion: badPool.dispersion, badVoiceCentroid: badPool.centroid, badCalls,
     newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0, newcomerCalls: incomerCalls,
     earlyVoiceCentroid: earlyPool.centroid, earlyCalls: earlyCalls.length,
@@ -245,7 +248,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "poison-benefit-units", "poison-shape-units", "poisoning-benefit", "poisoning-shape", "attack-benefit", "attack-shape", "attack-benefit-all", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "poison-benefit-units", "poison-shape-units", "poisoning-benefit", "poisoning-shape", "attack-benefit", "attack-shape", "attack-benefit-all", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -272,6 +275,7 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     // Distance between the warmth voice and the voice used in neither context; 0 when either is missing.
     case "warmth-specificity": return r.sound.warmthVoiceCentroid && r.sound.otherVoiceCentroid ? Math.hypot(r.sound.warmthVoiceCentroid.openness - r.sound.otherVoiceCentroid.openness, r.sound.warmthVoiceCentroid.resonance - r.sound.otherVoiceCentroid.resonance) : 0;
     case "arbitrariness-warmth": return 0;
+    case "arbitrariness-threat": return 0;
     case "distinctness": return r.sound.foodVoiceCentroid && r.sound.warmthVoiceCentroid ? Math.hypot(r.sound.foodVoiceCentroid.openness - r.sound.warmthVoiceCentroid.openness, r.sound.foodVoiceCentroid.resonance - r.sound.warmthVoiceCentroid.resonance) : 0;
     case "cold-benefit": return r.muted.lateMeanCold - r.sound.lateMeanCold;
     case "cold-shape-dependence": return r.scrambled.lateMeanCold - r.sound.lateMeanCold;
@@ -302,6 +306,9 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
     case "attack-benefit": return r.muted.lateAttacks - r.sound.lateAttacks;
     case "attack-shape": return r.scrambled.lateAttacks - r.sound.lateAttacks;
     case "attack-benefit-all": return r.muted.attacks - r.sound.attacks;
+    // predator-v2: the threat voice concentrates when audible; it sits apart from the food voice.
+    case "convergence-threat": return r.muted.threatVoiceCentroid && r.sound.threatVoiceCentroid ? r.muted.threatVoiceDispersion - r.sound.threatVoiceDispersion : 0;
+    case "threat-distinctness": return r.sound.foodVoiceCentroid && r.sound.threatVoiceCentroid ? Math.hypot(r.sound.foodVoiceCentroid.openness - r.sound.threatVoiceCentroid.openness, r.sound.foodVoiceCentroid.resonance - r.sound.threatVoiceCentroid.resonance) : 0;
     case "lineage-continuity": {
       const early = r.sound.earlyVoiceCentroid, late = r.sound.foodVoiceCentroid;
       if (!early || !late || r.sound.foodVoiceDispersion > ADOPTION_RADIUS) return 0;
@@ -323,6 +330,7 @@ export function assessSeeds(name: string, results: SeedResult[], protocol: Refer
   const checks: Check[] = MEASURES.map(id => {
     const values = id === "arbitrariness" ? spreadAcrossSeeds(r => r.sound.foodVoiceCentroid)
       : id === "arbitrariness-warmth" ? spreadAcrossSeeds(r => r.sound.warmthVoiceCentroid)
+      : id === "arbitrariness-threat" ? spreadAcrossSeeds(r => r.sound.threatVoiceCentroid)
       : results.map(r => checkValue(id, r, protocol));
     const summary = summarizeSamples(values, protocol.id + "/" + name + "/" + id);
     const c = registered.get(id);

@@ -109,7 +109,7 @@ export function selectByReferent(human: HumanState, sounds: HeardSound[], random
   }
   return random("referent-unknown") < REFERENT.unknownFollowRate ? [...scored].sort((a, b) => b.sound.loudness - a.sound.loudness)[0].sound : null;
 }
-export function decideReferentLearner(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number, eatingCoupling?: number, extra: { stateCoupling?: number; chooseSound?: SoundChoice } = {}) {
+export function decideReferentLearner(previous: HumanState, observation: Observation, random: RandomSource, satiationCall?: number, eatingCoupling?: number, extra: { stateCoupling?: number; chooseSound?: SoundChoice; callUrge?: number; threat?: { risk: number; position: { x: number; y: number } } | null; fleeFrom?: { x: number; y: number } | null } = {}) {
   const human: ReferentState = structuredClone(previous);
   const self = observation.selfPosition;
   const foodHere = observation.resources.filter(r => r.kind === "food" && r.strength > 0.01).map(r => ({ x: self.x + r.relativePosition.x, y: self.y + r.relativePosition.y }));
@@ -134,7 +134,7 @@ export function decideReferentLearner(previous: HumanState, observation: Observa
     kept.push(m);
   }
   human.recentSounds = kept;
-  const result = decideWithSenderOptions(human, observation, random, { stateCoupling: extra.stateCoupling ?? VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectByReferent(h, sounds, r), satiationCall, eatingCoupling, chooseSound: extra.chooseSound });
+  const result = decideWithSenderOptions(human, observation, random, { stateCoupling: extra.stateCoupling ?? VOICE_STATE.coupling, soundOrienting: (h, sounds, r) => selectByReferent(h, sounds, r), satiationCall, eatingCoupling, chooseSound: extra.chooseSound, callUrge: extra.callUrge, threat: extra.threat, fleeFrom: extra.fleeFrom });
   // Remember where each heard sound came from, classified with the categories updated by this decision.
   const next = result.human as ReferentState;
   next.recentSounds = [...(human.recentSounds ?? [])];

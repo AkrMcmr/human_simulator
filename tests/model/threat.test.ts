@@ -1,0 +1,83 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createHuman, decideWithOptions } from "../../packages/human/src/index.ts";
+import { applyWithIntake } from "../../packages/human/src/forager-listener.ts";
+import { decideThreatFull, decideThreatDeaf, decideThreatAlarm, threatOf, chooseThreatVoice, isAlarmCategory, THREAT } from "../../packages/human/src/threat.ts";
+import { ALARM } from "../../packages/human/src/valence.ts";
+import { protocol as predator } from "../../research/studies/predator-v1.ts";
+import { protocol as predator2 } from "../../research/studies/predator-v2.ts";
+import { seedsFor, referentialConfig, runCondition, checkValue, type SeedResult } from "../../research/studies/referential-v1.ts";
+import { HUMAN_MODELS, runExperiment } from "../../packages/simulation/src/index.ts";
+
+type T = ReturnType<typeof createHuman> & { lastIntake?: number; threatHeard?: Record<number, number>; eatingHeard?: Record<number, number>; alarms?: Record<number, { hit: number; miss: number }>; fleeFrom?: { x: number; y: number } | null; heardLog?: unknown[] };
+const beast = (x: number, y: number) => ({ trackId: "P", relativePosition: { x, y }, relativeVelocity: { x: 0, y: 0 }, morphologySimilarity: 0.2 });
+const peer = (x: number, y: number) => ({ trackId: "B", relativePosition: { x, y }, relativeVelocity: { x: 0, y: 0 }, morphologySimilarity: 0.98 });
+const shape = { openness: .7, resonance: .6 };
+const call = (rx: number, ry: number, s = shape) => ({ visibleSourceId: null, shape: s, loudness: .8, relativePosition: { x: rx, y: ry } });
+const at = (tick: number, animals: ReturnType<typeof beast>[] = [], sounds: ReturnType<typeof call>[] = []) => ({ tick, selfPosition: { x: 10, y: 14 }, animals, resources: [], sounds });
+const calm = () => createHuman("A", {}, { hunger: .3, fatigue: 0, cold: 0 });
+
+test("a dissimilar animal in sight is a threat that grows as it nears; the individual withdraws away from it, and the default core is unchanged without the hook", () => {
+  assert.equal(threatOf(at(0, [peer(2, 0)])), null, "a peer is no threat");
+  assert.equal(threatOf(at(0, [beast(THREAT.reach + 1, 0)])), null, "beyond reach");
+  const near = threatOf(at(0, [beast(2, 0)]))!;
+  assert.ok(near.risk > 0.6 && near.position.x === 12 && near.position.y === 14);
+  const r = decideThreatFull(calm(), at(5, [beast(2, 0)]), () => 0.5);
+  assert.equal(r.action.kind, "withdraw"); assert.ok(r.action.target!.x < 10, "away from the beast on the right");
+  assert.ok(r.trace.scores.find(s => s.action === "withdraw")!.terms.flight! > 0.9);
+  const plain = decideWithOptions(calm(), at(5, [beast(2, 0)]), () => 0.5, {});
+  assert.notEqual(plain.action.kind, "withdraw", "without the hook the default never withdraws from a non-peer");
+  assert.equal(plain.trace.scores.find(s => s.action === "withdraw"), undefined);
+});
+test("the threat voice imitates categories heard while threatened, kept apart from the food voice; eating imitates the food voice; otherwise both are avoided", () => {
+  const h = calm() as T;
+  h.heardSounds = [{ id: 1, shape: { openness: .2, resonance: .3 }, samples: 5 }, { id: 2, shape: { openness: .7, resonance: .6 }, samples: 5 }];
+  h.producedSounds = [{ id: 1, shape: { openness: .2, resonance: .3 }, samples: 2 }, { id: 2, shape: { openness: .7, resonance: .6 }, samples: 2 }, { id: 3, shape: { openness: .9, resonance: .05 }, samples: 2 }];
+  h.eatingHeard = { 1: 6 }; h.threatHeard = { 2: 5 };
+  assert.deepEqual(chooseThreatVoice(h, true), { openness: .7, resonance: .6 });
+  assert.deepEqual(chooseThreatVoice({ ...h, lastIntake: .04 } as T, false), { openness: .2, resonance: .3 });
+  assert.deepEqual(chooseThreatVoice(h, false), { openness: .9, resonance: .05 }, "neither context: the produced sound far from both voices");
+  const heard = decideThreatFull(h, at(5, [beast(3, 0)], [call(2, 0, { openness: .72, resonance: .58 })]), () => 0.5).human as T;
+  assert.equal(heard.threatHeard![2], 6, "a sound heard while threatened counts toward the threat voice");
+});
+test("strict association: a heard category becomes a warning after a threat follows it, the listener flees its source; the deaf control learns but does not flee; the ceiling flees the innate alarm", () => {
+  let h = calm() as T; h.heardSounds = [{ id: 1, shape: { ...shape }, samples: 5 }];
+  h = decideThreatFull(h, at(5, [], [call(4, 0)]), () => 0.5).human as T;
+  assert.equal(h.heardLog!.length, 1); assert.equal(isAlarmCategory(h, 1), false);
+  h = decideThreatFull(h, at(10, [beast(3, 0)]), () => 0.5).human as T;
+  assert.deepEqual(h.alarms, { 1: { hit: 1, miss: 0 } }); assert.ok(isAlarmCategory(h, 1));
+  const warned = decideThreatFull(h, at(60, [], [call(-4, 0)]), () => 0.5);
+  assert.equal(warned.action.kind, "withdraw"); assert.ok(warned.action.target!.x > 10, "away from the warning's source on the left");
+  const later = decideThreatFull({ ...(warned.human as T) } as T, at(60 + THREAT.fleeTicks + 1, []), () => 0.5).human as T;
+  assert.equal(later.fleeFrom, null, "the flight expires");
+  const deaf = decideThreatDeaf(h, at(60, [], [call(-4, 0)]), () => 0.5);
+  assert.notEqual(deaf.action.kind, "withdraw");
+  // A category heard without a threat following counts a miss and stops warning when misses catch up.
+  let m = calm() as T; m.heardSounds = [{ id: 1, shape: { ...shape }, samples: 5 }]; m.alarms = { 1: { hit: 1, miss: 0 } };
+  m = decideThreatFull(m, at(5, [], [call(4, 0)]), () => 0.5).human as T;
+  m = decideThreatFull(m, at(5 + THREAT.associationTicks + 1, []), () => 0.5).human as T;
+  assert.deepEqual(m.alarms, { 1: { hit: 1, miss: 1 } }); assert.equal(isAlarmCategory(m, 1), false);
+  const ceiling = decideThreatAlarm(calm(), at(5, [], [call(-4, 0, { ...ALARM.shape })]), () => 0.5);
+  assert.equal(ceiling.action.kind, "withdraw", "the ceiling withdraws from an alarm-shaped sound without learning");
+  assert.notEqual(decideThreatAlarm(calm(), at(5, [], [call(-4, 0)]), () => 0.5).action.kind, "withdraw");
+  const pained = applyWithIntake(h, { ambientCold: .3, foodIntake: 0, exertion: 0, resting: false, collision: 12 }) as T;
+  const afterPain = decideThreatFull({ ...pained, heardLog: [{ category: 1, x: 14, y: 14, tick: 100, resolved: false }] } as T, at(101, []), () => 0.5).human as T;
+  assert.equal(afterPain.alarms![1].hit, 2, "pain also resolves an open heard entry as a hit");
+});
+test("predator-v2 keeps the predator-v1 world, gates on threat-voice convergence, distinctness and the whole-run paired benefit, on fresh seeds", () => {
+  assert.equal(HUMAN_MODELS["threat-0.13.0-experimental.1"].role, "candidate");
+  assert.equal(HUMAN_MODELS["threat-deaf-0.13.0-experimental.1"].role, "control");
+  assert.equal(HUMAN_MODELS["threat-alarm-ceiling-0.13.0-experimental.1"].role, "control");
+  assert.deepEqual(predator2.world, predator.world); assert.deepEqual(predator2.resources, predator.resources);
+  assert.deepEqual(predator2.checks.map(c => c.id), ["convergence-gain", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "attack-benefit-all", "forage-benefit"]);
+  const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1")].flat();
+  const p2 = [predator2.pilotSeeds, seedsFor("development", predator2, "1"), seedsFor("validation", predator2, "1")].flat();
+  assert.equal(new Set([...used, ...p2]).size, used.length + p2.length);
+  const mk = (food: { openness: number; resonance: number } | null, threat: { openness: number; resonance: number } | null, disp: number) => ({ foodVoiceCentroid: food, threatVoiceCentroid: threat, threatVoiceDispersion: disp, attacks: 10, latePoisonings: 0 }) as unknown as SeedResult["sound"];
+  const r = { seed: 1, model: "m", sound: mk({ openness: .2, resonance: .2 }, { openness: .8, resonance: .2 }, .1), muted: mk(null, { openness: .5, resonance: .5 }, .3), misdirected: mk(null, null, 0), scrambled: mk(null, null, 0) } as SeedResult;
+  assert.ok(Math.abs(checkValue("threat-distinctness", r, predator2) - .6) < 1e-9);
+  assert.ok(Math.abs(checkValue("convergence-threat", r, predator2) - .2) < 1e-9);
+  const run = runCondition("threat-0.13.0-experimental.1", predator2.pilotSeeds[0], "sound", { ...predator2, horizon: 400 } as typeof predator2);
+  assert.ok(run.threatCalls >= 0 && run.attacks >= 0);
+  assert.equal(runExperiment({ ...referentialConfig(p2[0], "threat-alarm-ceiling-0.13.0-experimental.1", true, predator2), horizon: 100 }).frames.length, 101);
+});

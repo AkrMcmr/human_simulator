@@ -1,6 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
+import { decideThreatFull, decideThreatDeaf, decideThreatAlarm } from "../../packages/human/src/threat.ts";
 import { decideValence, decideValenceAversion, decideValencePrivate, decideValenceDisgust, decideValenceDisgustPrivate, decideValenceOnset, decideValenceOnsetPrivate, decideValenceOnsetFast, decideValenceOnsetFastPrivate, decideValenceAlarm, decideValenceMirror, decideValenceMirrorPrivate, decideValenceMirror2, decideValenceMirror2Private, decideValenceAssoc, decideValenceAssocPrivate, decideValenceAssoc2, decideValenceAssoc2Private, decideValenceLatent, decideValenceLatentPrivate, decideValenceLatentAlarm } from "../../packages/human/src/valence.ts";
 import { decideLexicon, decideLexiconTransient, decideLexiconMemory, decideLexiconSeparate, decideLexiconFine } from "../../packages/human/src/lexicon.ts";
 import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, decideConvention, decideConventionNoImitation, decideConventionContrast, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
@@ -69,4 +70,7 @@ export const models: Record<string, ModelAdapter> = {
   "valence-assoc-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatent, apply: applyWithIntake },
   "valence-assoc-private-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatentPrivate, apply: applyWithIntake },
   "valence-alarm-ceiling-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatentAlarm, apply: applyWithIntake },
+  "threat-0.13.0-experimental.1": { create: createHuman, decide: decideThreatFull, apply: applyWithIntake },
+  "threat-deaf-0.13.0-experimental.1": { create: createHuman, decide: decideThreatDeaf, apply: applyWithIntake },
+  "threat-alarm-ceiling-0.13.0-experimental.1": { create: createHuman, decide: decideThreatAlarm, apply: applyWithIntake },
 };
