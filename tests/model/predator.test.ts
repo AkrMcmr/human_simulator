@@ -10,8 +10,8 @@ import { createSimulation, runExperiment } from "../../packages/simulation/src/i
 
 const spec = { id: "P", waypoints: [{ x: 5, y: 5 }, { x: 15, y: 5 }], speed: 0.5, chaseRadius: 4, harm: 5 };
 
-test("world 0.8.0: a predator patrols its waypoints by script, chases a human within reach, hurts it on contact, and looks dissimilar", () => {
-  assert.equal(WORLD_VERSION, "0.8.0");
+test("world 0.9.0: a predator patrols its waypoints by script, chases a human within reach at its chase speed, hurts it on contact, leaves a bitten individual alone for a while, and looks dissimilar", () => {
+  assert.equal(WORLD_VERSION, "0.9.0");
   let w = createWorld([{ id: "A", position: { x: 30, y: 20 } }], { predators: [spec] }, []);
   const pred = () => w.animals.find(a => a.id === "P")!;
   assert.deepEqual(pred().position, { x: 5, y: 5 }); assert.equal(pred().kind, "predator");
@@ -29,6 +29,21 @@ test("world 0.8.0: a predator patrols its waypoints by script, chases a human wi
   for (let t = 0; t < 60; t++) { const step = advanceWorld(calm, { A: { kind: "rest" } }, t); calm = step.world; if (step.events.some(e => e.kind === "attack")) bites.push(t); }
   assert.ok(bites.length >= 1 && bites.length <= 2, `one bite, then a pause of 30 ticks (${bites.join(",")})`);
   if (bites.length === 2) assert.ok(bites[1] - bites[0] > 30);
+  // 0.9.0: chaseSpeed applies while chasing (declared in 0.8.0 but unused until 0.9.0: predator-v2 pilots 4-5 chased at the patrol speed).
+  let fast = createWorld([{ id: "A", position: { x: 8, y: 5 } }], { predators: [{ ...spec, speed: 0.2, chaseSpeed: 1.2, chaseRadius: 3 }] }, []);
+  const p0 = { ...fast.animals.find(a => a.id === "P")!.position };
+  fast = advanceWorld(fast, { A: { kind: "rest" } }, 0).world;
+  assert.ok(Math.abs(fast.animals.find(a => a.id === "P")!.position.x - p0.x - 1.2) < 1e-9, "a human within the chase radius is approached at chaseSpeed");
+  let slow = createWorld([{ id: "A", position: { x: 20, y: 5 } }], { predators: [{ ...spec, speed: 0.2, chaseSpeed: 1.2, chaseRadius: 3 }] }, []);
+  slow = advanceWorld(slow, { A: { kind: "rest" } }, 0).world;
+  assert.ok(Math.abs(slow.animals.find(a => a.id === "P")!.position.x - p0.x - 0.2) < 1e-9, "out of reach it patrols at speed");
+  // 0.9.0: with victimMemory the predator leaves the individual it just bit alone and turns to the next nearest one.
+  let pack = createWorld([{ id: "A", position: { x: 6.5, y: 5 } }, { id: "B", position: { x: 8.5, y: 5 } }], { predators: [{ ...spec, speed: 0.2, chaseSpeed: 1.2, chaseRadius: 3, cooldown: 2, victimMemory: 100 }] }, []);
+  const victims: string[] = [];
+  for (let t = 0; t < 40; t++) { const step = advanceWorld(pack, { A: { kind: "rest" }, B: { kind: "rest" } }, t); pack = step.world; for (const e of step.events) if (e.kind === "attack") victims.push(e.actorId); }
+  assert.deepEqual(victims.slice(0, 2), ["A", "B"], `A first, then B, and A not again within the memory (${victims.join(",")})`);
+  assert.equal(victims.filter(v => v === "A").length, 1);
+  assert.throws(() => createSimulation({ ...referentialConfig(1, "human-0.2.0", true, predator), world: { ...predator.world, predators: [{ ...spec, victimMemory: 1.5 }] } } as Parameters<typeof createSimulation>[0]), /危険な動物/);
   const seen = senseWorld(chase, "A", 12, keyedRandom(1, "s", 0));
   assert.deepEqual(seen.animals.map(a => [a.trackId, a.morphologySimilarity]), [["P", 0.2]], "the predator is seen as a dissimilar animal");
   // A stalking predator (visibility 2) is unseen at 4 units even though the world's vision radius is larger.

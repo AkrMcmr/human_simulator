@@ -1,6 +1,6 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.8.0";
+export const WORLD_VERSION = "0.9.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
@@ -9,7 +9,7 @@ export type WorldParameters = {
   /** 0.3.0: when a food patch falls to `depletedBelow` it is marked spent (still visible, never regrows) and a fresh patch appears at the next position of this fixed sequence. Omitted: no spawning (0.2.0 behavior). */
   foodSpawn?: { amount: number; radius: number; depletedBelow: number; positions: Vec2[]; /** 0.5.0: every n-th spawned patch is toxic (1-based count; omitted: none). */ toxicEvery?: number; /** 0.6.0: a patch alive this many ticks without being depleted rots (spent, nothing left) and the next patch appears, so an avoided patch does not hold a slot forever. Omitted: patches last until eaten (0.5.0 behavior). */ lifetime?: number };
   /** 0.8.0: scripted dangerous animals. Each patrols its waypoints in order (no randomness); when a human is within chaseRadius it moves toward the nearest one instead. A human within contact distance takes `harm` as collision each tick and an "attack" event is recorded. Humans see it as an animal of low morphological similarity. Omitted: no predators (the 0.7.0 behavior). */
-  predators?: { id: string; waypoints: Vec2[]; speed: number; chaseRadius: number; harm: number; /** After an attack the predator ignores humans and patrols for this many ticks (omitted: 0, it keeps pressing). */ cooldown?: number; /** Distance within which humans can see this predator (omitted: the world's vision radius). A stalking predator is seen only up close. */ visibility?: number; /** Speed while chasing (omitted: `speed`). A stalker patrols slowly and strikes fast. */ chaseSpeed?: number }[];
+  predators?: { id: string; waypoints: Vec2[]; speed: number; chaseRadius: number; harm: number; /** After an attack the predator ignores humans and patrols for this many ticks (omitted: 0, it keeps pressing). */ cooldown?: number; /** Distance within which humans can see this predator (omitted: the world's vision radius). A stalking predator is seen only up close. */ visibility?: number; /** Speed while chasing (omitted: `speed`). A stalker patrols slowly and strikes fast. Declared in 0.8.0 but only used from 0.9.0. */ chaseSpeed?: number; /** 0.9.0: after biting a human the predator ignores that individual (neither chases nor hurts it) for this many ticks, so a group is picked off one by one instead of one victim being bitten again and again (omitted: 0). */ victimMemory?: number }[];
   /** 0.7.0: poison from toxic food reaches the eater this many ticks after the bite (0 or omitted: the same tick, the 0.5.0 behavior). While it is latent the eater neither feels it nor knows the food was toxic. */
   poisonDelay?: number;
   /** 0.4.0: every `lifetime` ticks the warm place goes out (stays visible, spent, gives no warmth) and a fresh one appears at the next fixed position. Omitted: warm places are permanent (0.3.0 behavior). */
@@ -31,6 +31,8 @@ export type WorldState = {
   predatorProgress?: Record<string, number>;
   /** 0.8.0: tick until which each predator patrols only, after an attack (only with cooldown). */
   predatorCalm?: Record<string, number>;
+  /** 0.9.0: per predator, tick until which each bitten human is ignored (only with victimMemory). */
+  predatorBitten?: Record<string, Record<string, number>>;
 };
 export const DEFAULT_WORLD: WorldParameters = {
   width: 40, height: 28, visionRadius: 16, hearingRadius: 20,
@@ -97,11 +99,13 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
     if (pred.kind !== "predator") continue;
     const spec = p.predators?.find((s) => s.id === pred.id);
     if (!spec) continue;
-    const humans = world.animals.filter((a) => a.kind !== "predator");
+    const ignored = world.predatorBitten?.[pred.id] ?? {};
+    const humans = world.animals.filter((a) => a.kind !== "predator" && !((ignored[a.id] ?? -1) > tick));
     const nearest = humans.map((h) => ({ h, d: distance(h.position, pred.position) })).sort((a, b) => a.d - b.d || a.h.id.localeCompare(b.h.id))[0];
     let target: Vec2;
     const calm = (world.predatorCalm?.[pred.id] ?? -1) > tick;
-    if (!calm && nearest && nearest.d <= spec.chaseRadius) target = nearest.h.position;
+    const chasing = !calm && !!nearest && nearest.d <= spec.chaseRadius;
+    if (chasing) target = nearest!.h.position;
     else {
       const progress = world.predatorProgress ??= {};
       let i = progress[pred.id] ?? 0;
@@ -111,7 +115,7 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
     }
     const dx = target.x - pred.position.x, dy = target.y - pred.position.y, length = Math.hypot(dx, dy);
     if (length > 1e-9) {
-      const speed = Math.min(length, spec.speed);
+      const speed = Math.min(length, chasing ? (spec.chaseSpeed ?? spec.speed) : spec.speed);
       pred.position.x = clamp(pred.position.x + dx / length * speed, 0.6, p.width - 0.6);
       pred.position.y = clamp(pred.position.y + dy / length * speed, 0.6, p.height - 0.6);
     }
@@ -149,9 +153,11 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
       for (const [pred, human] of [[a, b], [b, a]] as const) if (pred.kind === "predator" && human.kind !== "predator") {
         const spec = p.predators?.find((s) => s.id === pred.id);
         const harm = spec?.harm ?? 0;
-        if (harm > 0 && (world.predatorCalm?.[pred.id] ?? -1) <= tick) {
+        if (harm > 0 && (world.predatorCalm?.[pred.id] ?? -1) <= tick && !((world.predatorBitten?.[pred.id]?.[human.id] ?? -1) > tick)) {
           effects[human.id].collision += harm; events.push({ tick: tick + 1, kind: "attack", actorId: human.id, value: harm });
           if (spec?.cooldown) (world.predatorCalm ??= {})[pred.id] = tick + 1 + spec.cooldown;
+          // 0.9.0: the bitten individual is left alone for a while; the predator turns to the next nearest one.
+          if (spec?.victimMemory) ((world.predatorBitten ??= {})[pred.id] ??= {})[human.id] = tick + 1 + spec.victimMemory;
         }
       }
     }

@@ -70,7 +70,7 @@ export const models: Record<string, ModelAdapter> = {
   "valence-assoc-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatent, apply: applyWithIntake },
   "valence-assoc-private-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatentPrivate, apply: applyWithIntake },
   "valence-alarm-ceiling-0.12.0-experimental.10": { create: createHuman, decide: decideValenceLatentAlarm, apply: applyWithIntake },
-  "threat-0.13.0-experimental.1": { create: createHuman, decide: decideThreatFull, apply: applyWithIntake },
-  "threat-deaf-0.13.0-experimental.1": { create: createHuman, decide: decideThreatDeaf, apply: applyWithIntake },
-  "threat-alarm-ceiling-0.13.0-experimental.1": { create: createHuman, decide: decideThreatAlarm, apply: applyWithIntake },
+  "threat-0.13.0-experimental.2": { create: createHuman, decide: decideThreatFull, apply: applyWithIntake },
+  "threat-deaf-0.13.0-experimental.2": { create: createHuman, decide: decideThreatDeaf, apply: applyWithIntake },
+  "threat-alarm-ceiling-0.13.0-experimental.2": { create: createHuman, decide: decideThreatAlarm, apply: applyWithIntake },
 };

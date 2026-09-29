@@ -69,12 +69,14 @@ test("strict association: a heard category becomes a warning after a threat foll
   assert.equal(afterPain.alarms![1].hit, 2, "pain also resolves an open heard entry as a hit");
 });
 test("predator-v2 keeps the predator-v1 world, gates on threat-voice convergence, distinctness and the whole-run paired benefit, on fresh seeds", () => {
-  assert.equal(HUMAN_MODELS["threat-0.13.0-experimental.1"].role, "candidate");
-  assert.equal(HUMAN_MODELS["threat-deaf-0.13.0-experimental.1"].role, "control");
-  assert.equal(HUMAN_MODELS["threat-alarm-ceiling-0.13.0-experimental.1"].role, "control");
-  const w2 = predator2.world as unknown as { predators: { speed: number; chaseSpeed?: number; chaseRadius: number; visibility?: number; harm: number; cooldown?: number }[] }, w1 = predator.world as unknown as { predators: { speed: number; chaseRadius: number; harm: number; cooldown?: number }[] };
+  assert.equal(HUMAN_MODELS["threat-0.13.0-experimental.2"].role, "candidate");
+  assert.equal(HUMAN_MODELS["threat-deaf-0.13.0-experimental.2"].role, "control");
+  assert.equal(HUMAN_MODELS["threat-alarm-ceiling-0.13.0-experimental.2"].role, "control");
+  const w2 = predator2.world as unknown as { predators: { speed: number; chaseSpeed?: number; chaseRadius: number; visibility?: number; harm: number; cooldown?: number; victimMemory?: number }[] }, w1 = predator.world as unknown as { predators: { speed: number; chaseRadius: number; harm: number; cooldown?: number }[] };
   assert.deepEqual([w2.predators[0].speed, w2.predators[0].chaseSpeed, w2.predators[0].chaseRadius, w2.predators[0].visibility], [0.2, 1.2, 3, 2], "a stalking predator: slow patrol, instant strike, seen and chasing only up close");
-  assert.deepEqual([w2.predators[0].harm, w2.predators[0].cooldown], [w1.predators[0].harm, 20], "same harm, a short pause before the next bite");
+  assert.deepEqual([w2.predators[0].harm, w2.predators[0].cooldown, w2.predators[0].victimMemory], [w1.predators[0].harm, 5, 300], "same harm, a short pause, and the bitten one is left alone: the group is picked off one by one");
+  const ceilingGuard = decideThreatAlarm({ ...calm(), producedSounds: [{ id: 1, shape: { openness: .15, resonance: .12 }, samples: 4 }], heardSounds: [{ id: 1, shape: { openness: .15, resonance: .12 }, samples: 4 }], eatingHeard: { 1: 5 } } as T, at(5, [], [call(-4, 0, { openness: .16, resonance: .12 })]), () => 0.5);
+  assert.notEqual(ceilingGuard.action.kind, "withdraw", "a sound nearer the listener's own food voice than the alarm shape is not an alarm for the ceiling");
   assert.deepEqual({ ...w2, predators: [w1.predators[0]] }, predator.world); assert.deepEqual(predator2.resources, predator.resources);
   assert.deepEqual(predator2.checks.map(c => c.id), ["convergence-gain", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "attack-benefit-all", "forage-benefit"]);
   const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1")].flat();
@@ -84,7 +86,7 @@ test("predator-v2 keeps the predator-v1 world, gates on threat-voice convergence
   const r = { seed: 1, model: "m", sound: mk({ openness: .2, resonance: .2 }, { openness: .8, resonance: .2 }, .1), muted: mk(null, { openness: .5, resonance: .5 }, .3), misdirected: mk(null, null, 0), scrambled: mk(null, null, 0) } as SeedResult;
   assert.ok(Math.abs(checkValue("threat-distinctness", r, predator2) - .6) < 1e-9);
   assert.ok(Math.abs(checkValue("convergence-threat", r, predator2) - .2) < 1e-9);
-  const run = runCondition("threat-0.13.0-experimental.1", predator2.pilotSeeds[0], "sound", { ...predator2, horizon: 400 } as typeof predator2);
+  const run = runCondition("threat-0.13.0-experimental.2", predator2.pilotSeeds[0], "sound", { ...predator2, horizon: 400 } as typeof predator2);
   assert.ok(run.threatCalls >= 0 && run.attacks >= 0);
-  assert.equal(runExperiment({ ...referentialConfig(p2[0], "threat-alarm-ceiling-0.13.0-experimental.1", true, predator2), horizon: 100 }).frames.length, 101);
+  assert.equal(runExperiment({ ...referentialConfig(p2[0], "threat-alarm-ceiling-0.13.0-experimental.2", true, predator2), horizon: 100 }).frames.length, 101);
 });

@@ -19,7 +19,7 @@ import { ALARM } from "./valence.ts";
  * acts on a heard warning; "alarm" is the ceiling: an innate fixed alarm sound when a threat is in sight, and
  * withdrawal from any alarm-shaped sound.
  */
-export const THREAT_VERSION = "0.13.0-experimental.1";
+export const THREAT_VERSION = "0.13.0-experimental.2";
 export const THREAT = { reach: 6, callUrge: FOOD_CALL.utility, associationTicks: 30, fleeTicks: 20, heardMemory: 40, /** Ticks between urged threat calls, so a threat in sight does not displace flight and foraging with a call every tick (predator-v2 pilot 1: ~990 calls per run). */ callRefractory: 10 };
 export type ThreatMode = "full" | "deaf" | "alarm";
 type ThreatState = HumanState & {
@@ -85,15 +85,19 @@ export function decideThreat(previous: HumanState, observation: Observation, ran
     if (human.heardLog.length > THREAT.heardMemory) human.heardLog = human.heardLog.slice(-THREAT.heardMemory);
   }
   // Comprehension: a heard warning (learned category, or the innate alarm shape for the ceiling) starts a flight from its source.
+  // experimental.2: the ceiling counts a sound as the alarm only when it is nearer the alarm shape than the listener's own food voice (predator-v2 pilot 5: ordinary low voices set off flights for a third of the run).
+  const ceilingFood = mode === "alarm" ? foodVoiceOf(human) : null;
   if (mode !== "deaf") for (const s of observation.sounds) {
     const category = nearestHeardCategory(human, s);
-    const warning = mode === "alarm" ? Math.hypot(s.shape.openness - ALARM.shape.openness, s.shape.resonance - ALARM.shape.resonance) < ALARM.radius : category !== null && isAlarmCategory(human, category);
+    const toAlarm = Math.hypot(s.shape.openness - ALARM.shape.openness, s.shape.resonance - ALARM.shape.resonance);
+    const warning = mode === "alarm" ? toAlarm < ALARM.radius && (!ceilingFood || toAlarm < Math.hypot(s.shape.openness - ceilingFood.openness, s.shape.resonance - ceilingFood.resonance)) : category !== null && isAlarmCategory(human, category);
     if (!warning) continue;
     human.fleeFrom = { x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y }; human.fleeUntil = observation.tick + THREAT.fleeTicks;
   }
   const fleeing = human.fleeFrom && (human.fleeUntil ?? -1) >= observation.tick ? human.fleeFrom : null;
   if (!fleeing) { human.fleeFrom = null; human.fleeUntil = undefined; }
-  const chooseSound = mode === "alarm" ? (h: HumanState) => threat ? { ...ALARM.shape } : chooseThreatVoice(h, false) : (h: HumanState) => chooseThreatVoice(h, !!threat);
+  // experimental.2: the ceiling's ordinary voice is kept out of the alarm's radius, so only a threat in sight produces the alarm.
+  const chooseSound = mode === "alarm" ? (h: HumanState) => { if (threat) return { ...ALARM.shape }; const v = chooseThreatVoice(h, false); return v ? separateFrom(v, ALARM.shape) : null; } : (h: HumanState) => chooseThreatVoice(h, !!threat);
   const urged = !!threat && observation.tick - (human.lastThreatCall ?? -Infinity) >= THREAT.callRefractory;
   const result = decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, {
     stateCoupling: CONVENTION.stateCoupling, chooseSound, threat, fleeFrom: fleeing, ...(urged ? { callUrge: THREAT.callUrge } : {}),
