@@ -13,6 +13,7 @@
 | 候補の通常world比較 | `npm run study:world -- --split development`。protocolをコミットしてから実行し、validationは一度だけ新規確認として扱う |
 | モデル登録簿・選択 | `npm run test:model`（`tests/model/selection.test.ts`）、`npm run typecheck`。UIの選択肢も登録簿から生成 |
 | 履歴介入の現象確認 | `npm run study:history -- --split development`。パイロットは`--split pilot`で尺度確認のみ。既定モデルの現象確認で候補比較ではない |
+| ゲーム（`packages/game`、`app/game`） | `npm run test:game`、`npm run typecheck`、`npm run build`、`node --test tests/*.test.mjs`。静的ページは`npm run build:game-page` |
 | UI | `npm run typecheck`、`npm run build`、`node --test tests/*.test.mjs`。ブラウザQAは明示的に依頼された範囲 |
 
 `test:model`は`tests/model/*.test.ts`なのでpolicyのテストも含みます。`test:policy`はその絞り込みです。`npm test`はスターター由来のビルド＋画面側テストであり、モデル・評価器のテストすべてを実行するコマンドではありません。
@@ -20,7 +21,7 @@
 ## 基準版との比較
 
 ```bash
-npm run evaluate -- --baseline research/baselines/v0.2.0-core-v1.json --out outputs/core-comparison.json --check
+npm run evaluate -- --baseline research/baselines/v0.2.0-world0.2.0-core-v1.json --out outputs/core-comparison.json --check
 npm run study:policy -- --split development --out outputs/policy-development.json
 npm run study:policy -- --split validation --out outputs/policy-validation.json --check
 npm run study:world -- --split development --out outputs/world-development.json

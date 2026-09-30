@@ -12,11 +12,14 @@
 
 パッケージのpackage.jsonとモデル定数が別の意味を持つ場合は説明を残します。今のhumanパッケージ0.2.0は既定モデル（`decideHuman`、予測効用あり）を指し、旧0.1.0は`decideLegacyHuman`として同じパッケージに残っています。実行時にどちらを使うかは`packages/simulation/src/models.ts`の登録簿のidで決まります。候補時代のid`predictive-0.2.0-experimental.1`は0.2.0と同じ計算を指し、保存済み研究の再現のために残します。対照`predictive-ablated-0.2.0-experimental.1`の版は`0.2.0-experimental.1+ablated`です。既定化の手順（2026-09-10に実施）: `decideHuman`の既定を変えてhumanの版を上げ、旧版を`human-0.1.0`として登録簿に残し、core-v1基準を新版で再記録して旧基準との差を確認する。
 
+world 0.2.0（2026-09-30）は操作`applyWorldEdit`の追加です。既存の計算は変えていませんが、世界のソースが変わったためcore-v1の環境ハッシュが変わり、`research/baselines/v0.2.0-core-v1.json`（world 0.1.0）とは`--check`で照合できません。同じhuman 0.2.0を新しい環境で測り直した基準を`research/baselines/v0.2.0-world0.2.0-core-v1.json`に保存し、測定値が旧基準と完全に一致することを確認しました。world 0.1.0で保存したシミュレーション記録や固定済みの改訂サイクルは、そのコミットで再生してください。
+
 ## 記録の形式
 
 - `human-world-lab/run`: 初期条件・チェックポイント・各ステップ。simulation 0.2.0からは`config.model`、`checkpoint.model`、`manifest.model`に選択した人間モデルのidを、`manifest.versions.human`にその版を記録する。`restoreRun`は同じモデル・版で再実行して完全一致を検証し、0.1.0形式や版・モデルの不一致は拒否する。
 - `human-world-lab/evaluation`: core-v1のシード別測定と集計。比較の前に形式・集計・評価器/環境ハッシュを検証する。
 - `human-world-lab/policy-study`: 政策候補の制御実験、旧版/候補/寄与無効の結果、core-v1の副作用。
+- `human-world-lab/game`: ゲームのプレイ記録。game・モデル・各部品の版、ステージ、シード、操作ログ、得点、記憶介入の有無。`replayGame`（`npm run game -- --file`）が再計算して得点の一致を確認する。
 - `human-world-lab/world-study`: 通常worldの条件×シード対の三版比較（world-v1）、条件別集計、寄与無効の一致、core-v1の副作用。
 
 これらを混同しないでください。互換でない状態を読み込む場合は、旧版を使うか、明示的な移行仕様と検証を別途作ります。現状は無言の移行をしません。

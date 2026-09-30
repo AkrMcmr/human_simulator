@@ -130,3 +130,4 @@ main { max-width: 1600px; padding: 28px 32px 32px; margin: auto; }.page-heading 
 .history-terms > div { display: flex; justify-content: space-between; gap: 12px; }
 .history-terms dd { font-variant-numeric: tabular-nums; }
 @media(max-width:700px) { .history-panel { padding: 18px; }.history-summary { grid-template-columns: 1fr; }.history-terms { grid-template-columns: 1fr; } }
+.topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }

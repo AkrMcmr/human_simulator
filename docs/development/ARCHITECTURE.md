@@ -42,6 +42,17 @@ human/worldは入力を変更しない純粋な遷移として扱います。実
 
 知覚項目の追加、更新順、世界の物理、身体・記憶形式はそれぞれ影響範囲が異なります。[版と再現のルール](VERSIONING.md)に従い、関連する不変条件と比較条件を更新します。会話の意味、相手の意図、文化のルールを外から直接設定すると、創発を観察する目的が変わります。必要な初期能力はCONCEPTの未決事項としてまず明示してください。
 
+## 世界への操作とゲームの層
+
+`applyWorldEdit(world, edit)`（world 0.2.0）は資源と寒さを変える純粋関数です。simulationの更新順には組み込まず、呼ぶ側がステップの間に`SimulatorState.world`へ適用します。
+
+`packages/game`（game 0.1.0、ゲーム「はじまりのふたり」）はexperimentsと同じ実験者の層です。依存はgame→simulation/world/contracts/humanの型のみで、human/worldからgameをimportしません。`act(state, action)`は純粋な縮約で、1回のプレイは「ステージ・シード・操作ログ」で決まります。`replayGame`は同じエンジンで最初から再計算し、版の違う記録は拒否します。
+
+- 予想の答え合わせは`DecisionTrace`の`scores`から、モデルと同じ選択規則（探索率＋温度0.09のsoftmax）で確率を計算します（`choiceProbabilities`。一致を`tests/game`で確認）。得点は人間へ戻しません。
+- 「本人の目」は`perceptionNow`で、エンジンと同じキーの`senseWorld`を呼びます。キー付き乱数なので消費も状態変更もありません。
+- 記憶の消去・入れ替え・性質の変更は実験室ステージだけで使え、記録に`labUsed`として残ります。history-v1と同じ種類の実験者介入で、本人には知らされません。
+- 画面は`app/game`（`/game`）。`npm run build:game-page`で同じ部品を1ファイルの静的ページ（`dist-game/index.html`、Git対象外）にします。
+
 ## 経験と判断の表示
 
 `observeSimulation`は観察専用の任意項目`AgentView.memorySnapshot`へ本人のpeersとpendingを複製します。checkpoint、行動、知覚契約は変えません。Frameへの追加なのでモデル/simulationの遷移版は据え置き、simulation 0.2.0の保存記録はrestoreRunがフレームを再生成して新しい表示にも使えます。表示追加によりソースハッシュは変わるため、過去の固定サイクルのreplayはそのサイクルのコミットを使ってください。

@@ -66,7 +66,7 @@ UIは最初は停止しています。「再生」で実行し、個体の知覚
 
 ```bash
 npm run evaluate -- --out outputs/evaluation.json
-npm run evaluate -- --baseline research/baselines/v0.2.0-core-v1.json --out outputs/candidate.json
+npm run evaluate -- --baseline research/baselines/v0.2.0-world0.2.0-core-v1.json --out outputs/candidate.json
 npm run test:evaluation
 ```
 

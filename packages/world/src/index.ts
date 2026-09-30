@@ -1,6 +1,7 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.1.0";
+/** 0.2.0 adds applyWorldEdit (placing, moving, resizing, removing resources; ambient cold). advanceWorld/senseWorld are unchanged. */
+export const WORLD_VERSION = "0.2.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
@@ -127,4 +128,52 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
     resource.amount = clamp(resource.amount - total + 0.003);
   }
   return { world, effects, events };
+}
+
+/**
+ * Physical operations on the world's resources and climate, applied between steps (before anyone perceives
+ * the edited world). Today only the experimenter/game layer issues them; no human action produces one yet.
+ * A future human action (carrying food, making a fire) must go through this same operation, with a new human version.
+ */
+export type WorldEdit =
+  | { kind: "placeResource"; resource: Resource }
+  | { kind: "moveResource"; id: string; position: Vec2 }
+  | { kind: "setResourceAmount"; id: string; amount: number }
+  | { kind: "removeResource"; id: string }
+  | { kind: "setAmbientCold"; value: number };
+const RESOURCE_ID = /^[A-Za-z0-9_-]{1,32}$/;
+const RESERVED_IDS = ["__proto__", "constructor", "prototype"];
+function checkPosition(world: WorldState, position: Vec2): void {
+  if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)
+      || position.x < 0 || position.x > world.parameters.width || position.y < 0 || position.y > world.parameters.height) throw new Error("World edit position is outside the world");
+}
+function checkUnit(value: number, label: string): void {
+  if (!Number.isFinite(value) || value < 0 || value > 1) throw new Error(label + " must be within 0..1");
+}
+/** Pure: returns a new world and never mutates the input. Invalid edits throw instead of being silently clamped. */
+export function applyWorldEdit(previous: WorldState, edit: WorldEdit): WorldState {
+  const world = structuredClone(previous);
+  const find = (id: string) => {
+    const resource = world.resources.find((r) => r.id === id);
+    if (!resource) throw new Error("Unknown resource: " + id);
+    return resource;
+  };
+  switch (edit.kind) {
+    case "placeResource": {
+      const r = edit.resource;
+      if (!r || typeof r.id !== "string" || !RESOURCE_ID.test(r.id) || RESERVED_IDS.includes(r.id)) throw new Error("Invalid resource id");
+      if (world.resources.some((existing) => existing.id === r.id)) throw new Error("Resource id already exists: " + r.id);
+      if (r.kind !== "food" && r.kind !== "warmth") throw new Error("Unknown resource kind");
+      checkPosition(world, r.position); checkUnit(r.amount, "Resource amount");
+      if (!Number.isFinite(r.radius) || r.radius <= 0 || r.radius > 100) throw new Error("Invalid resource radius");
+      world.resources.push({ id: r.id, kind: r.kind, position: { x: r.position.x, y: r.position.y }, amount: r.amount, radius: r.radius });
+      break;
+    }
+    case "moveResource": checkPosition(world, edit.position); find(edit.id).position = { x: edit.position.x, y: edit.position.y }; break;
+    case "setResourceAmount": checkUnit(edit.amount, "Resource amount"); find(edit.id).amount = edit.amount; break;
+    case "removeResource": find(edit.id); world.resources = world.resources.filter((r) => r.id !== edit.id); break;
+    case "setAmbientCold": checkUnit(edit.value, "Ambient cold"); world.parameters.ambientCold = edit.value; break;
+    default: throw new Error("Unknown world edit");
+  }
+  return world;
 }

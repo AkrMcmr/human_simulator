@@ -1,6 +1,6 @@
 {
-  "name": "@human-world/world",
-  "version": "0.2.0",
+  "name": "@human-world/game",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": "./src/index.ts"
