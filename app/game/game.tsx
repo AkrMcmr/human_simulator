@@ -142,7 +142,8 @@ function Reveal({ round, onNext, last }: { round: RoundResult; onNext: () => voi
   </div>;
 }
 
-export default function Game({ provenance, labHref }: { provenance: Provenance; labHref?: string }) {
+/** saveMode "copy" is for hosts that block downloads (the static page): the record goes to the clipboard instead. */
+export default function Game({ provenance, labHref, saveMode = "download" }: { provenance: Provenance; labHref?: string; saveMode?: "download" | "copy" }) {
   const [stageId, setStageId] = useState<string | null>(null);
   const [seedIndex, setSeedIndex] = useState(0);
   const [state, setState] = useState<GameState | null>(null);
@@ -251,7 +252,7 @@ export default function Game({ provenance, labHref }: { provenance: Provenance; 
             <button onClick={() => begin(stage, seedIndex + 1)}>別の世界で</button>
           </div>
           <div className="g-row">
-            <button onClick={() => download(`hajimari-${stage.id}-${state.seed}.json`, recordGame(state, provenance))}>記録を保存</button>
+            <button onClick={() => { const record = recordGame(state, provenance); if (saveMode === "download") { download(`hajimari-${stage.id}-${state.seed}.json`, record); return; } navigator.clipboard.writeText(JSON.stringify(record)).then(() => setMessage("記録をクリップボードにコピーしました。.json として保存すると再生できます。"), () => setMessage("コピーできませんでした。この画面ではクリップボードが使えません。")); }}>{saveMode === "download" ? "記録を保存" : "記録をコピー"}</button>
             <button onClick={() => { setStageId(null); setState(null); }}>ステージを選ぶ</button>
           </div>
           <p className="g-muted">記録はステージ・世界番号・あなたの操作だけで、同じ結果を誰でも再計算できます（npm run game -- --file 記録.json）。</p>
