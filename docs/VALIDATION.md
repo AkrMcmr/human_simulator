@@ -128,3 +128,7 @@ convention-v2の16シード再現（[判断0035](../research/decisions/0035-conv
 ## 2026-09-29: predator-v1 / predator-v2（保留）
 
 predator-v1（[判断0049](../research/decisions/0049-predator-design.md)、パイロット4回）で世界0.8.0（捕食者）を調整し、predator-v2（[判断0050](../research/decisions/0050-threat-warning.md)、パイロット6回、94101–94154）で候補・聞かない対照・上限対照を登録したが、上限対照の余地（実行全体の襲撃の利益2.0回）と聞かない対照の帰無（半分未満）を同時に満たす世界が無く、候補は未実行のまま保留。パイロット5の追跡で世界0.8.0の`chaseSpeed`が未使用だった不具合を見つけ、世界0.9.0で修正（`victimMemory`を追加、既定の世界は不変）。今回の検証: `npm run test:model` 133/133、型検査・lint成功。結果: `research/results/predator-v{1,2}-pilot*.{json,md}`。
+
+## 2026-09-30: predator-v2 パイロット7（保留確定）
+
+所有者の選択で追跡0.75の世界（protocol 1.6.0、94161–94164）を1回だけ実行。上限対照の襲撃の利益3.5回（基準達成）だが聞かない対照2.5回（半分未満の基準に不達）、候補群の危険の声は実行あたり4回未満。保留を確定し、世界の再調整は行わない（[判断0050](../research/decisions/0050-threat-warning.md)）。`npm run test:model` 133/133、型検査・lint成功。
