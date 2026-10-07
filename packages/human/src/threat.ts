@@ -23,6 +23,10 @@ export const THREAT_VERSION = "0.13.0-experimental.2";
 /** experimental.3 (decision 0051): the same perception, voice and association, but a threat in sight makes the individual cry while doing whatever it does (world 0.10.0 emits a sound attached to any action), so the cry no longer competes with flight for the one action of a tick. */
 export const THREAT_CRY_VERSION = "0.13.0-experimental.3";
 export const CRY = { noise: 0.07, repeat: 0.35 };
+/** experimental.4 (decision 0052): association within reach. Only sounds heard from within THREAT.reach are logged, and a category warns when the listener's own danger followed it at least `minimumHits` times and at a rate `contrast` times its base rate over all logged sounds (predator-v3 development: a cry heard within 6u was followed by the listener's own danger 17-82% of the time, beyond 10u never; other sounds 5-13% at any distance). */
+export const THREAT_NEAR_VERSION = "0.13.0-experimental.4";
+export const NEAR = { minimumHits: 2, contrast: 2 };
+export type AssociationRule = "strict" | "near";
 export const THREAT = { reach: 6, callUrge: FOOD_CALL.utility, associationTicks: 30, fleeTicks: 20, heardMemory: 40, /** Ticks between urged threat calls, so a threat in sight does not displace flight and foraging with a call every tick (predator-v2 pilot 1: ~990 calls per run). */ callRefractory: 10 };
 export type ThreatMode = "full" | "deaf" | "alarm";
 type ThreatState = HumanState & {
@@ -52,6 +56,14 @@ export function isAlarmCategory(human: HumanState, category: number): boolean {
   const a = (human as ThreatState).alarms?.[category];
   return !!a && a.hit >= 1 && a.hit > a.miss;
 }
+/** experimental.4: a category warns when danger followed it at least NEAR.minimumHits times and at NEAR.contrast times the listener's base rate over everything it logged. */
+export function isNearAlarmCategory(human: HumanState, category: number): boolean {
+  const alarms = (human as ThreatState).alarms ?? {}; const a = alarms[category];
+  if (!a || a.hit < NEAR.minimumHits) return false;
+  let hits = 0, total = 0; for (const v of Object.values(alarms)) { hits += v.hit; total += v.hit + v.miss; }
+  const base = total > 0 ? hits / total : 0;
+  return a.hit / (a.hit + a.miss) >= NEAR.contrast * base;
+}
 /** Voice choice by context: threat in sight → threat voice (apart from the food voice); eating → food voice (apart from the threat voice); otherwise a produced sound far from both, or null. */
 export function chooseThreatVoice(human: HumanState, threatened: boolean): SoundShape | null {
   const food = foodVoiceOf(human), threat = threatVoiceOf(human);
@@ -71,7 +83,7 @@ function cryShape(human: HumanState, chosen: SoundShape | null, risk: number, ra
   const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   return { openness: clamp01((1 - c) * base.openness + c * clamp01(risk * 2) + (random("cry-noise-o") - 0.5) * CRY.noise), resonance: clamp01((1 - c) * base.resonance + c * need + (random("cry-noise-r") - 0.5) * CRY.noise) };
 }
-export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full", cry = false) {
+export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full", cry = false, rule: AssociationRule = "strict") {
   const human: ThreatState = structuredClone(previous);
   const self = observation.selfPosition;
   const threat = threatOf(observation);
@@ -91,6 +103,7 @@ export function decideThreat(previous: HumanState, observation: Observation, ran
     for (const s of observation.sounds) {
       const category = nearestHeardCategory(human, s);
       if (category === null) continue;
+      if (rule === "near" && magnitude(s.relativePosition) > THREAT.reach) continue; // experimental.4: only a sound from within reach can be about my own danger
       const source = { x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y };
       if (!human.heardLog.some(e => e.category === category && !e.resolved && Math.hypot(e.x - source.x, e.y - source.y) <= 3)) human.heardLog.push({ category, ...source, tick: observation.tick, resolved: false });
     }
@@ -102,7 +115,7 @@ export function decideThreat(previous: HumanState, observation: Observation, ran
   if (mode !== "deaf") for (const s of observation.sounds) {
     const category = nearestHeardCategory(human, s);
     const toAlarm = Math.hypot(s.shape.openness - ALARM.shape.openness, s.shape.resonance - ALARM.shape.resonance);
-    const warning = mode === "alarm" ? toAlarm < ALARM.radius && (!ceilingFood || toAlarm < Math.hypot(s.shape.openness - ceilingFood.openness, s.shape.resonance - ceilingFood.resonance)) : category !== null && isAlarmCategory(human, category);
+    const warning = mode === "alarm" ? toAlarm < ALARM.radius && (!ceilingFood || toAlarm < Math.hypot(s.shape.openness - ceilingFood.openness, s.shape.resonance - ceilingFood.resonance)) : category !== null && (rule === "near" ? isNearAlarmCategory(human, category) : isAlarmCategory(human, category));
     if (!warning) continue;
     human.fleeFrom = { x: self.x + s.relativePosition.x, y: self.y + s.relativePosition.y }; human.fleeUntil = observation.tick + THREAT.fleeTicks;
   }
@@ -127,6 +140,7 @@ export function decideThreat(previous: HumanState, observation: Observation, ran
 export const decideThreatCryFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true);
 export const decideThreatCryDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf", true);
 export const decideThreatCryAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "alarm", true);
+export const decideThreatNearFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true, "near");
 export const decideThreatFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full");
 export const decideThreatDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf");
 export const decideThreatAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "alarm");
