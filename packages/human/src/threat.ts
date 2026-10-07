@@ -26,6 +26,10 @@ export const CRY = { noise: 0.07, repeat: 0.35 };
 /** experimental.4 (decision 0052): association within reach. Only sounds heard from within THREAT.reach are logged, and a category warns when the listener's own danger followed it at least `minimumHits` times and at a rate `contrast` times its base rate over all logged sounds (predator-v3 development: a cry heard within 6u was followed by the listener's own danger 17-82% of the time, beyond 10u never; other sounds 5-13% at any distance). */
 export const THREAT_NEAR_VERSION = "0.13.0-experimental.4";
 export const NEAR = { minimumHits: 2, contrast: 2 };
+/** experimental.5 (decision 0053): the imitation context of the threat voice widens from "a threat in sight" to "afraid": a threat in sight, within FEAR.ticks after the last sighting, or fleeing from a heard warning. Production only; perception, cry and association are those of experimental.4. */
+export const THREAT_FEAR_VERSION = "0.13.0-experimental.5";
+export const FEAR = { ticks: 20 };
+export type ImitationContext = "sight" | "fear";
 export type AssociationRule = "strict" | "near";
 export const THREAT = { reach: 6, callUrge: FOOD_CALL.utility, associationTicks: 30, fleeTicks: 20, heardMemory: 40, /** Ticks between urged threat calls, so a threat in sight does not displace flight and foraging with a call every tick (predator-v2 pilot 1: ~990 calls per run). */ callRefractory: 10 };
 export type ThreatMode = "full" | "deaf" | "alarm";
@@ -34,7 +38,7 @@ type ThreatState = HumanState & {
   eatingHeard?: Record<number, number>; threatHeard?: Record<number, number>;
   heardLog?: { category: number; x: number; y: number; tick: number; resolved: boolean }[];
   alarms?: Record<number, { hit: number; miss: number }>;
-  fleeFrom?: Vec2 | null; fleeUntil?: number; lastThreatCall?: number;
+  fleeFrom?: Vec2 | null; fleeUntil?: number; lastThreatCall?: number; lastThreatSeen?: number;
 };
 export function threatOf(observation: Observation): { risk: number; position: Vec2 } | null {
   const seen = observation.animals.filter(a => a.morphologySimilarity < 0.7).map(a => ({ a, d: magnitude(a.relativePosition) })).filter(x => x.d <= THREAT.reach).sort((p, q) => p.d - q.d)[0];
@@ -83,17 +87,20 @@ function cryShape(human: HumanState, chosen: SoundShape | null, risk: number, ra
   const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   return { openness: clamp01((1 - c) * base.openness + c * clamp01(risk * 2) + (random("cry-noise-o") - 0.5) * CRY.noise), resonance: clamp01((1 - c) * base.resonance + c * need + (random("cry-noise-r") - 0.5) * CRY.noise) };
 }
-export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full", cry = false, rule: AssociationRule = "strict") {
+export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full", cry = false, rule: AssociationRule = "strict", imitation: ImitationContext = "sight") {
   const human: ThreatState = structuredClone(previous);
   const self = observation.selfPosition;
   const threat = threatOf(observation);
   const attacked = human.lastPain > 0.5;
+  if (threat) human.lastThreatSeen = observation.tick;
+  // experimental.5: "afraid" = a threat in sight, just lost from sight, or fleeing from a heard warning (the state carried in from the previous tick).
+  const afraid = !!threat || (imitation === "fear" && ((human.lastThreatSeen !== undefined && observation.tick - human.lastThreatSeen <= FEAR.ticks) || (!!human.fleeFrom && (human.fleeUntil ?? -1) >= observation.tick)));
   // Context counts for imitation: categories heard while eating (food voice) and while a threat is in sight (threat voice).
   for (const s of observation.sounds) {
     const category = nearestHeardCategory(human, s);
     if (category === null) continue;
     if ((human.lastIntake ?? 0) > 0) { human.eatingHeard ??= {}; human.eatingHeard[category] = (human.eatingHeard[category] ?? 0) + 1; }
-    if (threat) { human.threatHeard ??= {}; human.threatHeard[category] = (human.threatHeard[category] ?? 0) + 1; }
+    if (afraid) { human.threatHeard ??= {}; human.threatHeard[category] = (human.threatHeard[category] ?? 0) + 1; }
   }
   // Strict association: each heard sound is logged; a threat seen or pain suffered within the window resolves open entries as hits, expiry as misses.
   if (mode !== "alarm") {
@@ -141,6 +148,8 @@ export const decideThreatCryFull = (h: HumanState, o: Observation, r: RandomSour
 export const decideThreatCryDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf", true);
 export const decideThreatCryAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "alarm", true);
 export const decideThreatNearFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true, "near");
+export const decideThreatFearFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true, "near", "fear");
+export const decideThreatFearDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf", true, "near", "fear");
 export const decideThreatFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full");
 export const decideThreatDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf");
 export const decideThreatAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "alarm");

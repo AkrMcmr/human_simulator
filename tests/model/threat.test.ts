@@ -2,12 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHuman, decideWithOptions } from "../../packages/human/src/index.ts";
 import { applyWithIntake } from "../../packages/human/src/forager-listener.ts";
-import { decideThreatFull, decideThreatDeaf, decideThreatAlarm, decideThreatCryFull, decideThreatCryDeaf, decideThreatCryAlarm, decideThreatNearFull, threatOf, chooseThreatVoice, isAlarmCategory, isNearAlarmCategory, THREAT, THREAT_CRY_VERSION, THREAT_NEAR_VERSION, NEAR } from "../../packages/human/src/threat.ts";
+import { decideThreatFull, decideThreatDeaf, decideThreatAlarm, decideThreatCryFull, decideThreatCryDeaf, decideThreatCryAlarm, decideThreatNearFull, decideThreatFearFull, decideThreatFearDeaf, threatOf, chooseThreatVoice, isAlarmCategory, isNearAlarmCategory, THREAT, THREAT_CRY_VERSION, THREAT_NEAR_VERSION, THREAT_FEAR_VERSION, NEAR, FEAR } from "../../packages/human/src/threat.ts";
 import { ALARM } from "../../packages/human/src/valence.ts";
 import { protocol as predator } from "../../research/studies/predator-v1.ts";
 import { protocol as predator2 } from "../../research/studies/predator-v2.ts";
 import { protocol as predator3 } from "../../research/studies/predator-v3.ts";
 import { protocol as predator4 } from "../../research/studies/predator-v4.ts";
+import { protocol as predator5 } from "../../research/studies/predator-v5.ts";
 import { seedsFor, referentialConfig, runCondition, checkValue, type SeedResult } from "../../research/studies/referential-v1.ts";
 import { HUMAN_MODELS, runExperiment } from "../../packages/simulation/src/index.ts";
 
@@ -143,4 +144,31 @@ test("experimental.4 association within reach: only sounds from within reach are
   assert.equal(p4.length, 36); assert.equal(new Set([...used, ...p4]).size, used.length + p4.length, "predator-v4 seeds are fresh");
   const run = runCondition("threat-cry-near-0.13.0-experimental.4", predator4.pilotSeeds[0], "sound", { ...predator4, horizon: 300 } as typeof predator4);
   assert.ok(run.threatCalls >= 0);
+});
+test("experimental.5 imitates the threat voice while afraid: just after losing sight of a threat and while fleeing a heard warning; experimental.4 only with a threat in sight; predator-v5 reuses the world and gates on fresh seeds", () => {
+  assert.equal(THREAT_FEAR_VERSION, "0.13.0-experimental.5"); assert.equal(FEAR.ticks, THREAT.fleeTicks);
+  const heardShape = { openness: .72, resonance: .58 };
+  const seen = (decide: typeof decideThreatFearFull) => {
+    let h = calm() as T; h.heardSounds = [{ id: 1, shape: { ...heardShape }, samples: 5 }];
+    h = decide(h, at(5, [beast(3, 0)]), () => 0.5).human as T;            // threat in sight at tick 5
+    return decide(h, at(5 + FEAR.ticks, [], [call(4, 0, heardShape)]), () => 0.5).human as T; // heard 20 ticks later, no threat in sight
+  };
+  assert.equal(seen(decideThreatFearFull).threatHeard![1], 1, "experimental.5 counts a sound heard within 20 ticks of the last sighting");
+  assert.equal(seen(decideThreatFearDeaf).threatHeard![1], 1, "so does its deaf control");
+  assert.equal(seen(decideThreatNearFull).threatHeard?.[1], undefined, "experimental.4 does not");
+  let f = calm() as T; f.heardSounds = [{ id: 1, shape: { ...heardShape }, samples: 5 }];
+  f = decideThreatFearFull(f, at(5, [beast(3, 0)]), () => 0.5).human as T;
+  f = decideThreatFearFull(f, at(5 + FEAR.ticks + 1, [], [call(4, 0, heardShape)]), () => 0.5).human as T;
+  assert.equal(f.threatHeard?.[1], undefined, "beyond 20 ticks after the sighting the fear has passed");
+  const w = { ...calm(), heardSounds: [{ id: 1, shape: { ...heardShape }, samples: 5 }], alarms: { 1: { hit: 3, miss: 1 } }, fleeFrom: { x: 2, y: 14 }, fleeUntil: 70 } as T;
+  const fleeing = decideThreatFearFull(w, at(60, [], [call(6, 0, heardShape)]), () => 0.5);
+  assert.equal(fleeing.action.kind, "withdraw"); assert.equal((fleeing.human as T).threatHeard![1], 1, "a sound heard while fleeing a warning counts toward the threat voice");
+  assert.equal(HUMAN_MODELS["threat-cry-near-fear-0.13.0-experimental.5"].role, "candidate"); assert.equal(HUMAN_MODELS["threat-cry-fear-deaf-0.13.0-experimental.5"].role, "control");
+  assert.deepEqual(predator5.world, predator4.world); assert.deepEqual(predator5.resources, predator4.resources); assert.deepEqual(predator5.checks, predator4.checks);
+  const m = predator5 as unknown as { models: Record<string, string>; paired: { id: string; candidate: string; reference: string; minimum?: number }[] };
+  assert.deepEqual([m.models.candidate, m.models.deaf, m.models.ceiling], ["threat-cry-near-fear-0.13.0-experimental.5", "threat-cry-fear-deaf-0.13.0-experimental.5", "threat-cry-alarm-ceiling-0.13.0-experimental.3"]);
+  assert.deepEqual(m.paired.map(p => [p.id, p.candidate, p.reference, p.minimum ?? null]), [["comprehension-benefit", m.models.candidate, m.models.deaf, 1], ["comprehension-benefit-late", m.models.candidate, m.models.deaf, null], ["ceiling-gap", m.models.candidate, m.models.ceiling, null], ["ceiling-room", m.models.ceiling, m.models.deaf, 2]]);
+  const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1"), predator2.pilotSeeds, seedsFor("development", predator2, "1"), seedsFor("validation", predator2, "1"), predator3.pilotSeeds, seedsFor("development", predator3, "1"), seedsFor("validation", predator3, "1"), predator4.pilotSeeds, seedsFor("development", predator4, "1"), seedsFor("validation", predator4, "1"), seedsFor("development", predator4, "2"), seedsFor("validation", predator4, "2")].flat();
+  const p5 = [predator5.pilotSeeds, seedsFor("development", predator5, "1"), seedsFor("validation", predator5, "1")].flat();
+  assert.equal(p5.length, 20); assert.equal(new Set([...used, ...p5]).size, used.length + p5.length, "predator-v5 seeds are fresh");
 });
