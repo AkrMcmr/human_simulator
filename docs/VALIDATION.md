@@ -136,3 +136,7 @@ predator-v1（[判断0049](../research/decisions/0049-predator-design.md)、パ�
 ## 2026-10-07: predator-v3 / predator-v4（聞き手の寄与が成立、2語の語彙は未成立）
 
 世界0.10.0（音の付いた行動は発声として届く。既定は不変）、候補experimental.3（逃げながら叫ぶ、[判断0051](../research/decisions/0051-cry-while-fleeing.md)）はpredator-v3（パイロット96101–、開発96001–、確認97001–）で産出を戻したが聞き手の寄与0.125 / 1.25で未成立。experimental.4（届く範囲の連合、[判断0052](../research/decisions/0052-near-association.md)）はpredator-v4ラウンド1（98001–/99001–）・ラウンド2（98011–/99011–）で聞き手の寄与2.75 / 2.0 / 3.875 / 1.25（閾値1.0）を4分割すべて達成、危険の声の収束・区別は4分割中2で、全項目成立は確認群ラウンド1のみ。閾値不変。評価器は発声の数え方を「音の付いた行動」に広げた（旧モデルでは同値）。`npm run test:model` 135/135、型検査・lint成功。結果: `research/results/predator-v{3,4}-*.{json,md}`。
+
+## 2026-10-07: predator-v5（怖がっている間の真似、未成立）
+
+experimental.5（[判断0053](../research/decisions/0053-fear-imitation.md)、100001–/101001–）: 聞き手の寄与1.375 / 2.625（通算6分割すべて達成）、区別0.256 / 0.269（両群達成）、収束0.127 / 0.100、任意性0.166 / 0.069、空腹の副作用−0.064 / −0.000。全項目成立なし、閾値不変。`npm run test:model` 136/136、型検査・lint成功。結果: `research/results/predator-v5-*.{json,md}`。
