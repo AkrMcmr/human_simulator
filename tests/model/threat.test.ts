@@ -139,8 +139,8 @@ test("experimental.4 association within reach: only sounds from within reach are
   assert.deepEqual([models.models.candidate, models.models.deaf, models.models.ceiling], ["threat-cry-near-0.13.0-experimental.4", "threat-cry-deaf-0.13.0-experimental.3", "threat-cry-alarm-ceiling-0.13.0-experimental.3"]);
   assert.deepEqual(models.paired.map(p => p.candidate), ["threat-cry-near-0.13.0-experimental.4", "threat-cry-near-0.13.0-experimental.4", "threat-cry-near-0.13.0-experimental.4", "threat-cry-alarm-ceiling-0.13.0-experimental.3"]);
   const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1"), predator2.pilotSeeds, seedsFor("development", predator2, "1"), seedsFor("validation", predator2, "1"), predator3.pilotSeeds, seedsFor("development", predator3, "1"), seedsFor("validation", predator3, "1")].flat();
-  const p4 = [predator4.pilotSeeds, seedsFor("development", predator4, "1"), seedsFor("validation", predator4, "1")].flat();
-  assert.equal(p4.length, 20); assert.equal(new Set([...used, ...p4]).size, used.length + p4.length, "predator-v4 seeds are fresh");
+  const p4 = [predator4.pilotSeeds, seedsFor("development", predator4, "1"), seedsFor("validation", predator4, "1"), seedsFor("development", predator4, "2"), seedsFor("validation", predator4, "2")].flat();
+  assert.equal(p4.length, 36); assert.equal(new Set([...used, ...p4]).size, used.length + p4.length, "predator-v4 seeds are fresh");
   const run = runCondition("threat-cry-near-0.13.0-experimental.4", predator4.pilotSeeds[0], "sound", { ...predator4, horizon: 300 } as typeof predator4);
   assert.ok(run.threatCalls >= 0);
 });
