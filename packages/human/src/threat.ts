@@ -1,6 +1,6 @@
 import { magnitude } from "../../contracts/src/index.ts";
 import type { Observation, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-import type { HumanState } from "./index.ts";
+import { rememberSound, type HumanState } from "./index.ts";
 import { decideReferentLearner, nearestHeardCategory, foodVoiceOf, FOOD_CALL, CONVENTION, CONTRAST } from "./forager-listener.ts";
 import { separateFrom } from "./lexicon.ts";
 import { ALARM } from "./valence.ts";
@@ -20,6 +20,9 @@ import { ALARM } from "./valence.ts";
  * withdrawal from any alarm-shaped sound.
  */
 export const THREAT_VERSION = "0.13.0-experimental.2";
+/** experimental.3 (decision 0051): the same perception, voice and association, but a threat in sight makes the individual cry while doing whatever it does (world 0.10.0 emits a sound attached to any action), so the cry no longer competes with flight for the one action of a tick. */
+export const THREAT_CRY_VERSION = "0.13.0-experimental.3";
+export const CRY = { noise: 0.07, repeat: 0.35 };
 export const THREAT = { reach: 6, callUrge: FOOD_CALL.utility, associationTicks: 30, fleeTicks: 20, heardMemory: 40, /** Ticks between urged threat calls, so a threat in sight does not displace flight and foraging with a call every tick (predator-v2 pilot 1: ~990 calls per run). */ callRefractory: 10 };
 export type ThreatMode = "full" | "deaf" | "alarm";
 type ThreatState = HumanState & {
@@ -59,7 +62,16 @@ export function chooseThreatVoice(human: HumanState, threatened: boolean): Sound
   const far = human.producedSounds.map(c => ({ shape: { ...c.shape }, gap: Math.min(...voices.map(v => Math.hypot(c.shape.openness - v.openness, c.shape.resonance - v.resonance))) })).filter(c => c.gap >= CONTRAST.minimumGap).sort((a, b) => b.gap - a.gap)[0];
   return far?.shape ?? null;
 }
-export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full") {
+/** The cry's shape: the context voice (threat voice, or the innate alarm for the ceiling), else a produced sound or a new one, expressed with the same weak state coupling and motor noise as the core's vocalization. */
+function cryShape(human: HumanState, chosen: SoundShape | null, risk: number, random: RandomSource, innate = false): SoundShape {
+  const known = human.producedSounds;
+  const base = chosen ?? (known.length > 0 && random("cry-repeat") > CRY.repeat ? known[Math.floor(random("cry-category") * known.length)].shape : { openness: random("cry-openness"), resonance: random("cry-resonance") });
+  // The ceiling's innate alarm is a fixed reflex shape: motor noise only, no state coupling (with a threat in sight the coupling would push it out of its own radius).
+  const c = innate ? 0 : CONVENTION.stateCoupling, need = Math.max(human.body.hunger, human.body.fatigue, human.body.cold);
+  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+  return { openness: clamp01((1 - c) * base.openness + c * clamp01(risk * 2) + (random("cry-noise-o") - 0.5) * CRY.noise), resonance: clamp01((1 - c) * base.resonance + c * need + (random("cry-noise-r") - 0.5) * CRY.noise) };
+}
+export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full", cry = false) {
   const human: ThreatState = structuredClone(previous);
   const self = observation.selfPosition;
   const threat = threatOf(observation);
@@ -100,11 +112,21 @@ export function decideThreat(previous: HumanState, observation: Observation, ran
   const chooseSound = mode === "alarm" ? (h: HumanState) => { if (threat) return { ...ALARM.shape }; const v = chooseThreatVoice(h, false); return v ? separateFrom(v, ALARM.shape) : null; } : (h: HumanState) => chooseThreatVoice(h, !!threat);
   const urged = !!threat && observation.tick - (human.lastThreatCall ?? -Infinity) >= THREAT.callRefractory;
   const result = decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, {
-    stateCoupling: CONVENTION.stateCoupling, chooseSound, threat, fleeFrom: fleeing, ...(urged ? { callUrge: THREAT.callUrge } : {}),
+    stateCoupling: CONVENTION.stateCoupling, chooseSound, threat, fleeFrom: fleeing, ...(urged && !cry ? { callUrge: THREAT.callUrge } : {}),
   });
-  if (threat && result.action.kind === "vocalize") (result.human as ThreatState).lastThreatCall = observation.tick;
+  // experimental.3: the cry rides on the chosen action (flight, usually) instead of displacing it.
+  if (cry && threat && urged && result.action.kind !== "vocalize") {
+    const sound = cryShape(result.human, chooseSound(result.human), threat.risk, random, mode === "alarm");
+    result.action = { ...result.action, sound };
+    rememberSound(result.human.producedSounds, sound, 0.14);
+    result.trace.scores = result.trace.scores.map(s => s.action === result.action.kind ? { ...s, terms: { ...s.terms, cry: 1 } } : s);
+  }
+  if (threat && result.action.sound) (result.human as ThreatState).lastThreatCall = observation.tick;
   return result;
 }
+export const decideThreatCryFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true);
+export const decideThreatCryDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf", true);
+export const decideThreatCryAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "alarm", true);
 export const decideThreatFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full");
 export const decideThreatDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf");
 export const decideThreatAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "alarm");

@@ -11,7 +11,7 @@ import { createSimulation, runExperiment } from "../../packages/simulation/src/i
 const spec = { id: "P", waypoints: [{ x: 5, y: 5 }, { x: 15, y: 5 }], speed: 0.5, chaseRadius: 4, harm: 5 };
 
 test("world 0.9.0: a predator patrols its waypoints by script, chases a human within reach at its chase speed, hurts it on contact, leaves a bitten individual alone for a while, and looks dissimilar", () => {
-  assert.equal(WORLD_VERSION, "0.9.0");
+  assert.equal(WORLD_VERSION, "0.10.0");
   let w = createWorld([{ id: "A", position: { x: 30, y: 20 } }], { predators: [spec] }, []);
   const pred = () => w.animals.find(a => a.id === "P")!;
   assert.deepEqual(pred().position, { x: 5, y: 5 }); assert.equal(pred().kind, "predator");
@@ -44,6 +44,10 @@ test("world 0.9.0: a predator patrols its waypoints by script, chases a human wi
   assert.deepEqual(victims.slice(0, 2), ["A", "B"], `A first, then B, and A not again within the memory (${victims.join(",")})`);
   assert.equal(victims.filter(v => v === "A").length, 1);
   assert.throws(() => createSimulation({ ...referentialConfig(1, "human-0.2.0", true, predator), world: { ...predator.world, predators: [{ ...spec, victimMemory: 1.5 }] } } as Parameters<typeof createSimulation>[0]), /危険な動物/);
+  // 0.10.0: a sound attached to a non-vocalize action is emitted (a cry while fleeing); without a sound nothing is emitted.
+  const crying = advanceWorld(createWorld([{ id: "A", position: { x: 20, y: 10 } }], { soundEnabled: true }, []), { A: { kind: "withdraw", target: { x: 25, y: 10 }, sound: { openness: 0.1, resonance: 0.1 } } }, 0);
+  assert.equal(crying.world.sounds.length, 1); assert.ok(Math.abs(crying.world.animals[0].position.x - 20.65) < 1e-9, "it moved at flight speed while crying");
+  assert.equal(advanceWorld(createWorld([{ id: "A", position: { x: 20, y: 10 } }], { soundEnabled: true }, []), { A: { kind: "withdraw", target: { x: 25, y: 10 } } }, 0).world.sounds.length, 0);
   const seen = senseWorld(chase, "A", 12, keyedRandom(1, "s", 0));
   assert.deepEqual(seen.animals.map(a => [a.trackId, a.morphologySimilarity]), [["P", 0.2]], "the predator is seen as a dissimilar animal");
   // A stalking predator (visibility 2) is unseen at 4 units even though the world's vision radius is larger.

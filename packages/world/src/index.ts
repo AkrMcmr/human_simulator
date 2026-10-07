@@ -1,6 +1,6 @@
 import { clamp, distance } from "../../contracts/src/index.ts";
 import type { ActionIntent, Observation, PhysicalEffect, RandomSource, SoundShape, Vec2 } from "../../contracts/src/index.ts";
-export const WORLD_VERSION = "0.9.0";
+export const WORLD_VERSION = "0.10.0";
 export type WorldParameters = {
   width: number; height: number; visionRadius: number; hearingRadius: number;
   acousticNoise: number; ambientCold: number; soundEnabled: boolean;
@@ -170,7 +170,8 @@ export function advanceWorld(previous: WorldState, actions: Record<string, Actio
     animal.velocity = { x: animal.position.x - old.position.x, y: animal.position.y - old.position.y };
     if (animal.kind === "predator") continue;
     const action = actions[animal.id];
-    if (action?.kind === "vocalize" && action.sound) {
+    // 0.10.0: any action carrying a sound emits it (a cry while fleeing); the default human attaches sounds to "vocalize" only, so its behavior is unchanged.
+    if (action?.sound) {
       effects[animal.id].exertion += 0.15;
       if (p.soundEnabled) world.sounds.push({ sourceId: animal.id, position: { ...animal.position }, shape: { ...action.sound }, tick: tick + 1 });
       events.push({ tick: tick + 1, kind: "sound", actorId: animal.id, value: p.soundEnabled ? 1 : 0 });

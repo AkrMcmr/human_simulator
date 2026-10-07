@@ -123,7 +123,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
         lastHeard[h.id] = tick;
       }
       if (observation.sounds.length) { const loudest = [...observation.sounds].sort((a, b) => b.loudness - a.loudness)[0]; pendingDirections[h.id] = { ...loudest.relativePosition }; }
-      if (result.action.kind === "vocalize") {
+      // world 0.10.0: a sound attached to any action is a vocalization (cries while fleeing); older models attach sounds to "vocalize" only.
+      if (result.action.sound) {
         vocalizations++;
         if (observation.animals.some(a => a.morphologySimilarity < 0.7)) { threatCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateThreatCalls.push({ ...result.action.sound }); }
         // valence-v4: a disgust call (experimental.3, lastDisgust set by the decision itself) counts as a bad-food voice like a poisoned one.

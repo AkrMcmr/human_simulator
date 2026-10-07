@@ -36,7 +36,7 @@ export function createHuman(id: string, parameters: Partial<HumanParameters> = {
   };
 }
 
-function rememberSound(categories: VoiceCategory[], shape: SoundShape, threshold = 0.18): void {
+export function rememberSound(categories: VoiceCategory[], shape: SoundShape, threshold = 0.18): void {
   const nearest = [...categories].sort((a, b) => soundDistance(a.shape, shape) - soundDistance(b.shape, shape))[0];
   if (nearest && (soundDistance(nearest.shape, shape) < threshold || categories.length >= 16)) {
     nearest.samples++;
