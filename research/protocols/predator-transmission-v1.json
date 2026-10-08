@@ -1,0 +1,363 @@
+{
+  "id": "predator-transmission-v1",
+  "version": "1.0.0",
+  "evidence": "free-world-cultural-transmission-of-a-two-referent-voice-system-diagnostics-not-language-or-human-validation",
+  "purpose": "M3: 危険な動物の世界（predator-v5と同一）で、食料の声・危険の声・警告の意味を持つ集団に、1500ステップ目に何も知らない新参者（D）を入れ、4500ステップまで走らせる。在来者の2語が保たれたまま、新参者が教えられずに両方の声を採用し（後ろ3分の1の声が在来者の声の0.15以内にある割合、聞ける新参者 − 聞けない新参者）、警告の意味を身につける（同じ叫びを出すが聞かない対照の新参者より襲撃が少ない）かを測る。判断0055",
+  "models": {
+    "baseline": "human-0.2.0",
+    "ceiling": "threat-cry-alarm-ceiling-0.13.0-experimental.3",
+    "deaf": "threat-cry-fear-deaf-0.13.0-experimental.5",
+    "candidate": "threat-cry-near-fear-0.13.0-experimental.5"
+  },
+  "pilotSeeds": [
+    102101,
+    102102,
+    102103,
+    102104
+  ],
+  "pilotUse": "聞かない対照・上限対照だけで、(1) 対比較「上限対照の新参者の余地」（聞かない対照 − 上限対照の新参者の襲撃、音あり、到着後）が1.0回以上、(2) 新参者の後ろ3分の1の危険の声が実行あたり3回以上（採用率が測れる）、(3) 非常時3%未満・死亡が実行の半数未満、を確認する。候補は走らせない。対比較「新参者の理解」の閾値0.5回はパイロット前に固定し、(1)が1.0回未満なら保留にする",
+  "rounds": {
+    "1": {
+      "developmentSeeds": [
+        102001,
+        102002,
+        102003,
+        102004,
+        102005,
+        102006,
+        102007,
+        102008
+      ],
+      "validationSeeds": [
+        103001,
+        103002,
+        103003,
+        103004,
+        103005,
+        103006,
+        103007,
+        103008
+      ]
+    }
+  },
+  "developmentSeeds": [
+    94001,
+    94002,
+    94003,
+    94004,
+    94005,
+    94006,
+    94007,
+    94008
+  ],
+  "validationSeeds": [
+    95001,
+    95002,
+    95003,
+    95004,
+    95005,
+    95006,
+    95007,
+    95008
+  ],
+  "horizon": 4500,
+  "world": {
+    "visionRadius": 5,
+    "hearingRadius": 24,
+    "ambientCold": 0.36,
+    "foodRegeneration": 0,
+    "foodSpawn": {
+      "amount": 6,
+      "radius": 2,
+      "depletedBelow": 0.01,
+      "positions": [
+        {
+          "x": 5,
+          "y": 22
+        },
+        {
+          "x": 35,
+          "y": 6
+        },
+        {
+          "x": 20,
+          "y": 25
+        },
+        {
+          "x": 12,
+          "y": 20
+        },
+        {
+          "x": 28,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 32,
+          "y": 16
+        },
+        {
+          "x": 16,
+          "y": 7
+        },
+        {
+          "x": 24,
+          "y": 21
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 33,
+          "y": 23
+        },
+        {
+          "x": 20,
+          "y": 3
+        }
+      ],
+      "lifetime": 500
+    },
+    "predators": [
+      {
+        "id": "P",
+        "waypoints": [
+          {
+            "x": 8,
+            "y": 8
+          },
+          {
+            "x": 32,
+            "y": 8
+          },
+          {
+            "x": 32,
+            "y": 20
+          },
+          {
+            "x": 8,
+            "y": 20
+          }
+        ],
+        "speed": 0.2,
+        "chaseSpeed": 0.75,
+        "chaseRadius": 3,
+        "harm": 12,
+        "cooldown": 5,
+        "visibility": 2,
+        "victimMemory": 300
+      }
+    ]
+  },
+  "agents": {
+    "A": {
+      "x": 10,
+      "y": 14
+    },
+    "B": {
+      "x": 30,
+      "y": 14
+    },
+    "C": {
+      "x": 20,
+      "y": 6
+    },
+    "D": {
+      "x": 20,
+      "y": 22
+    }
+  },
+  "body": {
+    "hunger": 0.5,
+    "fatigue": 0.15,
+    "cold": 0.1
+  },
+  "resources": [
+    {
+      "id": "food-1",
+      "kind": "food",
+      "position": {
+        "x": 7,
+        "y": 5
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-2",
+      "kind": "food",
+      "position": {
+        "x": 33,
+        "y": 23
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-3",
+      "kind": "food",
+      "position": {
+        "x": 20,
+        "y": 3
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-4",
+      "kind": "food",
+      "position": {
+        "x": 10,
+        "y": 26
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-5",
+      "kind": "food",
+      "position": {
+        "x": 30,
+        "y": 3
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-6",
+      "kind": "food",
+      "position": {
+        "x": 36,
+        "y": 13
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "food-7",
+      "kind": "food",
+      "position": {
+        "x": 4,
+        "y": 14
+      },
+      "amount": 6,
+      "radius": 2
+    },
+    {
+      "id": "warm-c",
+      "kind": "warmth",
+      "position": {
+        "x": 20,
+        "y": 14
+      },
+      "amount": 1,
+      "radius": 3
+    }
+  ],
+  "conditions": [
+    "sound",
+    "muted",
+    "misdirected",
+    "scrambled"
+  ],
+  "hearWindow": 30,
+  "arrivalCap": 300,
+  "unit": "シードごとの差。襲撃＝捕食者と接触した人間のステップ数（1ステップ1回、害12を衝突として受け、健康を約0.07失う。噛んだ後80ステップは巡回に戻る）。後ろ3分の1は実行の後ろ1000ステップ。仲間が先に見ていた襲撃＝生きている他の個体の（60ステップ以内の）捕食者の目撃が、被害者自身の今回の目撃の始まりより15ステップ以上早い襲撃。危険の声＝捕食者が見えている時の発声。危険の声＝捕食者が見えている時の発声（後ろ3分の1の重心・散らばり）。対比較は実行全体の襲撃（聞かない対照 − 候補、音あり）",
+  "checks": [
+    {
+      "id": "convergence-gain",
+      "label": "在来者の食料の声は聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "convergence-threat",
+      "label": "在来者の危険の声は聞き合えると一つに集まる",
+      "minimum": 0.12,
+      "unit": "sound distance"
+    },
+    {
+      "id": "threat-distinctness",
+      "label": "在来者の食料の声と危険の声が別の音（重心間の距離）",
+      "minimum": 0.25,
+      "unit": "sound distance"
+    },
+    {
+      "id": "adoption-rate-gain",
+      "label": "新参者の食料の声の採用率（聞ける − 聞けない）",
+      "minimum": 0.3,
+      "unit": "fraction of newcomer food calls"
+    },
+    {
+      "id": "adoption-threat-rate-gain",
+      "label": "新参者の危険の声の採用率（聞ける − 聞けない）",
+      "minimum": 0.3,
+      "unit": "fraction of newcomer threat calls"
+    },
+    {
+      "id": "newcomer-benefit",
+      "label": "聞ける新参者は空腹で損をしない（後ろ3分の1）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    },
+    {
+      "id": "forage-benefit",
+      "label": "音があることで空腹が悪化しない（後ろ3分の1）",
+      "minimum": -0.02,
+      "unit": "mean hunger difference"
+    }
+  ],
+  "reported": [
+    "attacks",
+    "lateAttacks",
+    "threatCalls",
+    "newcomerAttacks",
+    "newcomer-attack-benefit",
+    "attack-benefit-all",
+    "arbitrariness-threat",
+    "adoption-gain",
+    "desperateFraction",
+    "minimumHealth"
+  ],
+  "notAClaim": "捕食者は決まった規則で動き、意図も学習もない。新参者は同じモデルの何も知らない個体で、教える・教わるの意図はない。音に意味・正解を与えない。語・文法・意図の再現ではない",
+  "thresholdBasis": "在来者の収束0.12・区別0.25、採用率の利得0.3、新参者の空腹−0.02はtransmission-v2とpredator-v4から据え置き。危険の声の採用率は食料の声と同じ定義（在来者の後ろ3分の1の声が半径0.15に集まっている時だけ測り、集まっていなければ0）。対比較「新参者の理解」0.5回は、集団の聞き手の寄与1.0回（4人分）を1人分に按分した0.25回の2倍で、パイロット前に固定",
+  "establishedIf": "7項目と対比較「新参者の理解」（0.5回）を開発・確認の両群で達成した候補について「教えなくても、新参者は集団の2つの声を採用し、警告の意味を自分の経験から身につける（2つの指示対象を持つ声の体系の文化的伝達の最小形）」と呼ぶ",
+  "hungerWindow": "late",
+  "paired": [
+    {
+      "id": "newcomer-comprehension",
+      "label": "新参者の理解: 同じ叫びを出すが聞かない対照の新参者より襲撃が少ない（音あり、到着後）",
+      "candidate": "threat-cry-near-fear-0.13.0-experimental.5",
+      "reference": "threat-cry-fear-deaf-0.13.0-experimental.5",
+      "field": "newcomerAttacks",
+      "condition": "sound",
+      "minimum": 0.5
+    },
+    {
+      "id": "comprehension-benefit",
+      "label": "集団の聞き手の寄与（音あり、実行全体）",
+      "candidate": "threat-cry-near-fear-0.13.0-experimental.5",
+      "reference": "threat-cry-fear-deaf-0.13.0-experimental.5",
+      "field": "attacks",
+      "condition": "sound",
+      "minimum": 1.0
+    },
+    {
+      "id": "ceiling-newcomer-room",
+      "label": "上限対照の新参者の余地: 聞かない対照 − 上限対照 の新参者の襲撃（音あり。パイロット基準1.0回）",
+      "candidate": "threat-cry-alarm-ceiling-0.13.0-experimental.3",
+      "reference": "threat-cry-fear-deaf-0.13.0-experimental.5",
+      "field": "newcomerAttacks",
+      "condition": "sound",
+      "minimum": 1.0
+    }
+  ],
+  "newcomer": {
+    "id": "D",
+    "tick": 1500
+  }
+}

@@ -43,6 +43,8 @@ export type RunResult = {
   newcomerDistance: number; newcomerLateHunger: number;
   /** transmission-v2: the newcomer's late food calls themselves, so adoption can be judged against the incumbents' voice of another condition. */
   newcomerCalls: { openness: number; resonance: number }[];
+  /** predator-transmission-v1: attacks on the newcomer after its arrival, and its late calls made with a predator in sight (the incumbents' late threat calls stay in the threat pool). */
+  newcomerAttacks: number; newcomerThreatCalls: { openness: number; resonance: number }[];
   /** generations-v1: the group's pooled food-voice centroid inside the protocol's early window (before any replacement), or null. */
   earlyVoiceCentroid: { openness: number; resonance: number } | null; earlyCalls: number;
   /** Mean distance of every food call in the last third (all individuals pooled) to the pooled centroid; low when the group's food calls concentrate on one voice. 1 when fewer than 5 calls. */
@@ -82,7 +84,8 @@ export function runCondition(modelId: string, seed: number, condition: Condition
   const poisonedPairs = new Set<string>(), latePoisonedPairs = new Set<string>();
   const poisoningKinds = { first: 0, simultaneous: 0, unwarned: 0, warned: 0 };
   let livingTicks = 0, desperateTicks = 0;
-  let attacks = 0, lateAttacks = 0, attackHarm = 0, lateAttackHarm = 0, foreseeableAttacks = 0, threatCalls = 0;
+  let attacks = 0, lateAttacks = 0, attackHarm = 0, lateAttackHarm = 0, foreseeableAttacks = 0, threatCalls = 0, newcomerAttacks = 0;
+  const newcomerThreatCalls: { openness: number; resonance: number }[] = [];
   const lateThreatCalls: { openness: number; resonance: number }[] = [];
   const lastSawPredator: Record<string, number> = {}, sawSince: Record<string, number> = {};
   const firstPoisonedAt = new Map<string, number>(); // toxic patch id -> tick of the first poisoning there
@@ -126,7 +129,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
       // world 0.10.0: a sound attached to any action is a vocalization (cries while fleeing); older models attach sounds to "vocalize" only.
       if (result.action.sound) {
         vocalizations++;
-        if (observation.animals.some(a => a.morphologySimilarity < 0.7)) { threatCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) lateThreatCalls.push({ ...result.action.sound }); }
+        if (observation.animals.some(a => a.morphologySimilarity < 0.7)) { threatCalls++; if (tick >= protocol.horizon * 2 / 3 && result.action.sound) (newcomer && h.id === newcomer.id ? newcomerThreatCalls : lateThreatCalls).push({ ...result.action.sound }); }
         // valence-v4: a disgust call (experimental.3, lastDisgust set by the decision itself) counts as a bad-food voice like a poisoned one.
         const poisoned = ((h as HumanState & { lastPoison?: number }).lastPoison ?? 0) > 0 || ((result.human as HumanState & { lastDisgust?: number }).lastDisgust ?? 0) > 0;
         if (poisoned) {
@@ -183,6 +186,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     }
     for (const e of advanced.events) if (e.kind === "attack") {
       attacks++; attackHarm += e.value; if (tick >= protocol.horizon * 2 / 3) { lateAttacks++; lateAttackHarm += e.value; }
+      if (newcomer && e.actorId === newcomer.id && tick >= newcomer.tick) newcomerAttacks++;
       // Foreseeable: a living peer's current or recent sighting (within 60 ticks) began at least 15 ticks before the victim's own current sighting (or the victim never saw it coming).
       const victimFirst = lastSawPredator[e.actorId] !== undefined && tick - lastSawPredator[e.actorId] <= 1 ? sawSince[e.actorId] : tick;
       if (state.humans.some(o => o.id !== e.actorId && o.body.health > 0 && lastSawPredator[o.id] !== undefined && tick - lastSawPredator[o.id] <= 60 && sawSince[o.id] <= victimFirst - 15)) foreseeableAttacks++;
@@ -235,7 +239,7 @@ export function runCondition(modelId: string, seed: number, condition: Condition
     otherVoiceCentroid: otherPool.centroid, otherCalls,
     attacks, lateAttacks, attackHarm, lateAttackHarm, foreseeableAttacks, threatCalls, threatVoiceDispersion: threatPool.dispersion, threatVoiceCentroid: threatPool.centroid,
     poisonIntake, latePoisonIntake, poisonings: poisonedPairs.size, latePoisonings: latePoisonedPairs.size, poisoningKinds, desperateFraction: livingTicks ? desperateTicks / livingTicks : 0, badVoiceDispersion: badPool.dispersion, badVoiceCentroid: badPool.centroid, badCalls,
-    newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0, newcomerCalls: incomerCalls,
+    newcomerDistance, newcomerLateHunger: newcomerLate.length ? mean(newcomerLate) : 0, newcomerCalls: incomerCalls, newcomerAttacks, newcomerThreatCalls,
     earlyVoiceCentroid: earlyPool.centroid, earlyCalls: earlyCalls.length,
     meanHunger: mean(hungers), lateMeanHunger: lateHungers.length ? mean(lateHungers) : mean(hungers), foodIntake, firstFoodTick, meanFirstFoodTick: mean(ids.map(id => firstFoodTick[id])),
     heardEvents, unseenHeardEvents, towardSourceFraction: towardChecks ? towardHits / towardChecks : 0,
@@ -249,7 +253,7 @@ export function runSeed(modelId: string, seed: number, protocol: ReferentialProt
   return { seed, model: modelId, sound: runCondition(modelId, seed, "sound", protocol), muted: runCondition(modelId, seed, "muted", protocol), misdirected: runCondition(modelId, seed, "misdirected", protocol), scrambled: runCondition(modelId, seed, "scrambled", protocol) };
 }
 /** All values oriented so that higher supports the hypothesis that heard sounds guide foraging. Protocol checks pick which measures gate; the rest are reported. */
-export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "poison-benefit-units", "poison-shape-units", "poisoning-benefit", "poisoning-shape", "attack-benefit", "attack-shape", "attack-benefit-all", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "contact-side-effect"] as const;
+export const MEASURES = ["forage-benefit", "direction-dependence", "shape-dependence", "latency-benefit", "latency-direction", "latency-shape", "arrival-benefit", "arrival-direction", "arrival-shape", "call-suppression", "convergence-gain", "arbitrariness", "convergence-warmth", "arbitrariness-warmth", "distinctness", "warmth-specificity", "cold-benefit", "cold-shape-dependence", "adoption-gain", "adoption-rate-gain", "newcomer-benefit", "newcomer-shape", "lineage-continuity", "convergence-bad", "valence-distinctness", "poison-benefit", "poison-shape", "poison-benefit-units", "poison-shape-units", "poisoning-benefit", "poisoning-shape", "attack-benefit", "attack-shape", "attack-benefit-all", "convergence-threat", "arbitrariness-threat", "threat-distinctness", "adoption-threat-rate-gain", "newcomer-attack-benefit", "contact-side-effect"] as const;
 export function checkValue(id: string, r: SeedResult, protocol: ReferentialProtocol = protocolV1): number {
   const h = protocol.horizon;
   // A protocol may evaluate hunger over the final third only (hungerWindow "late"), after a learned convention has had time to form.
@@ -291,6 +295,14 @@ export function checkValue(id: string, r: SeedResult, protocol: ReferentialProto
       return rate(r.sound.newcomerCalls ?? []) - rate(r.muted.newcomerCalls ?? []);
     }
     case "newcomer-benefit": return r.muted.newcomerLateHunger - r.sound.newcomerLateHunger;
+    // predator-transmission-v1: the same adoption rate for the threat voice (the newcomer's late calls with a predator in sight against the incumbents' late threat voice of the sound run), and fewer attacks on the hearing newcomer than on the deaf (muted-run) one.
+    case "adoption-threat-rate-gain": {
+      const voice = r.sound.threatVoiceCentroid;
+      if (!voice || r.sound.threatVoiceDispersion > ADOPTION_RADIUS) return 0;
+      const rate = (calls: { openness: number; resonance: number }[]) => calls.length ? calls.filter(c => Math.hypot(c.openness - voice.openness, c.resonance - voice.resonance) <= ADOPTION_RADIUS).length / calls.length : 0;
+      return rate(r.sound.newcomerThreatCalls ?? []) - rate(r.muted.newcomerThreatCalls ?? []);
+    }
+    case "newcomer-attack-benefit": return (r.muted.newcomerAttacks ?? 0) - (r.sound.newcomerAttacks ?? 0);
     // generations-v1: after every original individual has been replaced, the late food voice still sits where the early one was. Higher is better: LINEAGE_SPAN minus the early-to-late distance; 0 when either voice is missing or the late voice is not concentrated.
     // valence-v1: the bad-food voice concentrates when audible; the two voices differ; less poison is eaten with sound than muted, and more again with scrambled shapes (late third, as fractions of the muted late poison).
     case "convergence-bad": return r.muted.badVoiceCentroid && r.sound.badVoiceCentroid ? r.muted.badVoiceDispersion - r.sound.badVoiceDispersion : 0;

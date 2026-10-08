@@ -9,6 +9,8 @@ import { protocol as predator2 } from "../../research/studies/predator-v2.ts";
 import { protocol as predator3 } from "../../research/studies/predator-v3.ts";
 import { protocol as predator4 } from "../../research/studies/predator-v4.ts";
 import { protocol as predator5 } from "../../research/studies/predator-v5.ts";
+import { protocol as predatorTransmission } from "../../research/studies/predator-transmission-v1.ts";
+import { protocol as transmission2 } from "../../research/studies/transmission-v2.ts";
 import { seedsFor, referentialConfig, runCondition, checkValue, type SeedResult } from "../../research/studies/referential-v1.ts";
 import { HUMAN_MODELS, runExperiment } from "../../packages/simulation/src/index.ts";
 
@@ -171,4 +173,26 @@ test("experimental.5 imitates the threat voice while afraid: just after losing s
   const used = [predator.pilotSeeds, seedsFor("development", predator, "1"), seedsFor("validation", predator, "1"), predator2.pilotSeeds, seedsFor("development", predator2, "1"), seedsFor("validation", predator2, "1"), predator3.pilotSeeds, seedsFor("development", predator3, "1"), seedsFor("validation", predator3, "1"), predator4.pilotSeeds, seedsFor("development", predator4, "1"), seedsFor("validation", predator4, "1"), seedsFor("development", predator4, "2"), seedsFor("validation", predator4, "2")].flat();
   const p5 = [predator5.pilotSeeds, seedsFor("development", predator5, "1"), seedsFor("validation", predator5, "1")].flat();
   assert.equal(p5.length, 20); assert.equal(new Set([...used, ...p5]).size, used.length + p5.length, "predator-v5 seeds are fresh");
+});
+test("predator-transmission-v1 replaces D at tick 1500 of 4500 in the predator-v5 world, measures the newcomer's adoption of the threat voice and its attacks, on fresh seeds", () => {
+  const pt = predatorTransmission as unknown as { horizon: number; newcomer: { id: string; tick: number }; world: unknown; resources: unknown; checks: { id: string }[]; paired: { id: string; field: string; minimum?: number }[]; models: Record<string, string> };
+  assert.equal(pt.horizon, 4500); assert.deepEqual(pt.newcomer, { id: "D", tick: 1500 });
+  assert.deepEqual(pt.world, predator5.world); assert.deepEqual(pt.resources, predator5.resources);
+  assert.deepEqual(pt.checks.map(c => c.id), ["convergence-gain", "convergence-threat", "threat-distinctness", "adoption-rate-gain", "adoption-threat-rate-gain", "newcomer-benefit", "forage-benefit"]);
+  assert.deepEqual(pt.paired.map(p => [p.id, p.field, p.minimum ?? null]), [["newcomer-comprehension", "newcomerAttacks", 0.5], ["comprehension-benefit", "attacks", 1], ["ceiling-newcomer-room", "newcomerAttacks", 1]]);
+  assert.equal(pt.models.candidate, "threat-cry-near-fear-0.13.0-experimental.5");
+  const used = [predator5.pilotSeeds, seedsFor("development", predator5, "1"), seedsFor("validation", predator5, "1"), transmission2.pilotSeeds, seedsFor("development", transmission2, "1"), seedsFor("validation", transmission2, "1")].flat();
+  const mine = [predatorTransmission.pilotSeeds, seedsFor("development", predatorTransmission, "1"), seedsFor("validation", predatorTransmission, "1")].flat();
+  assert.equal(mine.length, 20); assert.equal(new Set([...used, ...mine]).size, used.length + mine.length, "fresh seeds");
+  // The threat-voice adoption rate mirrors the food-voice one: 0 without a concentrated incumbent voice, else the share of the newcomer's late threat calls within 0.15 of it, hearing minus deaf.
+  const mk = (centroid: { openness: number; resonance: number } | null, dispersion: number, calls: { openness: number; resonance: number }[], newcomerAttacks: number) => ({ threatVoiceCentroid: centroid, threatVoiceDispersion: dispersion, newcomerThreatCalls: calls, newcomerAttacks, attacks: 10 }) as unknown as SeedResult["sound"];
+  const near = { openness: .3, resonance: .3 }, far = { openness: .8, resonance: .8 };
+  const r = { seed: 1, model: "m", sound: mk({ openness: .3, resonance: .3 }, .1, [near, near, far, near], 1), muted: mk(null, 1, [near, far, far, far], 3), misdirected: mk(null, 1, [], 0), scrambled: mk(null, 1, [], 0) } as SeedResult;
+  assert.ok(Math.abs(checkValue("adoption-threat-rate-gain", r, predatorTransmission) - 0.5) < 1e-9);
+  assert.equal(checkValue("newcomer-attack-benefit", r, predatorTransmission), 2);
+  const spread = { ...r, sound: mk({ openness: .3, resonance: .3 }, .2, [near, near], 1) } as SeedResult;
+  assert.equal(checkValue("adoption-threat-rate-gain", spread, predatorTransmission), 0, "no convention among the incumbents: nothing to adopt");
+  // A short run with the replacement: the newcomer exists afterwards and the new fields are finite.
+  const run = runCondition("threat-cry-fear-deaf-0.13.0-experimental.5", predatorTransmission.pilotSeeds[0], "sound", { ...predatorTransmission, horizon: 300, newcomer: { id: "D", tick: 100 } } as unknown as typeof predatorTransmission);
+  assert.ok(Number.isFinite(run.newcomerAttacks) && Array.isArray(run.newcomerThreatCalls));
 });
