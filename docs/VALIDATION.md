@@ -140,3 +140,7 @@ predator-v1（[判断0049](../research/decisions/0049-predator-design.md)、パ�
 ## 2026-10-07: predator-v5（怖がっている間の真似、未成立）
 
 experimental.5（[判断0053](../research/decisions/0053-fear-imitation.md)、100001–/101001–）: 聞き手の寄与1.375 / 2.625（通算6分割すべて達成）、区別0.256 / 0.269（両群達成）、収束0.127 / 0.100、任意性0.166 / 0.069、空腹の副作用−0.064 / −0.000。全項目成立なし、閾値不変。`npm run test:model` 136/136、型検査・lint成功。結果: `research/results/predator-v5-*.{json,md}`。
+
+## 2026-10-08: predator-transmission-v1（未成立）
+
+評価器に新参者の襲撃・危険の声の採用率を追加（旧protocolでは0・空）。predator-v5の世界で1500/4500ステップ目に新参者を入れ、パイロット（102101–）で上限対照の新参者の余地1.25回を確認後、開発（102001–）・確認（103001–）を4モデルで実行。食料の声の採用0.343 / 0.348（達成）、危険の声の採用−0.047 / 0.127、新参者の理解0.25 / 0.25（閾値0.5）、集団の聞き手の寄与3.625 / 5.625。[判断0055](../research/decisions/0055-predator-transmission.md)。`npm run test:model` 137/137、型検査・lint成功。
