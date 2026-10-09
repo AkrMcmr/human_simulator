@@ -10,6 +10,7 @@ import { protocol as predator3 } from "../../research/studies/predator-v3.ts";
 import { protocol as predator4 } from "../../research/studies/predator-v4.ts";
 import { protocol as predator5 } from "../../research/studies/predator-v5.ts";
 import { protocol as predatorTransmission } from "../../research/studies/predator-transmission-v1.ts";
+import { protocol as predatorTransmission2 } from "../../research/studies/predator-transmission-v2.ts";
 import { protocol as transmission2 } from "../../research/studies/transmission-v2.ts";
 import { seedsFor, referentialConfig, runCondition, checkValue, type SeedResult } from "../../research/studies/referential-v1.ts";
 import { HUMAN_MODELS, runExperiment } from "../../packages/simulation/src/index.ts";
@@ -195,4 +196,12 @@ test("predator-transmission-v1 replaces D at tick 1500 of 4500 in the predator-v
   // A short run with the replacement: the newcomer exists afterwards and the new fields are finite.
   const run = runCondition("threat-cry-fear-deaf-0.13.0-experimental.5", predatorTransmission.pilotSeeds[0], "sound", { ...predatorTransmission, horizon: 300, newcomer: { id: "D", tick: 100 } } as unknown as typeof predatorTransmission);
   assert.ok(Number.isFinite(run.newcomerAttacks) && Array.isArray(run.newcomerThreatCalls));
+});
+test("predator-transmission-v2 is v1 with a 7500-tick horizon (the newcomer lives 6000 ticks), same world, models, gates and thresholds, on fresh seeds", () => {
+  const a = predatorTransmission as unknown as Record<string, unknown>, b = predatorTransmission2 as unknown as Record<string, unknown>;
+  assert.equal(b.horizon, 7500); assert.deepEqual(b.newcomer, { id: "D", tick: 1500 });
+  for (const k of ["world", "resources", "models", "checks", "paired", "agents", "body"]) assert.deepEqual(b[k], a[k], k);
+  const used = [predatorTransmission.pilotSeeds, seedsFor("development", predatorTransmission, "1"), seedsFor("validation", predatorTransmission, "1")].flat();
+  const mine = [predatorTransmission2.pilotSeeds, seedsFor("development", predatorTransmission2, "1"), seedsFor("validation", predatorTransmission2, "1")].flat();
+  assert.equal(mine.length, 20); assert.equal(new Set([...used, ...mine]).size, used.length + mine.length, "fresh seeds");
 });
