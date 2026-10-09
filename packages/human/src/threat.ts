@@ -30,6 +30,9 @@ export const NEAR = { minimumHits: 2, contrast: 2 };
 export const THREAT_FEAR_VERSION = "0.13.0-experimental.5";
 export const FEAR = { ticks: 20 };
 export type ImitationContext = "sight" | "fear";
+/** experimental.6 (decision 0057): contrast imitation. The threat voice is the heard category whose share while afraid exceeds its share while eating, so the food calls that fill the air while fleeing (predator-v5 development: the top "afraid" category was the individual's own food voice in 4 of 16 cases) cannot become the threat voice. */
+export const THREAT_CONTRAST_VERSION = "0.13.0-experimental.6";
+export type VoiceScoring = "share" | "contrast";
 export type AssociationRule = "strict" | "near";
 export const THREAT = { reach: 6, callUrge: FOOD_CALL.utility, associationTicks: 30, fleeTicks: 20, heardMemory: 40, /** Ticks between urged threat calls, so a threat in sight does not displace flight and foraging with a call every tick (predator-v2 pilot 1: ~990 calls per run). */ callRefractory: 10 };
 export type ThreatMode = "full" | "deaf" | "alarm";
@@ -46,12 +49,14 @@ export function threatOf(observation: Observation): { risk: number; position: Ve
   return { risk: Math.min(1, Math.max(0, 1 - seen.d / THREAT.reach)), position: { x: observation.selfPosition.x + seen.a.relativePosition.x, y: observation.selfPosition.y + seen.a.relativePosition.y } };
 }
 /** The heard category this individual reproduces when threatened: the share of each category heard while a threat was in sight. */
-export function threatVoiceOf(human: HumanState): SoundShape | null {
+export function threatVoiceOf(human: HumanState, scoring: VoiceScoring = "share"): SoundShape | null {
   const h = human as ThreatState;
   const heard = h.threatHeard ?? {}; const total = Object.values(heard).reduce((a, b) => a + b, 0);
+  const eating = h.eatingHeard ?? {}; const eatingTotal = Object.values(eating).reduce((a, b) => a + b, 0);
   let best: { shape: SoundShape; score: number } | null = null;
   for (const c of human.heardSounds) {
-    const score = CONVENTION.heardWeight * ((heard[c.id] ?? 0) / Math.max(1, total));
+    const share = (heard[c.id] ?? 0) / Math.max(1, total);
+    const score = CONVENTION.heardWeight * (scoring === "contrast" ? share - (eating[c.id] ?? 0) / Math.max(1, eatingTotal) : share);
     if (score > CONVENTION.minimumScore && (!best || score > best.score)) best = { shape: { ...c.shape }, score };
   }
   return best?.shape ?? null;
@@ -69,8 +74,8 @@ export function isNearAlarmCategory(human: HumanState, category: number): boolea
   return a.hit / (a.hit + a.miss) >= NEAR.contrast * base;
 }
 /** Voice choice by context: threat in sight → threat voice (apart from the food voice); eating → food voice (apart from the threat voice); otherwise a produced sound far from both, or null. */
-export function chooseThreatVoice(human: HumanState, threatened: boolean): SoundShape | null {
-  const food = foodVoiceOf(human), threat = threatVoiceOf(human);
+export function chooseThreatVoice(human: HumanState, threatened: boolean, scoring: VoiceScoring = "share"): SoundShape | null {
+  const food = foodVoiceOf(human), threat = threatVoiceOf(human, scoring);
   if (threatened) return threat ? (food ? separateFrom(threat, food) : threat) : null;
   if (((human as ThreatState).lastIntake ?? 0) > 0) return food ? (threat ? separateFrom(food, threat) : food) : null;
   const voices = [food, threat].filter((v): v is SoundShape => v !== null);
@@ -87,7 +92,7 @@ function cryShape(human: HumanState, chosen: SoundShape | null, risk: number, ra
   const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   return { openness: clamp01((1 - c) * base.openness + c * clamp01(risk * 2) + (random("cry-noise-o") - 0.5) * CRY.noise), resonance: clamp01((1 - c) * base.resonance + c * need + (random("cry-noise-r") - 0.5) * CRY.noise) };
 }
-export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full", cry = false, rule: AssociationRule = "strict", imitation: ImitationContext = "sight") {
+export function decideThreat(previous: HumanState, observation: Observation, random: RandomSource, mode: ThreatMode = "full", cry = false, rule: AssociationRule = "strict", imitation: ImitationContext = "sight", scoring: VoiceScoring = "share") {
   const human: ThreatState = structuredClone(previous);
   const self = observation.selfPosition;
   const threat = threatOf(observation);
@@ -129,7 +134,7 @@ export function decideThreat(previous: HumanState, observation: Observation, ran
   const fleeing = human.fleeFrom && (human.fleeUntil ?? -1) >= observation.tick ? human.fleeFrom : null;
   if (!fleeing) { human.fleeFrom = null; human.fleeUntil = undefined; }
   // experimental.2: the ceiling's ordinary voice is kept out of the alarm's radius, so only a threat in sight produces the alarm.
-  const chooseSound = mode === "alarm" ? (h: HumanState) => { if (threat) return { ...ALARM.shape }; const v = chooseThreatVoice(h, false); return v ? separateFrom(v, ALARM.shape) : null; } : (h: HumanState) => chooseThreatVoice(h, !!threat);
+  const chooseSound = mode === "alarm" ? (h: HumanState) => { if (threat) return { ...ALARM.shape }; const v = chooseThreatVoice(h, false); return v ? separateFrom(v, ALARM.shape) : null; } : (h: HumanState) => chooseThreatVoice(h, !!threat, scoring);
   const urged = !!threat && observation.tick - (human.lastThreatCall ?? -Infinity) >= THREAT.callRefractory;
   const result = decideReferentLearner(human, observation, random, FOOD_CALL.utility, undefined, {
     stateCoupling: CONVENTION.stateCoupling, chooseSound, threat, fleeFrom: fleeing, ...(urged && !cry ? { callUrge: THREAT.callUrge } : {}),
@@ -150,6 +155,8 @@ export const decideThreatCryAlarm = (h: HumanState, o: Observation, r: RandomSou
 export const decideThreatNearFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true, "near");
 export const decideThreatFearFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true, "near", "fear");
 export const decideThreatFearDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf", true, "near", "fear");
+export const decideThreatContrastFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full", true, "near", "fear", "contrast");
+export const decideThreatContrastDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf", true, "near", "fear", "contrast");
 export const decideThreatFull = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "full");
 export const decideThreatDeaf = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "deaf");
 export const decideThreatAlarm = (h: HumanState, o: Observation, r: RandomSource) => decideThreat(h, o, r, "alarm");

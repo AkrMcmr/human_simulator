@@ -1,7 +1,7 @@
 import { decideSoundAssociation, decideAssociationOff, decideClassificationOff, decideAttentionOff, decideSoundPolicyOff } from "../../packages/human/src/sound-association.ts";
 import { decideSignalSender, decideSignalSenderOnly, decideSignalSenderOff } from "../../packages/human/src/signal-sender.ts";
 import { decideVoiceState, decideVoiceStateReceiver, decideVoiceStateOnly } from "../../packages/human/src/voice-state.ts";
-import { decideThreatFull, decideThreatDeaf, decideThreatAlarm, decideThreatCryFull, decideThreatCryDeaf, decideThreatCryAlarm, decideThreatNearFull, decideThreatFearFull, decideThreatFearDeaf } from "../../packages/human/src/threat.ts";
+import { decideThreatFull, decideThreatDeaf, decideThreatAlarm, decideThreatCryFull, decideThreatCryDeaf, decideThreatCryAlarm, decideThreatNearFull, decideThreatFearFull, decideThreatFearDeaf, decideThreatContrastFull, decideThreatContrastDeaf } from "../../packages/human/src/threat.ts";
 import { decideValence, decideValenceAversion, decideValencePrivate, decideValenceDisgust, decideValenceDisgustPrivate, decideValenceOnset, decideValenceOnsetPrivate, decideValenceOnsetFast, decideValenceOnsetFastPrivate, decideValenceAlarm, decideValenceMirror, decideValenceMirrorPrivate, decideValenceMirror2, decideValenceMirror2Private, decideValenceAssoc, decideValenceAssocPrivate, decideValenceAssoc2, decideValenceAssoc2Private, decideValenceLatent, decideValenceLatentPrivate, decideValenceLatentAlarm } from "../../packages/human/src/valence.ts";
 import { decideLexicon, decideLexiconTransient, decideLexiconMemory, decideLexiconSeparate, decideLexiconFine } from "../../packages/human/src/lexicon.ts";
 import { decideForagerListener, decideForagerListenerOnly, decideSelectiveForager, decideFoodCallForager, decideFoodCallSelective, decideFoodCallOnly, decideEatingSelective, decideEatingBlind, decideEatingReferent, decideFoodCallReferent, decideLearnedCaller, decideConvention, decideConventionNoImitation, decideConventionContrast, applyWithIntake } from "../../packages/human/src/forager-listener.ts";
@@ -79,4 +79,6 @@ export const models: Record<string, ModelAdapter> = {
   "threat-cry-near-0.13.0-experimental.4": { create: createHuman, decide: decideThreatNearFull, apply: applyWithIntake },
   "threat-cry-near-fear-0.13.0-experimental.5": { create: createHuman, decide: decideThreatFearFull, apply: applyWithIntake },
   "threat-cry-fear-deaf-0.13.0-experimental.5": { create: createHuman, decide: decideThreatFearDeaf, apply: applyWithIntake },
+  "threat-cry-contrast-0.13.0-experimental.6": { create: createHuman, decide: decideThreatContrastFull, apply: applyWithIntake },
+  "threat-cry-contrast-deaf-0.13.0-experimental.6": { create: createHuman, decide: decideThreatContrastDeaf, apply: applyWithIntake },
 };
