@@ -148,3 +148,7 @@ experimental.5（[判断0053](../research/decisions/0053-fear-imitation.md)、10
 ## 2026-10-09: predator-transmission-v2（新参者の理解は両群成立、危険の声の伝達は確認群で未達）
 
 7500ステップ（新参者は6000ステップ）、104001–/105001–。新参者の理解1.625 / 1.5（閾値0.5）、食料の声の採用0.619 / 0.453、危険の声の採用0.384 / 0.097、在来者の危険の声の収束0.126 / 0.103、新参者の空腹−0.008 / −0.011。開発群は全項目成立、確認群は危険の声側だけ未達。[判断0056](../research/decisions/0056-predator-transmission-longer.md)。`npm run test:model` 138/138、型検査・lint成功。
+
+## 2026-10-09: predator-v6（対比の真似、反証）
+
+experimental.6（[判断0057](../research/decisions/0057-contrast-imitation.md)、106001–/107001–）: 危険の声の収束0.064 / 0.097（悪化）、区別0.302 / 0.281、聞き手の寄与0.625 / 3.625。反証、候補は採用しない。`npm run test:model` 139/139、型検査・lint成功。
