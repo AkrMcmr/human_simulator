@@ -19,6 +19,8 @@ npm run test:policy
 
 中期の開発方針と達成条件は[中期目標](docs/MIDTERM_GOALS.md)にまとめています。
 
+認知モデルとは別のトラックとして、操作可能で現実準拠の人間3D身体モデルを公開製品にする設計を[docs/body](docs/body/README.md)に起草しました（2026-10-10時点で設計のみ。[ADR 0002](docs/decisions/0002-body-track.md)）。
+
 ## 構造
 
 | 場所 | 責務 |
