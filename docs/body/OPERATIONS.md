@@ -129,6 +129,20 @@
 | `surface.setLOD` | 段階または画面占有率 | 形態 L0 | FR-SURF-01 |
 | `surface.attach` / `surface.detach` | ソケットID、外部アセットの参照 | 形態 L1 | FR-SURF-02 |
 
+### mind（認知接続）
+
+認知そのものの操作。認知が身体へ出す命令は上記の通常のコマンドで、ここには含めない。
+
+| 操作 | パラメータ | 忠実度 | 要件 |
+| --- | --- | --- | --- |
+| `mind.attach` | 認知の種類（`scripted` / `hwl` / `external`）、版、パラメータ、シード | – | FR-MIND-01, 02, 03, 04 |
+| `mind.detach` | – | – | FR-MIND-01 |
+| `mind.perceive` | ホストが渡す外界の知覚 `HostPerception`（この刻みの認知入力。記録される） | – | FR-MIND-01, 05 |
+| `mind.setGoal` | 参照認知への高位目標（例: 「位置 X へ向かう」「対象 Y を拾う」「休む」） | – | FR-MIND-02 |
+| `mind.setParameters` | 参照認知のパラメータ（慎重さ、好奇心、反応の遅れなど） | – | FR-MIND-02 |
+
+認知からは `damage.*`、`physio.setState`、`runtime.*` の外部設定を発行できない（`rejected` / `locked`）。
+
 ### runtime（実行・記録）
 
 | 操作 | パラメータ | 忠実度 | 要件 |
@@ -152,7 +166,8 @@
 | `query.balance` | 重心、支持基底、安定余裕 |
 | `query.physio` | 全生理変数（単位付き）と性能係数 |
 | `query.damage` | 損傷一覧、部位ごとの機能倍率、痛み |
-| `query.senses` | 本人の身体感覚（固有受容、接触、痛み、温冷、疲労感、渇き）。認知モデルへ渡す用途。他者の内部状態は含まない |
+| `query.senses` | 本人の身体感覚（固有受容、接触、痛み、温冷、疲労感、渇き）。認知接続層へ毎刻み渡されるものと同じ。他者の内部状態は含まない |
+| `query.mind` | 接続中の認知の種類・版・決定論性・内部状態の要約（参照認知の現在の目標や状態名） |
 | `query.surface` | 変形後メッシュ（LOD 指定）、ソケット変換 |
 | `query.events` | 範囲内のイベント列 |
 | `query.versions` | 契約・解剖データ・各層・資産・後端の版 |
@@ -184,6 +199,17 @@ grasp.reach({ hand: "right", target: { shape: "cylinder", radius: 0.03, height: 
 grasp.grip({ hand: "right", type: "power", force: 0.4 });
 query.physio(); // { metabolicRateW, fatigue, coreTempC, ... }
 query.senses(); // 本人が感じる疲労感・接触・痛み
+```
+
+同じことを認知接続層に任せる場合。ホストは外界の知覚と高位目標を渡すだけで、歩く・つかむの命令は認知が出す。
+
+```ts
+mind.attach({ kind: "scripted", seed: 7, parameters: { caution: 0.5 } });
+mind.setGoal({ kind: "pickUp", target: "cup-1" });
+// 毎刻み、ホストは見えるものを渡す
+mind.perceive({ objects: [{ id: "cup-1", position: [2.0, 0.9, 0.1], shape: "cylinder" }] });
+runtime.step({ ticks: 600 });
+query.mind(); // { kind: "scripted", state: "reaching", goal: ... }
 ```
 
 ## 互換性と版

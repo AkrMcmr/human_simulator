@@ -38,9 +38,14 @@ flowchart TB
   subgraph val[検証]
     V[body-validation<br/>テスト階層・参照データ比較]
   end
+  subgraph mind[認知接続層]
+    MI[body-mind<br/>感覚 + 外界知覚 → 命令の契約。参照実装: スクリプト型 / HWL接続]
+  end
   subgraph bridge[橋渡し（任意）]
     B[body-bridge-hwl<br/>Human World Lab の Body / PhysicalEffect との写像]
   end
+  MI --> R
+  B --> MI
   C --> A --> M --> K --> D --> MO
   C --> P
   C --> G
@@ -81,6 +86,7 @@ flowchart TB
 | `body-io` | 正準形式の読み書き、glTF / VRM / USD / FBX / BVH への変換。信頼できない入力の検証と上限 | ファイル | コア型 | なし |
 | `body-adapters-*` | エンジンごとの読み込み・同期・描画。コアの状態を書き換えない | runtime の状態 | エンジン内オブジェクト | なし |
 | `body-validation` | テスト階層 T0〜T5 と参照データ比較（[VALIDATION](VALIDATION.md)） | runtime | 報告 | なし |
+| `body-mind` | 認知接続層。`Senses`（本人の身体感覚）と `HostPerception`（ホストが渡す外界の知覚）を受け取り、`BodyCommand` の列を返す契約。参照実装 `mind-scripted`（状態機械・行動木）と `mind-hwl`（親リポジトリの human 0.2.0 を `body-bridge-hwl` 経由で接続） | 感覚、外界知覚、前刻みのイベント | コマンド | 参照実装は決定論的（シード）。外部認知は任意 |
 | `body-bridge-hwl` | 親リポジトリの `Body` / `PhysicalEffect` との写像（任意・後段） | 両者の状態 | 写像結果 | なし |
 
 ## 依存方向
@@ -91,13 +97,15 @@ flowchart TB
 - motor は kinematics と dynamics の契約に依存するが、どちらの実装にも依存しない（L1/L2 切り替え）。
 - physio と damage は運動量・接触力を受け取り、性能係数と制限を返す。motor と kinematics はそれを受け取る。循環を避けるため、runtime が刻みごとに「前刻みの生理・損傷出力」を「今刻みの運動入力」へ渡す（親リポジトリの「全員が同じ更新前の世界を観察する」と同じ考え方）。
 - adapters と io はコアに依存し、コアは adapters と io に依存しない。
-- 既存の `packages/human`, `packages/world`, `packages/simulation` と body-* の間に import はない。橋渡しは `body-bridge-hwl` のみ。
+- `body-mind` は contracts と runtime の公開 API にだけ依存する。runtime は `Mind` 契約（型）だけを知り、参照実装には依存しない。
+- 既存の `packages/human`, `packages/world`, `packages/simulation` と body-* の間に import はない。橋渡しは `body-bridge-hwl` のみで、`mind-hwl` はそれを経由する。
 
 ## 一刻みの契約
 
 固定刻み `dt`（既定 1/120 s を工学的仮定として置く。動力学の安定性と 60Hz ゲームでの 2 サブステップを両立する値。B2 で見直す）。
 
-1. **入力の収集**: この刻みに届いたコマンドを集める。適用は刻みの境界でのみ行う。
+0. **認知の判断**（認知を接続している場合）: 前刻みの終わりに確定した `Senses` と、ホストがこの刻みに渡した `HostPerception` を認知へ渡し、返ってきたコマンドをこの刻みのコマンドキューへ入れる。認知は更新途中の状態を読めない。
+1. **入力の収集**: この刻みに届いたコマンド（ホストからの直接の命令と、認知が出した命令）を集める。適用は刻みの境界でのみ行う。
 2. **性能係数の確定**: 前刻みの physio・damage の出力（最大トルク倍率、可動域制限、痛み）を今刻みの入力として固定する。
 3. **運動制御**: motor が目標から関節目標（L1: 角度、L2: トルク）を計算する。
 4. **姿勢の更新**: L1 では kinematics が可動域内で角度を更新。L2 では dynamics が外力・接触・トルクで積分する。
@@ -146,6 +154,41 @@ type BodyEvent = {
 
 `BodyConfig.fidelity = { morph: 0..4, motion: 0..4, physio: 0..4, response: 0..4 }` を実行開始時に固定し、記録に残す。切り替えは「上位レベルの層を無効化し、下位レベルの既定値を使う」で実装する。無効化した層のキーは出力に残し、値を 0 または既定にする（親リポジトリの寄与無効の対照と同じ扱い。記録の形が変わらないので比較しやすい）。
 
+## 認知接続層（mind）
+
+身体コアは「何をするか」を決めない。それを決める層を `body-mind` として製品に含め、ゲーム・研究の両方から同じ契約で使えるようにする（依頼者の要望、2026-11-06）。
+
+```ts
+type Senses = {
+  tick: number;                       // 感覚が確定した刻み（現在の刻み − 1）
+  proprioception: JointReading[];     // 関節角・角速度・荷重感
+  contacts: ContactSense[];           // 接触部位・圧・滑り
+  pain: PainSense[];                  // 部位・強度
+  thermal: { core: number; skin: number; comfort: number };
+  fatigue: number; thirst: number; hunger: number; breathlessness: number;
+  balance: { stable: boolean; leanDirection: Vec3 };
+};
+
+type HostPerception = Record<string, unknown>; // ホストが定義する外界の知覚（見えるもの、聞こえるもの）。身体は中身を解釈しない
+
+interface Mind {
+  readonly id: string; readonly version: string; readonly deterministic: boolean;
+  decide(input: { senses: Senses; perception: HostPerception; events: BodyEvent[]; random: RandomSource }): BodyCommand[];
+  checkpoint?(): unknown;             // 決定論的な認知は内部状態を保存・復元できる
+  restore?(state: unknown): void;
+}
+```
+
+| 項目 | 方針 |
+| --- | --- |
+| 入力の境界 | 認知が受け取るのは本人の `Senses` と、ホストが明示的に渡した `HostPerception` だけ。他の身体の内部状態、世界の全状態、将来の情報は渡さない |
+| 出力 | 通常の `BodyCommand`（motor、grasp、face、pose など）。`damage.*` や `physio.setState` のような外部設定は認知からは拒否する（実験者用の操作であり、本人の意思で怪我を消せない） |
+| 参照実装 1: `mind-scripted` | 状態機械・行動木。語彙は「向かう、追う、避ける、拾う、置く、座る、休む、待つ、見る」程度から始め、ゲームの NPC と検証用の両方に使う。決定論的 |
+| 参照実装 2: `mind-hwl` | 親リポジトリの `decideHuman`（human 0.2.0）を `body-bridge-hwl` で接続する。`Observation` は `HostPerception` と `Senses` から組み立て、`ActionIntent` を `BodyCommand` へ写す。親リポジトリの既定モデルの挙動・版は変えない。後段（B4） |
+| 外部認知 | 利用者が同じ契約で差し込む。学習器や LLM を使ってもよいが、それは身体コアの外であり、実行時にコアがそれらを呼ぶことはない。非決定論的な認知の実行は `manifest.mind.deterministic = false` と記録し、再現は記録済みの命令列から行う |
+| 記録 | 認知が出した命令は、ホストの直接命令と同じく全部 `human-body/run` に残る。認知の種類・版・決定論性を manifest に書く |
+| 認知の妥当性 | body track の忠実度の軸に含めない。人間らしい判断かどうかは親リポジトリの研究ループで評価する |
+
 ## 既存モデルとの橋渡し
 
 親リポジトリの `Body = { hunger, fatigue, cold, health }` と `PhysicalEffect = { ambientCold, foodIntake, exertion, resting, collision }` は抽象単位である。橋渡し `body-bridge-hwl` は次を**明示的な写像表**として持つ。
@@ -177,6 +220,7 @@ packages/
   body-physio/         body-damage/         body-face/
   body-surface/        body-runtime/        body-io/
   body-validation/     body-bridge-hwl/
+  body-mind/           (参照実装 mind-scripted, mind-hwl を含む)
 adapters/
   three/  unity/  unreal/  godot/  blender/
 assets/body/
