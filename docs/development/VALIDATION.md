@@ -14,6 +14,7 @@
 | モデル登録簿・選択 | `npm run test:model`（`tests/model/selection.test.ts`）、`npm run typecheck`。UIの選択肢も登録簿から生成 |
 | 履歴介入の現象確認 | `npm run study:history -- --split development`。パイロットは`--split pilot`で尺度確認のみ。既定モデルの現象確認で候補比較ではない |
 | UI | `npm run typecheck`、`npm run build`、`node --test tests/*.test.mjs`。ブラウザQAは明示的に依頼された範囲 |
+| body track（`packages/body-*`、`cli/body.ts`） | `npm run test:body`、`npm run typecheck`。解剖データや回帰を変えたら`body-anatomy`の版を上げ、[research/body](../../research/body/README.md)の手順でT4を再実行する |
 
 `test:model`は`tests/model/*.test.ts`なのでpolicyのテストも含みます。`test:policy`はその絞り込みです。`npm test`はスターター由来のビルド＋画面側テストであり、モデル・評価器のテストすべてを実行するコマンドではありません。
 

@@ -1,6 +1,15 @@
 # 身体モデル（body track）設計文書
 
-状態: **設計のみ**（2026-10-10 起草、2026-11-06 に依頼者が B0 を確認）。実装、3D資産、実測データとの比較はまだありません。この文書群は、何を作るか・何を作らないか・何をもって「現実に近い」と言うかを、実装の前に固定するためのものです。
+状態: **B1 第1増分を実装済み**（2026-10-10 設計起草、2026-11-06 に依頼者が B0 を確認し B1 に着手）。`packages/body-*` に契約・解剖データ・体格生成・順運動学・実行基盤・glTF 書き出しがあり、形態 L1 の体節長は ANSUR II の未使用分割で実測比較済み（[FIDELITY](FIDELITY.md)）。体表は仮のカプセルで、本物の基準メッシュ・IK・three.js ビューアは未実装。この文書群は、何を作るか・何を作らないか・何をもって「現実に近い」と言うかを固定するためのものです。
+
+```bash
+npm run test:body                                                       # T0〜T2
+npm run body -- generate --sex female --stature 1.62 --mass 60 --out outputs/body/spec.json
+npm run body -- info --spec outputs/body/spec.json
+npm run body -- export --spec outputs/body/spec.json --out outputs/body/body.glb --pose a
+npm run body -- run --spec outputs/body/spec.json --steps 180 --out outputs/body/run.json
+npm run body -- replay --run outputs/body/run.json
+```
 
 ## 目的
 
@@ -19,6 +28,8 @@
 | [OPERATIONS](OPERATIONS.md) | 操作API（コマンド・問い合わせ・イベント）の意味論と領域別カタログ | 利用者（ゲーム・シミュレーション開発者）、実装者 |
 | [FORMATS](FORMATS.md) | 単位、座標系、ボーン命名、正準ファイル形式、glTF/VRM/USD/FBX/BVHへの書き出し | 利用者、実装者 |
 | [VALIDATION](VALIDATION.md) | 忠実度の測り方、テスト階層、参照データ、主張ラベルの規則 | 実装者、研究者、レビュワー |
+| [FIDELITY](FIDELITY.md) | 軸×レベルの現在のラベル（U/E/R/M）と、公開文書で言ってよいこと | 全員 |
+| [research/body](../../research/body/README.md) | 参照データの取得手順、protocol、結果、判断記録 | 研究者、レビュワー |
 | [ROADMAP](ROADMAP.md) | 段階B0〜B6と各段階の完了条件 | 全員 |
 | [PRODUCT](PRODUCT.md) | 公開形態、ライセンス方針、第三者データの利用可否、倫理・安全方針 | 企画、法務相談の前提 |
 | [ADR 0002](../decisions/0002-body-track.md) | この取り組みをモノレポ内の別トラックとして始める判断と代替案 | 全員 |

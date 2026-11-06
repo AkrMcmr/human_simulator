@@ -50,7 +50,11 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 
 2026-10-10に、操作可能で現実準拠の人間3D身体モデルをゲーム・シミュレーション向けの公開製品にする設計文書を[docs/body](body/README.md)へ起草しました（[ADR 0002](decisions/0002-body-track.md)）。認知モデルとは独立した契約を持つ別トラックで、既存のhuman/world/simulationとは相互にimportしません。実装・資産・実測比較は未着手で、既定モデルhuman 0.2.0と上記M1〜M4の優先順位は変わりません。
 
-2026-11-06に依頼者がB0（設計）を確認し、認知を処理する場所を設ける（`body-mind`）、性的コンテンツは目的ではないが制限しない、初版の配布資産は成人のみ、の3点を決めました。次の作業は[ROADMAP](body/ROADMAP.md)のB1（契約・骨格・形態L1・glTF書き出し）です。
+2026-11-06に依頼者がB0（設計）を確認し、認知を処理する場所を設ける（`body-mind`）、性的コンテンツは目的ではないが制限しない、初版の配布資産は成人のみ、の3点を決めました。
+
+同日、B1の第1増分を実装しました。`packages/body-contracts`〜`body-io`の7パッケージ、`npm run test:body`（T0〜T2、26件）、CLI `npm run body`（generate / info / export / run / replay）。形態L1の体節長は、事前登録した[protocol morph-v1](../research/body/protocols/morph-v1.json)でANSUR IIの未使用分割（男性2,042・女性996）に対し全60チェックを達成し、[判断記録](../research/body/decisions/0001-morph-v1.md)を残しました。書き出したGLBはKhronos glTF Validatorでエラー0です。現在のラベルは[FIDELITY](body/FIDELITY.md)にあります（体節長のみM、体表は仮のカプセルで主張なし）。
+
+次の作業は、B1の残り（再配布可能な基準メッシュの導入とFR-MORPH-02の周径条件、three.jsの最小ビューア）とB2（IK、リターゲット、運動学ベースの歩行、認知接続層の契約）です。既定モデルhuman 0.2.0と既存のテスト・CLIは変更していません。
 
 ## 参加するには
 

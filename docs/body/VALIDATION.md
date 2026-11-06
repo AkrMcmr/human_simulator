@@ -73,9 +73,10 @@ T4 を実行する前に、`research/body/protocols/<name>.json` に次を固定
 - 結果を見てから閾値・指標・分割を変えない。変えるなら新しい protocol として登録する。
 - 医療・安全上の判断に使えると示唆しない。
 
-## 実装前のチェックリスト
+## チェックリスト（2026-11-06 時点）
 
-- [ ] T0〜T3 のテストが CI で実行される
-- [ ] 各軸の初回 T4 protocol が登録されている（形態: ANSUR II、運動: 慣性表 + 歩行）
-- [ ] `FIDELITY.md` の表が存在し、全セルが U/E/R/M のいずれか
-- [ ] 公開文書の「既知の限界」節が `FIDELITY.md` と一致する
+- [x] T0〜T2 のテストがある（`npm run test:body`）。T3 は動力学（B3）から
+- [x] 形態の初回 T4 protocol（[morph-v1](../../research/body/protocols/morph-v1.json)）を登録し、開発・確認の両分割で実行した
+- [ ] 運動の T4 protocol（慣性表の照合、歩行）は B2〜B3 で登録
+- [x] [`FIDELITY.md`](FIDELITY.md) の表が存在し、全セルが U/E/R/M または未実装
+- [ ] 公開文書の「既知の限界」節（B5）

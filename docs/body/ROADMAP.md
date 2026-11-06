@@ -22,6 +22,8 @@
 - 表示: three.js の最小ビューア（CLI と同じランタイムを使う。親リポジトリの「CLI と UI は同じエンジン」の原則）。
 - 完了条件: FR-MORPH-01/02/06、FR-KIN-01/02、FR-REC-01/02/03、NFR-01/03/04/05 の受け入れ条件を満たす。形態 L1 の T4 結果が記録される。glTF が公開検証ツールを通る。
 
+進捗（2026-11-06、第1増分）: `body-contracts` / `body-anatomy` / `body-morph` / `body-kinematics` / `body-surface`（仮のカプセル） / `body-runtime` / `body-io` を実装し、`npm run test:body`（T0〜T2、26 件）が通る。形態 T4 [morph-v1](../../research/body/protocols/morph-v1.json) を事前登録して開発・確認の両分割で合格（[判断記録](../../research/body/decisions/0001-morph-v1.md)）。GLB は Khronos glTF Validator でエラー 0。**未了**: 本物の基準メッシュ（FR-MORPH-02 の周径条件）、three.js の最小ビューア、`human-body/motion` 形式。IK は B2。
+
 ## B2: 運動学 L1・運動制御 L1・リターゲット
 
 - `body-kinematics`: IK（到達可能性の判定を含む）、姿勢プリセット、BVH / glTF からのリターゲットと接地補正。

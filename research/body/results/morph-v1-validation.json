@@ -1,0 +1,940 @@
+{
+  "format": "human-body/morph-study",
+  "protocol": {
+    "id": "morph-v1",
+    "version": "1",
+    "registered": "2026-11-06",
+    "axis": "morphology",
+    "fidelityLevel": 1,
+    "status": "registered before validation results were seen; development split used only to fit the regression",
+    "hypothesis": "Per-sex linear regressions on stature and mass (body-anatomy predictSegmentLengths) predict derived segment lengths of unseen ANSUR II subjects with a mean absolute percentage error of at most 5% and a 90th-percentile absolute percentage error of at most 12% for every primary segment, and are no worse than fixed stature ratios for every segment where a published ratio exists.",
+    "falsification": "Any primary segment exceeding either threshold on the validation split, or any ratio-covered segment where the regression MAPE exceeds the fixed-ratio MAPE, fails the protocol. Thresholds are not changed after seeing validation results; a new protocol version is registered instead.",
+    "data": {
+      "name": "ANSUR II public working databases (2012)",
+      "publisher": "U.S. Army Natick Soldier RD&E Center; cleared for unlimited public release",
+      "originalDistribution": "https://www.openlab.psu.edu/ansur2/",
+      "obtainedFrom": "GitHub mirror senihberkay/US-Army-ANSUR-II, files 'ANSUR II MALE Public.csv' and 'ANSUR II FEMALE Public.csv' (fetched 2026-11-06; the original site was unreachable from the build environment)",
+      "sha256": {
+        "male": "0547aea0170e5293de519389981135e75803f02e6d40c77ace740decc0caac64",
+        "female": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a"
+      },
+      "rows": {
+        "male": 4082,
+        "female": 1986
+      },
+      "units": "lengths in mm; weightkg column is hectograms; converted to m and kg",
+      "limitation": "Military personnel aged roughly 17-58; not representative of a civilian population. Sexes analysed separately. Raw files are not committed."
+    },
+    "split": {
+      "rule": "subjectid even = development (regression fit), subjectid odd = validation (one-shot confirmation)",
+      "note": "After the validation split has been seen once it is a regression check, not fresh confirmation."
+    },
+    "predictors": [
+      "sex (separate models)",
+      "statureM",
+      "massKg"
+    ],
+    "model": "segmentLengthM = b0 + b1 * statureM + b2 * massKg (ordinary least squares, development split)",
+    "primarySegments": {
+      "upperArm": "acromionradialelength",
+      "forearm": "radialestylionlength",
+      "hand": "handlength",
+      "thigh": "trochanterionheight - lateralfemoralepicondyleheight",
+      "shank": "lateralfemoralepicondyleheight - lateralmalleolusheight",
+      "footLength": "footlength",
+      "trunk": "cervicaleheight - trochanterionheight",
+      "headNeck": "stature - cervicaleheight",
+      "shoulderBreadth": "biacromialbreadth",
+      "hipBreadth": "bicristalbreadth"
+    },
+    "reportedOnlySegments": [
+      "footHeight",
+      "sittingHeight",
+      "handBreadth",
+      "footBreadth",
+      "headLength",
+      "chestCircumference",
+      "waistCircumference",
+      "buttockCircumference",
+      "thighCircumference",
+      "calfCircumference",
+      "bicepsCircumference",
+      "forearmCircumference",
+      "neckCircumference",
+      "headCircumference",
+      "wristCircumference",
+      "ankleCircumference",
+      "handCircumference"
+    ],
+    "metrics": {
+      "mape": {
+        "definition": "mean over validation subjects of |predicted - measured| / measured",
+        "threshold": 0.05
+      },
+      "p90ape": {
+        "definition": "90th percentile over validation subjects of |predicted - measured| / measured",
+        "threshold": 0.12
+      },
+      "vsFixedRatio": {
+        "definition": "regression MAPE <= fixed-ratio MAPE on the same subjects",
+        "appliesTo": "every primary segment with a fixed ratio below"
+      }
+    },
+    "fixedRatioBaseline": {
+      "source": "Drillis & Contini (1966) segment length ratios of stature as commonly tabulated (e.g. Winter, Biomechanics and Motor Control of Human Movement). Basis R for the ratios; the correspondence to ANSUR landmarks is approximate (shoulder width in that table is wider than biacromial breadth; trunk is acromion-to-trochanter).",
+      "ratios": {
+        "upperArm": 0.186,
+        "forearm": 0.146,
+        "hand": 0.108,
+        "thigh": 0.245,
+        "shank": 0.246,
+        "footLength": 0.152,
+        "footHeight": 0.039,
+        "shoulderBreadth": 0.259,
+        "hipBreadth": 0.191,
+        "trunk": 0.288,
+        "headNeck": 0.182
+      }
+    },
+    "outputs": {
+      "development": "research/body/results/morph-v1-development.{json,md}",
+      "validation": "research/body/results/morph-v1-validation.{json,md}"
+    },
+    "claims": "Passing upgrades the morphology axis at level 1 to M for the derived segment lengths relative to this military sample only. It says nothing about surface shape, circumference placement, civilian populations, children, or other axes."
+  },
+  "split": "validation",
+  "anatomyVersion": "0.1.0",
+  "regressionHash": "10d50e6f51a31a17",
+  "regressionSource": {
+    "name": "ANSUR II public working databases (2012)",
+    "publisher": "U.S. Army Natick Soldier RD&E Center; cleared for unlimited public release",
+    "obtainedFrom": "GitHub mirror senihberkay/US-Army-ANSUR-II (files 'ANSUR II MALE Public.csv', 'ANSUR II FEMALE Public.csv')",
+    "originalDistribution": "https://www.openlab.psu.edu/ansur2/",
+    "units": "lengths mm, weightkg in hectograms (converted to m and kg here)",
+    "sha256": {
+      "male": "0547aea0170e5293de519389981135e75803f02e6d40c77ace740decc0caac64",
+      "female": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a"
+    },
+    "split": "development = even subjectid; validation = odd subjectid (protocol morph-v1)",
+    "basis": "R",
+    "limitation": "Military sample (age, fitness); not a civilian population. Analyse sexes separately."
+  },
+  "dataSha256": {
+    "male": "0547aea0170e5293de519389981135e75803f02e6d40c77ace740decc0caac64",
+    "female": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a"
+  },
+  "results": [
+    {
+      "segment": "upperArm",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.02504408944729109,
+      "p90ape": 0.05208014465281347,
+      "meanMeasuredM": 0.3354378060724783,
+      "fixedRatioMape": 0.032504609918944896,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "forearm",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.031465650916947155,
+      "p90ape": 0.06431134683527598,
+      "meanMeasuredM": 0.2680426052889322,
+      "fixedRatioMape": 0.04657344010765081,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "hand",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.029435963987179726,
+      "p90ape": 0.06135502914621638,
+      "meanMeasuredM": 0.19342948090107676,
+      "fixedRatioMape": 0.03296617211366995,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "thigh",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.0408058448859791,
+      "p90ape": 0.08291728405897644,
+      "meanMeasuredM": 0.40916356513222213,
+      "fixedRatioMape": 0.06340991134366716,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "shank",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.026277199750062645,
+      "p90ape": 0.05485065906133875,
+      "meanMeasuredM": 0.41908765915768775,
+      "fixedRatioMape": 0.03982768927866684,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "footLength",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.02643624509541373,
+      "p90ape": 0.05323680914753888,
+      "meanMeasuredM": 0.27134476003917646,
+      "fixedRatioMape": 0.02961110777293712,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "trunk",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.029950567368128043,
+      "p90ape": 0.062024184680557364,
+      "meanMeasuredM": 0.6169422135161613,
+      "fixedRatioMape": 0.17880868266666233,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "headNeck",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.03668670208262879,
+      "p90ape": 0.07726504283977415,
+      "meanMeasuredM": 0.23878991185112686,
+      "fixedRatioMape": 0.3416647164872679,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "shoulderBreadth",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.026995486952593864,
+      "p90ape": 0.05766486245970557,
+      "meanMeasuredM": 0.4158354554358469,
+      "fixedRatioMape": 0.09578172608685458,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "hipBreadth",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.03619311166091362,
+      "p90ape": 0.07576738377608178,
+      "meanMeasuredM": 0.27567482859941145,
+      "fixedRatioMape": 0.22064846491557094,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "footHeight",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.053677993547301996,
+      "p90ape": 0.10790749821260474,
+      "meanMeasuredM": 0.07278550440744307,
+      "fixedRatioMape": 0.07015101905704554,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "sittingHeight",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.019254905282025118,
+      "p90ape": 0.04047119110036448,
+      "meanMeasuredM": 0.9181351616062677,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "handBreadth",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.032214805474350953,
+      "p90ape": 0.06646779221675932,
+      "meanMeasuredM": 0.08820470127326153,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "footBreadth",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.032335749665128866,
+      "p90ape": 0.0672405451414212,
+      "meanMeasuredM": 0.10178109696376117,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "headLength",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.02516583403581819,
+      "p90ape": 0.05245324812620388,
+      "meanMeasuredM": 0.19933055827619978,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "chestCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.02409690703016311,
+      "p90ape": 0.04982275770984427,
+      "meanMeasuredM": 1.059887855044078,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "waistCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.03816180538472097,
+      "p90ape": 0.07991470243701736,
+      "meanMeasuredM": 0.9422644466209595,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "buttockCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.019805414248229795,
+      "p90ape": 0.040845595919508655,
+      "meanMeasuredM": 1.0195612144955934,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "thighCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.027281431020151403,
+      "p90ape": 0.056723556358224965,
+      "meanMeasuredM": 0.6248432908912837,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "calfCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.0322696951178583,
+      "p90ape": 0.06852839499761673,
+      "meanMeasuredM": 0.3922012732615083,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "bicepsCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.040137350156829336,
+      "p90ape": 0.08285863379065274,
+      "meanMeasuredM": 0.3582967678746339,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "forearmCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.032845863719801846,
+      "p90ape": 0.06685145510728722,
+      "meanMeasuredM": 0.3102286973555335,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "neckCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.029075267100487516,
+      "p90ape": 0.05984247525499566,
+      "meanMeasuredM": 0.3979378060724773,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "headCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.01917382073769449,
+      "p90ape": 0.038653312802976465,
+      "meanMeasuredM": 0.5738746327130264,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "wristCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.027407621657790007,
+      "p90ape": 0.05704409103446077,
+      "meanMeasuredM": 0.1758619000979434,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "ankleCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.0350527332686836,
+      "p90ape": 0.07459604346583024,
+      "meanMeasuredM": 0.22924779627815922,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "handCircumference",
+      "sex": "male",
+      "n": 2042,
+      "mape": 0.029916506765040297,
+      "p90ape": 0.06303375707704521,
+      "meanMeasuredM": 0.21221351616062717,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "upperArm",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.02694792056281289,
+      "p90ape": 0.056291643285022674,
+      "meanMeasuredM": 0.31074397590361474,
+      "fixedRatioMape": 0.03311837028024911,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "forearm",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.036067366143219474,
+      "p90ape": 0.07369150021749331,
+      "meanMeasuredM": 0.24126706827309297,
+      "fixedRatioMape": 0.0371080045917379,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "hand",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.032808776134965294,
+      "p90ape": 0.06919280708492985,
+      "meanMeasuredM": 0.18088855421686767,
+      "fixedRatioMape": 0.038512800414210194,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "thigh",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03681766797834327,
+      "p90ape": 0.07736510216881912,
+      "meanMeasuredM": 0.3791787148594378,
+      "fixedRatioMape": 0.060524479786296985,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "shank",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03312381022535009,
+      "p90ape": 0.07144735893205847,
+      "meanMeasuredM": 0.40245682730923615,
+      "fixedRatioMape": 0.03378208456217611,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "footLength",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.026895015739118906,
+      "p90ape": 0.05585321149776512,
+      "meanMeasuredM": 0.24633534136546203,
+      "fixedRatioMape": 0.028213905215797818,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "trunk",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.030645124605496534,
+      "p90ape": 0.06418359524633446,
+      "meanMeasuredM": 0.5511234939759034,
+      "fixedRatioMape": 0.14755726478645215,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "headNeck",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03515689824038476,
+      "p90ape": 0.07248281731852173,
+      "meanMeasuredM": 0.23320481927710876,
+      "fixedRatioMape": 0.2733714063981769,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "shoulderBreadth",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03188155499567447,
+      "p90ape": 0.06723531383535403,
+      "meanMeasuredM": 0.3656686746987954,
+      "fixedRatioMape": 0.1554719810876609,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "hipBreadth",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.047881576141994946,
+      "p90ape": 0.09740007369879922,
+      "meanMeasuredM": 0.27350502008032074,
+      "fixedRatioMape": 0.14614712459705276,
+      "primary": true,
+      "checks": {
+        "mape": "pass",
+        "p90ape": "pass",
+        "vsFixedRatio": "pass"
+      }
+    },
+    {
+      "segment": "footHeight",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.059784673274527356,
+      "p90ape": 0.12226077016582748,
+      "meanMeasuredM": 0.06305220883534136,
+      "fixedRatioMape": 0.06025789700950894,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "sittingHeight",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.019423845286524806,
+      "p90ape": 0.03956289337377002,
+      "meanMeasuredM": 0.8573594377510043,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "handBreadth",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.032515795848680654,
+      "p90ape": 0.06591494502758313,
+      "meanMeasuredM": 0.0781767068273092,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "footBreadth",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03458523648883121,
+      "p90ape": 0.07163881597436197,
+      "meanMeasuredM": 0.09273895582329293,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "headLength",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.028564531875379648,
+      "p90ape": 0.05855282543956397,
+      "meanMeasuredM": 0.18983333333333316,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "chestCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.036351228038584905,
+      "p90ape": 0.07528061795954179,
+      "meanMeasuredM": 0.9463704819277106,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "waistCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.04457420648960089,
+      "p90ape": 0.09001116769019937,
+      "meanMeasuredM": 0.8603835341365464,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "buttockCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.02228844876168013,
+      "p90ape": 0.045761094545135224,
+      "meanMeasuredM": 1.0219267068273092,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "thighCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.029105994165856207,
+      "p90ape": 0.0604230171687216,
+      "meanMeasuredM": 0.6165190763052207,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "calfCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03592761345223653,
+      "p90ape": 0.07739068390201703,
+      "meanMeasuredM": 0.37291967871485887,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "bicepsCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.036612115209862635,
+      "p90ape": 0.07138115931477428,
+      "meanMeasuredM": 0.30488152610441804,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "forearmCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03116453117811612,
+      "p90ape": 0.06679016860969507,
+      "meanMeasuredM": 0.2639688755020078,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "neckCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.029111696271867552,
+      "p90ape": 0.06123522024399634,
+      "meanMeasuredM": 0.3290993975903616,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "headCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.02503804153507497,
+      "p90ape": 0.052635417073538374,
+      "meanMeasuredM": 0.560770080321285,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "wristCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.026826701728254822,
+      "p90ape": 0.05641862922673799,
+      "meanMeasuredM": 0.15491566265060258,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "ankleCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.04316909536895442,
+      "p90ape": 0.08664347144468643,
+      "meanMeasuredM": 0.2162198795180726,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    },
+    {
+      "segment": "handCircumference",
+      "sex": "female",
+      "n": 996,
+      "mape": 0.03008221251766779,
+      "p90ape": 0.060375265270344806,
+      "meanMeasuredM": 0.18668072289156643,
+      "fixedRatioMape": null,
+      "primary": false,
+      "checks": {
+        "mape": "n/a",
+        "p90ape": "n/a",
+        "vsFixedRatio": "n/a"
+      }
+    }
+  ],
+  "status": "pass",
+  "failures": []
+}
