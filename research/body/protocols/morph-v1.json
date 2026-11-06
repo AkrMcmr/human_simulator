@@ -1,0 +1,56 @@
+{
+  "id": "morph-v1",
+  "version": "1",
+  "registered": "2026-11-06",
+  "axis": "morphology",
+  "fidelityLevel": 1,
+  "status": "registered before validation results were seen; development split used only to fit the regression",
+  "hypothesis": "Per-sex linear regressions on stature and mass (body-anatomy predictSegmentLengths) predict derived segment lengths of unseen ANSUR II subjects with a mean absolute percentage error of at most 5% and a 90th-percentile absolute percentage error of at most 12% for every primary segment, and are no worse than fixed stature ratios for every segment where a published ratio exists.",
+  "falsification": "Any primary segment exceeding either threshold on the validation split, or any ratio-covered segment where the regression MAPE exceeds the fixed-ratio MAPE, fails the protocol. Thresholds are not changed after seeing validation results; a new protocol version is registered instead.",
+  "data": {
+    "name": "ANSUR II public working databases (2012)",
+    "publisher": "U.S. Army Natick Soldier RD&E Center; cleared for unlimited public release",
+    "originalDistribution": "https://www.openlab.psu.edu/ansur2/",
+    "obtainedFrom": "GitHub mirror senihberkay/US-Army-ANSUR-II, files 'ANSUR II MALE Public.csv' and 'ANSUR II FEMALE Public.csv' (fetched 2026-11-06; the original site was unreachable from the build environment)",
+    "sha256": {
+      "male": "0547aea0170e5293de519389981135e75803f02e6d40c77ace740decc0caac64",
+      "female": "ed7e800aa97a4d42f8286b988be2fe1883a2e789588169db959864b707d1757a"
+    },
+    "rows": { "male": 4082, "female": 1986 },
+    "units": "lengths in mm; weightkg column is hectograms; converted to m and kg",
+    "limitation": "Military personnel aged roughly 17-58; not representative of a civilian population. Sexes analysed separately. Raw files are not committed."
+  },
+  "split": {
+    "rule": "subjectid even = development (regression fit), subjectid odd = validation (one-shot confirmation)",
+    "note": "After the validation split has been seen once it is a regression check, not fresh confirmation."
+  },
+  "predictors": ["sex (separate models)", "statureM", "massKg"],
+  "model": "segmentLengthM = b0 + b1 * statureM + b2 * massKg (ordinary least squares, development split)",
+  "primarySegments": {
+    "upperArm": "acromionradialelength",
+    "forearm": "radialestylionlength",
+    "hand": "handlength",
+    "thigh": "trochanterionheight - lateralfemoralepicondyleheight",
+    "shank": "lateralfemoralepicondyleheight - lateralmalleolusheight",
+    "footLength": "footlength",
+    "trunk": "cervicaleheight - trochanterionheight",
+    "headNeck": "stature - cervicaleheight",
+    "shoulderBreadth": "biacromialbreadth",
+    "hipBreadth": "bicristalbreadth"
+  },
+  "reportedOnlySegments": ["footHeight", "sittingHeight", "handBreadth", "footBreadth", "headLength", "chestCircumference", "waistCircumference", "buttockCircumference", "thighCircumference", "calfCircumference", "bicepsCircumference", "forearmCircumference", "neckCircumference", "headCircumference", "wristCircumference", "ankleCircumference", "handCircumference"],
+  "metrics": {
+    "mape": { "definition": "mean over validation subjects of |predicted - measured| / measured", "threshold": 0.05 },
+    "p90ape": { "definition": "90th percentile over validation subjects of |predicted - measured| / measured", "threshold": 0.12 },
+    "vsFixedRatio": { "definition": "regression MAPE <= fixed-ratio MAPE on the same subjects", "appliesTo": "every primary segment with a fixed ratio below" }
+  },
+  "fixedRatioBaseline": {
+    "source": "Drillis & Contini (1966) segment length ratios of stature as commonly tabulated (e.g. Winter, Biomechanics and Motor Control of Human Movement). Basis R for the ratios; the correspondence to ANSUR landmarks is approximate (shoulder width in that table is wider than biacromial breadth; trunk is acromion-to-trochanter).",
+    "ratios": { "upperArm": 0.186, "forearm": 0.146, "hand": 0.108, "thigh": 0.245, "shank": 0.246, "footLength": 0.152, "footHeight": 0.039, "shoulderBreadth": 0.259, "hipBreadth": 0.191, "trunk": 0.288, "headNeck": 0.182 }
+  },
+  "outputs": {
+    "development": "research/body/results/morph-v1-development.{json,md}",
+    "validation": "research/body/results/morph-v1-validation.{json,md}"
+  },
+  "claims": "Passing upgrades the morphology axis at level 1 to M for the derived segment lengths relative to this military sample only. It says nothing about surface shape, circumference placement, civilian populations, children, or other axes."
+}
