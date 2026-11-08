@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Body viewer</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; font-size: 13px; }
+    body { margin: 0; display: grid; grid-template-columns: 300px 1fr; height: 100vh; }
+    aside { padding: 12px; overflow: auto; border-right: 1px solid #8884; display: flex; flex-direction: column; gap: 8px; }
+    label { display: grid; grid-template-columns: 1fr 72px; gap: 6px; align-items: center; }
+    label span.value { text-align: right; font-variant-numeric: tabular-nums; }
+    input[type=range] { grid-column: 1 / span 2; }
+    fieldset { border: 1px solid #8884; padding: 6px 8px; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    #log { font-family: ui-monospace, monospace; font-size: 11px; white-space: pre-wrap; max-height: 160px; overflow: auto; }
+    canvas { display: block; width: 100%; height: 100%; }
+    h1 { font-size: 14px; margin: 0; }
+  </style>
+</head>
+<body>
+  <aside>
+    <h1>Body viewer（B1）</h1>
+    <div id="versions"></div>
+    <fieldset>
+      <legend>身体仕様</legend>
+      <label>性別 <select id="sex"><option value="female">female</option><option value="male" selected>male</option></select></label>
+      <label>身長 (m) <span class="value" id="stature-v"></span><input id="stature" type="range" min="1.3" max="2.1" step="0.01" value="1.75" /></label>
+      <label>体重 (kg) <span class="value" id="mass-v"></span><input id="mass" type="range" min="35" max="160" step="1" value="80" /></label>
+      <label>脚長 z <span class="value" id="legLength-v"></span><input id="legLength" type="range" min="-3" max="3" step="0.1" value="0" /></label>
+      <label>肩幅 z <span class="value" id="shoulderBreadth-v"></span><input id="shoulderBreadth" type="range" min="-3" max="3" step="0.1" value="0" /></label>
+      <label>体表 <select id="surface"><option value="mesh" selected>mesh</option><option value="capsule">capsule</option></select></label>
+      <button id="regenerate">この仕様で生成（morph.create）</button>
+    </fieldset>
+    <fieldset id="joints"><legend>関節（pose.setJoint、可動域で丸め）</legend></fieldset>
+    <fieldset><legend>イベント</legend><div id="log"></div></fieldset>
+  </aside>
+  <canvas id="view"></canvas>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

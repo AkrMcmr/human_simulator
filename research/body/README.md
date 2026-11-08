@@ -27,6 +27,14 @@ npm run study:body-morph -- --male <male.csv> --female <female.csv> --split vali
 
 protocol は [protocols/morph-v1.json](protocols/morph-v1.json)（閾値・対象体節・固定比率の対照を結果を見る前に固定）。結果は [results/](results/) に JSON と Markdown で保存する。
 
+## 基準メッシュ（MakeHuman、CC0）
+
+```bash
+node --experimental-strip-types research/body/scripts/derive-base-mesh.ts <base.obj>
+```
+
+MakeHuman リポジトリの `makehuman/data/3dobjs/base.obj` から皮膚と関節ヘルパー重心を取り出し、`assets/body/base-mesh/makehuman-base.json` を書き出す。出典・ライセンス・ハッシュは [assets/body/base-mesh/README.md](../../assets/body/base-mesh/README.md)。
+
 ## 他の参照データ（未着手）
 
 - 体節慣性: de Leva (1996)、Dumas (2007) の表との比較（運動 T4）。

@@ -38,8 +38,9 @@ function geometry(L: SegmentLengths, sex: Sex): Record<string, Geometry> {
   const g: Record<string, Geometry> = {};
   const hipHeight = L.footHeight + L.shank + L.thigh;
   const hipJointSpacing = L.hipBreadth * 0.6;
-  const trunkSplit = { spine: 0.2, chest: 0.25, upperChest: 0.25, neck: 0.3 };
-  const neckLength = L.headNeck * 0.3, headLength = L.headNeck * 0.7;
+  // Trunk and neck splits follow the base mesh's joint fractions so segment-wise mesh transfer stretches uniformly (basis E).
+  const trunkSplit = { spine: 0.13, chest: 0.126, upperChest: 0.172, neck: 0.572 };
+  const neckLength = L.headNeck * 0.42, headLength = L.headNeck * 0.58;
   const torsoRadius = r(L.waistCircumference) * 0.5;
   g.hips = { offset: vec3(0, hipHeight, 0), tip: vec3(0, L.trunk * trunkSplit.spine, 0), radius: r(L.buttockCircumference) * 0.5 };
   g.spine = { offset: g.hips.tip, tip: vec3(0, L.trunk * trunkSplit.chest, 0), radius: torsoRadius };
@@ -114,4 +115,11 @@ export function skeletonSummary(skeleton: Skeleton) {
   let mass = 0, comY = 0;
   for (const b of skeleton.bones) if (b.segment) { mass += b.segment.mass; comY += b.segment.mass * (world.get(b.id)!.y + b.segment.com.y); }
   return { generatedStatureM: top, totalMassKg: mass, comHeightM: comY / mass, comHeightFraction: comY / mass / top, restPositions: world };
+}
+
+/** Girth targets (metres) for the surface fit: the regression circumferences plus foot breadth. */
+export function girthTargets(input: BodySpec): Record<string, number> {
+  const L = resolveLengths(validateSpec(input));
+  const keys = ["chestCircumference", "waistCircumference", "buttockCircumference", "thighCircumference", "calfCircumference", "bicepsCircumference", "forearmCircumference", "wristCircumference", "ankleCircumference", "neckCircumference", "headCircumference", "handCircumference", "footBreadth"];
+  return Object.fromEntries(keys.map(k => [k, L[k]]));
 }

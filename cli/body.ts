@@ -2,15 +2,15 @@
  * Body track CLI (B1). Subcommands:
  *   generate --sex male|female --stature <m> --mass <kg> [--age 30] [--seed 1] [--leg-length z] ... --out spec.json
  *   info     --spec spec.json
- *   export   --spec spec.json --out body.glb [--pose rest|a|t]
+ *   export   --spec spec.json --out body.glb [--pose bind|rest|a|t] [--surface mesh|capsule]
  *   run      --spec spec.json --steps <n> --out run.json      (demo: A-pose at tick 1, checkpoint every 60 ticks)
  *   replay   --run run.json
  */
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import type { BodySpec, ProportionKey } from "../packages/body-contracts/src/index.ts";
-import { buildSkeleton, resolveLengths, skeletonSummary } from "../packages/body-morph/src/index.ts";
-import { buildSurface } from "../packages/body-surface/src/index.ts";
+import { buildSkeleton, resolveLengths, skeletonSummary, girthTargets } from "../packages/body-morph/src/index.ts";
+import { buildSurface, type SurfaceKind } from "../packages/body-surface/src/index.ts";
 import { namedPose } from "../packages/body-kinematics/src/index.ts";
 import { BodyRuntime, VERSIONS } from "../packages/body-runtime/src/index.ts";
 import { exportGlb, readRunFile, readSpecFile, writeRunFile, writeSpecFile } from "../packages/body-io/src/index.ts";
@@ -42,9 +42,14 @@ switch (command) {
     break;
   }
   case "export": {
-    const spec = loadSpec(); const sk = buildSkeleton(spec); const pose = (options.get("--pose") ?? "a") as "rest" | "a" | "t";
-    if (!["rest", "a", "t"].includes(pose)) throw new Error("--pose must be rest, a or t");
-    write(need("--out"), exportGlb(sk, buildSurface(sk), namedPose(sk, pose), { pose, versions: VERSIONS }));
+    const spec = loadSpec(); const sk = buildSkeleton(spec); const pose = options.get("--pose") ?? "bind";
+    if (!["bind", "rest", "a", "t"].includes(pose)) throw new Error("--pose must be bind, rest, a or t");
+    const kind = (options.get("--surface") ?? "mesh") as SurfaceKind;
+    if (kind !== "mesh" && kind !== "capsule") throw new Error("--surface must be mesh or capsule");
+    const surface = buildSurface(sk, { kind, girths: girthTargets(spec) });
+    const posed = pose === "bind" ? surface.bindPose : namedPose(sk, pose as "rest" | "a" | "t");
+    if (surface.girths) console.log(JSON.stringify(Object.fromEntries(Object.entries(surface.girths).map(([k, v]) => [k, { measured: +v.measured.toFixed(4), target: +v.target.toFixed(4), error: +((v.measured / v.target - 1) * 100).toFixed(2) + "%" }])), null, 1));
+    write(need("--out"), exportGlb(sk, surface, posed, { pose, versions: VERSIONS }));
     break;
   }
   case "run": {

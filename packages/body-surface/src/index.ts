@@ -1,19 +1,37 @@
 /**
- * Provisional surface: one capsule per bone, rigidly skinned to that bone. This is a placeholder
- * so that the pipeline (skeleton -> skinned glTF) can be validated end to end. It is NOT a
- * body mesh and makes no claim about body shape (FR-MORPH-02 is only partly met; see
- * docs/body/FIDELITY.md). A redistributable base mesh replaces it in a later increment.
+ * Surface generation. "mesh" fits the redistributable base mesh (MakeHuman, CC0) to the
+ * skeleton with girth-matched radial scaling (see ./fit.ts). "capsule" is the earlier
+ * placeholder (one capsule per bone) kept for pipeline tests and as a fallback.
+ * Neither makes a validated claim about surface shape yet (docs/body/FIDELITY.md).
  */
-import type { Skeleton, Vec3 } from "../../body-contracts/src/index.ts";
+import type { Pose, Skeleton, Vec3 } from "../../body-contracts/src/index.ts";
 import { add3, length3, scale3, vec3 } from "../../body-contracts/src/index.ts";
+import { buildFittedSurface, type GirthTargets, type FittedMesh } from "./fit.ts";
 
-export const SURFACE_VERSION = "0.1.0-capsule-placeholder";
+export const SURFACE_VERSION = "0.2.0";
+export type SurfaceKind = "mesh" | "capsule";
 export type SurfaceMesh = {
+  kind: SurfaceKind;
   positions: Float32Array; normals: Float32Array; joints: Uint16Array; weights: Float32Array; indices: Uint32Array;
   /** Bone ids in joint-index order (matches skeleton.bones order). */
   boneOrder: string[];
   vertexCount: number; triangleCount: number;
+  /** Pose in which the mesh was bound; undefined means the rest pose. */
+  bindPose?: Pose;
+  /** Girths measured on the generated mesh next to their targets (mesh kind only). */
+  girths?: FittedMesh["girths"];
 };
+export { buildFittedSurface, baseMeshBindPose, inverseBindMatrices, sliceCircumference, LANDMARKS, BASE_MESH, type GirthTargets } from "./fit.ts";
+
+export function buildSurface(skeleton: Skeleton, options: { kind?: SurfaceKind; girths?: GirthTargets } = {}): SurfaceMesh {
+  const kind = options.kind ?? "mesh";
+  if (kind === "mesh") {
+    if (!options.girths) throw new Error("The mesh surface needs girth targets (body-morph girthTargets)");
+    const fitted = buildFittedSurface(skeleton, options.girths);
+    return { kind, ...fitted };
+  }
+  return { kind, ...buildCapsuleSurface(skeleton) };
+}
 
 const SEGMENTS = 8, CAP_RINGS = 2;
 function basis(axis: Vec3): [Vec3, Vec3] {
@@ -23,8 +41,7 @@ function basis(axis: Vec3): [Vec3, Vec3] {
   const w = vec3(axis.y * vn.z - axis.z * vn.y, axis.z * vn.x - axis.x * vn.z, axis.x * vn.y - axis.y * vn.x);
   return [vn, w];
 }
-
-export function buildSurface(skeleton: Skeleton): SurfaceMesh {
+export function buildCapsuleSurface(skeleton: Skeleton): Omit<SurfaceMesh, "kind"> {
   const restWorld = new Map<string, Vec3>();
   for (const b of skeleton.bones) restWorld.set(b.id, add3(b.parent ? restWorld.get(b.parent)! : vec3(), b.offset));
   const positions: number[] = [], normals: number[] = [], joints: number[] = [], weights: number[] = [], indices: number[] = [];
@@ -37,7 +54,6 @@ export function buildSurface(skeleton: Skeleton): SurfaceMesh {
     const r = bone.radius;
     const start = positions.length / 3;
     const rings: { center: Vec3; radius: number; normalAxial: number }[] = [];
-    // bottom cap (pole at -r), cylinder, top cap (pole at L + r)
     for (let i = CAP_RINGS; i >= 1; i--) { const a = (i / CAP_RINGS) * (Math.PI / 2); rings.push({ center: add3(base, scale3(axis, -r * Math.sin(a))), radius: r * Math.cos(a), normalAxial: -Math.sin(a) }); }
     rings.push({ center: base, radius: r, normalAxial: 0 });
     rings.push({ center: add3(base, scale3(axis, L)), radius: r, normalAxial: 0 });

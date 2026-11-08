@@ -5,9 +5,9 @@
  */
 import { type BodyCommand, type BodyConfig, type BodyEvent, type BodyQuery, type BodySpec, type JointAngles, type Pose, type RejectionReason, type Skeleton, type ViolationPolicy, BODY_CONTRACT_VERSION, DEFAULT_CONFIG, RNG_VERSION, keyedRandom, stableHash, validateSpec } from "../../body-contracts/src/index.ts";
 import { ANATOMY_VERSION, ROM_VERSION, SEGMENT_VERSION, regression } from "../../body-anatomy/src/index.ts";
-import { MORPH_VERSION, buildSkeleton } from "../../body-morph/src/index.ts";
+import { MORPH_VERSION, buildSkeleton, girthTargets } from "../../body-morph/src/index.ts";
 import { KINEMATICS_VERSION, applyLimits, forwardKinematics, restPose, tipPosition } from "../../body-kinematics/src/index.ts";
-import { SURFACE_VERSION, buildSurface } from "../../body-surface/src/index.ts";
+import { SURFACE_VERSION, buildSurface, type SurfaceKind } from "../../body-surface/src/index.ts";
 
 export const RUNTIME_VERSION = "0.1.0";
 export const RUN_FORMAT = "human-body/run";
@@ -155,7 +155,7 @@ export class BodyRuntime {
         return { tick: this.state.tick, joints: this.state.pose.joints, world: Object.fromEntries(this.state.skeleton.bones.map(b => [b.id, { ...world.get(b.id)!, tip: tipPosition(b, world.get(b.id)!) }])) };
       }
       case "query.rom": return this.state.skeleton ? Object.fromEntries(this.state.skeleton.bones.map(b => [b.id, b.joint.dofs])) : null;
-      case "query.surface": return this.state.skeleton ? buildSurface(this.state.skeleton) : null;
+      case "query.surface": return this.state.skeleton ? buildSurface(this.state.skeleton, { kind: (q.params?.kind as SurfaceKind | undefined) ?? "mesh", girths: girthTargets(this.state.spec!) }) : null;
       case "query.events": return this.events.slice();
       default: throw new Error("Unknown query " + name);
     }

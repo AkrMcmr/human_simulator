@@ -1,14 +1,17 @@
 # 身体モデル（body track）設計文書
 
-状態: **B1 第1増分を実装済み**（2026-10-10 設計起草、2026-11-06 に依頼者が B0 を確認し B1 に着手）。`packages/body-*` に契約・解剖データ・体格生成・順運動学・実行基盤・glTF 書き出しがあり、形態 L1 の体節長は ANSUR II の未使用分割で実測比較済み（[FIDELITY](FIDELITY.md)）。体表は仮のカプセルで、本物の基準メッシュ・IK・three.js ビューアは未実装。この文書群は、何を作るか・何を作らないか・何をもって「現実に近い」と言うかを固定するためのものです。
+状態: **B1 をほぼ完了**（2026-10-10 設計起草、2026-11-06 に依頼者が B0 を確認し B1 に着手、2026-11-08 に第2増分）。`packages/body-*` に契約・解剖データ・体格生成・順運動学・体表（CC0 基準メッシュの適合）・実行基盤・glTF 書き出しがあり、形態 L1 の体節長は ANSUR II の未使用分割で実測比較済み、生成した体表の周径は回帰値に一致する（[FIDELITY](FIDELITY.md)）。three.js の最小ビューアは `npm run viewer:dev`。IK とリターゲットは B2。この文書群は、何を作るか・何を作らないか・何をもって「現実に近い」と言うかを固定するためのものです。
 
 ```bash
 npm run test:body                                                       # T0〜T2
 npm run body -- generate --sex female --stature 1.62 --mass 60 --out outputs/body/spec.json
 npm run body -- info --spec outputs/body/spec.json
-npm run body -- export --spec outputs/body/spec.json --out outputs/body/body.glb --pose a
+npm run body -- export --spec outputs/body/spec.json --out outputs/body/body.glb        # 基準メッシュ、バインド姿勢
+npm run body -- export --spec outputs/body/spec.json --out outputs/body/caps.glb --surface capsule --pose a
 npm run body -- run --spec outputs/body/spec.json --steps 180 --out outputs/body/run.json
 npm run body -- replay --run outputs/body/run.json
+npm run viewer:dev                                                      # ブラウザのビューア（同じ BodyRuntime を使用）
+npm run viewer:build                                                    # dist/body-viewer に静的ビルド
 ```
 
 ## 目的

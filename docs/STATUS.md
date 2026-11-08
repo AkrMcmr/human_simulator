@@ -54,7 +54,9 @@ human **0.2.0-experimental.1**（学習した距離変化から危険度の減�
 
 同日、B1の第1増分を実装しました。`packages/body-contracts`〜`body-io`の7パッケージ、`npm run test:body`（T0〜T2、26件）、CLI `npm run body`（generate / info / export / run / replay）。形態L1の体節長は、事前登録した[protocol morph-v1](../research/body/protocols/morph-v1.json)でANSUR IIの未使用分割（男性2,042・女性996）に対し全60チェックを達成し、[判断記録](../research/body/decisions/0001-morph-v1.md)を残しました。書き出したGLBはKhronos glTF Validatorでエラー0です。現在のラベルは[FIDELITY](body/FIDELITY.md)にあります（体節長のみM、体表は仮のカプセルで主張なし）。
 
-次の作業は、B1の残り（再配布可能な基準メッシュの導入とFR-MORPH-02の周径条件、three.jsの最小ビューア）とB2（IK、リターゲット、運動学ベースの歩行、認知接続層の契約）です。既定モデルhuman 0.2.0と既存のテスト・CLIは変更していません。
+2026-11-08に第2増分として、MakeHumanのCC0基準メッシュ（`assets/body/base-mesh`、出典とハッシュ付き）を骨格に適合する`body-surface/fit.ts`と、同じ`BodyRuntime`をブラウザで動かすthree.jsビューア（`npm run viewer:dev`）を追加しました。生成した体表の12周径は回帰の目標値の±3%以内で、胸・腰・大腿は4体型のテストで確認しています（体表の形そのものの実測比較はまだありません）。`npm run test:body`は30件、GLBはKhronos Validatorでエラー0です。
+
+次の作業はB2（IK、リターゲット、運動学ベースの歩行、認知接続層の契約と参照実装）です。B1の残りは自己交差の検査と`human-body/motion`形式です。既定モデルhuman 0.2.0と既存のテスト・CLIは変更していません。
 
 ## 参加するには
 

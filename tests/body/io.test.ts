@@ -30,7 +30,7 @@ test("T1 / FR-REC-01: a run file is validated, bounded and replayed", () => {
   assert.throws(() => readRunFile(bad), /finalTick/);
 });
 test("FR-SURF-01 (placeholder) / glTF: the GLB is well formed, every vertex is fully weighted, and the skin covers all 55 bones", () => {
-  const sk = buildSkeleton(spec), surface = buildSurface(sk);
+  const sk = buildSkeleton(spec), surface = buildSurface(sk, { kind: "capsule" });
   for (let i = 0; i < surface.vertexCount; i++) { let s = 0; for (let k = 0; k < 4; k++) s += surface.weights[i * 4 + k]; assert.ok(Math.abs(s - 1) < 1e-6); assert.ok(surface.joints[i * 4] < sk.bones.length); }
   for (let i = 0; i < surface.indices.length; i++) assert.ok(surface.indices[i] < surface.vertexCount);
   const glb = exportGlb(sk, surface, namedPose(sk, "a"), { test: true });

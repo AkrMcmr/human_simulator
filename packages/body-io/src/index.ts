@@ -2,10 +2,10 @@
  * Canonical file formats (validated, size-limited) and glTF 2.0 binary export.
  * Untrusted input is schema-checked and bounded before anything is built from it (NFR-06).
  */
-import { type BodySpec, type Pose, type Skeleton, type Vec3, validateSpec } from "../../body-contracts/src/index.ts";
+import { type BodySpec, type Pose, type Skeleton, validateSpec } from "../../body-contracts/src/index.ts";
 import { MORPH_VERSION } from "../../body-morph/src/index.ts";
-import { forwardKinematics, jointRotation } from "../../body-kinematics/src/index.ts";
-import { type SurfaceMesh } from "../../body-surface/src/index.ts";
+import { jointRotation } from "../../body-kinematics/src/index.ts";
+import { type SurfaceMesh, inverseBindMatrices } from "../../body-surface/src/index.ts";
 import { BodyRuntime, RUN_FORMAT, RUNTIME_VERSION, type RunRecord } from "../../body-runtime/src/index.ts";
 
 export const IO_VERSION = "0.1.0";
@@ -76,11 +76,8 @@ type Accessor = { bufferView: number; componentType: number; count: number; type
 export function exportGlb(skeleton: Skeleton, surface: SurfaceMesh, pose?: Pose, extras: Record<string, unknown> = {}): Uint8Array {
   if (surface.vertexCount > LIMITS.vertices) throw new Error("Too many vertices");
   if (surface.boneOrder.length !== skeleton.bones.length) throw new Error("Surface and skeleton disagree on bones");
-  const restWorld = new Map<string, Vec3>();
-  for (const b of skeleton.bones) { const p = b.parent ? restWorld.get(b.parent)! : { x: 0, y: 0, z: 0 }; restWorld.set(b.id, { x: p.x + b.offset.x, y: p.y + b.offset.y, z: p.z + b.offset.z }); }
-  const ibm = new Float32Array(skeleton.bones.length * 16);
-  skeleton.bones.forEach((b, i) => { const w = restWorld.get(b.id)!; ibm.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -w.x, -w.y, -w.z, 1], i * 16); });
-
+  const ibm = inverseBindMatrices(skeleton, surface.bindPose);
+  const posed = pose ?? surface.bindPose;
   const chunks: Uint8Array[] = []; const bufferViews: { buffer: 0; byteOffset: number; byteLength: number; target?: number }[] = []; const accessors: Accessor[] = [];
   let offset = 0;
   const push = (data: Float32Array | Uint16Array | Uint32Array, componentType: number, type: string, count: number, target?: number, minmax?: boolean) => {
@@ -104,23 +101,22 @@ export function exportGlb(skeleton: Skeleton, surface: SurfaceMesh, pose?: Pose,
   const aIdx = push(surface.indices, GLTF_COMPONENT.UNSIGNED_INT, "SCALAR", surface.indices.length, 34963);
   const aIbm = push(ibm, GLTF_COMPONENT.FLOAT, "MAT4", skeleton.bones.length);
 
-  const world = pose ? forwardKinematics(skeleton, pose) : null;
+  
   const index = new Map(skeleton.bones.map((b, i) => [b.id, i]));
   const nodes: Record<string, unknown>[] = skeleton.bones.map(b => {
     const children = skeleton.bones.filter(c => c.parent === b.id).map(c => index.get(c.id)!);
-    const q = pose ? jointRotation(pose.joints[b.id]) : null;
+    const q = posed ? jointRotation(posed.joints[b.id]) : null;
     const node: Record<string, unknown> = { name: b.id, translation: [b.offset.x, b.offset.y, b.offset.z], extras: { core: b.core, jointType: b.joint.type } };
     if (q && (q.x || q.y || q.z)) node.rotation = [q.x, q.y, q.z, q.w];
     if (children.length) node.children = children;
     return node;
   });
-  void world;
   const meshNode = nodes.length;
   nodes.push({ name: "surface", mesh: 0, skin: 0 });
   const gltf = {
-    asset: { version: "2.0", generator: `human-body io ${IO_VERSION}`, extras: { ...extras, skeletonVersion: skeleton.version, anatomyVersion: skeleton.anatomyVersion, statureM: skeleton.statureM, massKg: skeleton.massKg } },
+    asset: { version: "2.0", generator: `human-body io ${IO_VERSION}`, extras: { ...extras, surface: surface.kind, skeletonVersion: skeleton.version, anatomyVersion: skeleton.anatomyVersion, statureM: skeleton.statureM, massKg: skeleton.massKg } },
     scene: 0, scenes: [{ nodes: [0, meshNode] }], nodes,
-    meshes: [{ name: "capsules", primitives: [{ attributes: { POSITION: aPos, NORMAL: aNrm, JOINTS_0: aJnt, WEIGHTS_0: aWgt }, indices: aIdx, mode: 4 }] }],
+    meshes: [{ name: surface.kind, primitives: [{ attributes: { POSITION: aPos, NORMAL: aNrm, JOINTS_0: aJnt, WEIGHTS_0: aWgt }, indices: aIdx, mode: 4 }] }],
     skins: [{ name: "body", skeleton: 0, joints: skeleton.bones.map((_, i) => i), inverseBindMatrices: aIbm }],
     accessors, bufferViews, buffers: [{ byteLength: offset }],
   };
