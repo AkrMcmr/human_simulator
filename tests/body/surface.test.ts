@@ -37,12 +37,16 @@ test("FR-MORPH-02: the fitted mesh is fully weighted, finite, deterministic, and
     assert.equal(stableHash(Array.from(s.positions.subarray(0, 300))), stableHash(Array.from(buildSurface(sk, { kind: "mesh", girths: girthTargets(spec) }).positions.subarray(0, 300))));
   }
 });
-test("FR-MORPH-02: chest, waist and thigh girths of the fitted mesh match the regression targets within 3%", () => {
+test("FR-MORPH-02: chest, waist and thigh girths match the regression targets within 3%, and trunk cross-sections match the measured depth/breadth aspect", () => {
   for (const spec of specs) {
     const s = buildSurface(buildSkeleton(spec), { kind: "mesh", girths: girthTargets(spec) });
     for (const key of ["chestCircumference", "waistCircumference", "thighCircumference"]) {
       const g = s.girths![key];
       assert.ok(Math.abs(g.measured / g.target - 1) <= 0.03, `${spec.sex} ${spec.statureM}m ${spec.massKg}kg ${key}: measured ${g.measured.toFixed(3)} target ${g.target.toFixed(3)}`);
+    }
+    for (const key of ["buttockCircumference", "waistCircumference", "chestCircumference"]) {
+      const g = s.girths![key];
+      assert.ok(g.aspect && g.aspectTarget && Math.abs(g.aspect / g.aspectTarget - 1) <= 0.05, `${spec.sex} ${key} depth/breadth aspect ${g.aspect} vs target ${g.aspectTarget}`);
     }
     for (const key of ["buttockCircumference", "calfCircumference", "bicepsCircumference", "headCircumference", "neckCircumference"]) {
       const g = s.girths![key];

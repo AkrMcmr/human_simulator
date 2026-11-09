@@ -54,7 +54,7 @@ const files = { male: resolve(malePath), female: resolve(femalePath) };
 const hashes = Object.fromEntries(Object.entries(files).map(([k, p]) => [k, createHash("sha256").update(readFileSync(p)).digest("hex")]));
 const out: Record<string, unknown> = {
   format: "human-body/anthropometry-regression",
-  version: "0.1.0",
+  version: "0.2.0",
   source: {
     name: "ANSUR II public working databases (2012)",
     publisher: "U.S. Army Natick Soldier RD&E Center; cleared for unlimited public release",

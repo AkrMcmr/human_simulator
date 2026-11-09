@@ -53,3 +53,22 @@ const asset = {
 const target = resolve(root, "assets/body/base-mesh/makehuman-base.json");
 writeFileSync(target, JSON.stringify(asset) + "\n");
 console.log("wrote", target, "vertices", used.length, "triangles", triangles.length / 3, "joints", Object.keys(joints).length);
+
+// Small companion file for body-anatomy: joint centroids and a few mesh measures (metres), no geometry.
+const bodyPositions = used.map(v => verts[v].map(x => x / 10));
+const ground = joints["ground"][1];
+const top = Math.max(...bodyPositions.map(p => p[1]));
+const footVerts = bodyPositions.filter(p => p[1] - ground < 0.03 && p[0] > 0);
+const footLengthM = Math.max(...footVerts.map(p => p[2])) - Math.min(...footVerts.map(p => p[2]));
+const dist = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+const measures = {
+  statureM: +(top - ground).toFixed(5),
+  groundY: +ground.toFixed(5),
+  handLengthM: +dist(joints["l-hand"], joints["l-finger-3-4"]).toFixed(5),
+  footLengthM: +footLengthM.toFixed(5),
+  headLengthM: +(joints["head-2"][1] - joints["head"][1]).toFixed(5),
+};
+const companion = { format: "human-body/base-joints", version: asset.version, source: { ...asset.source, derivedBy: "research/body/scripts/derive-base-mesh.ts", basis: "E (modelled reference body, not a measured person)" }, joints, measures };
+const companionTarget = resolve(root, "packages/body-anatomy/src/data/base-joints.json");
+writeFileSync(companionTarget, JSON.stringify(companion, null, 1) + "\n");
+console.log("wrote", companionTarget, JSON.stringify(measures));

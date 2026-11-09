@@ -17,9 +17,12 @@ renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202428);
 const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 50);
-camera.position.set(0.8, 1.2, 3.2);
+const view = new URLSearchParams(location.search).get("view") ?? "front"; // front | side | back | hands | head, for QA screenshots
+const presets: Record<string, [number[], number[]]> = { front: [[0.8, 1.2, 3.2], [0, 0.95, 0]], side: [[3.0, 1.1, 0.4], [0, 0.95, 0]], back: [[-0.6, 1.2, -3.2], [0, 0.95, 0]], hands: [[0.95, 1.0, 1.1], [0.62, 0.9, 0.12]], head: [[0.5, 1.65, 1.0], [0, 1.6, 0.05]] };
+const [eye, target] = presets[view] ?? presets.front;
+camera.position.set(eye[0], eye[1], eye[2]);
 const controls = new OrbitControls(camera, canvas);
-controls.target.set(0, 0.95, 0);
+controls.target.set(target[0], target[1], target[2]);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.2));
 const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
 scene.add(new THREE.GridHelper(4, 16, 0x556677, 0x334455));
@@ -114,6 +117,8 @@ for (const id of ["stature", "mass", "legLength", "shoulderBreadth"]) {
   input.addEventListener("input", show); show();
 }
 $<HTMLButtonElement>("regenerate").addEventListener("click", regenerate);
+// QA: ?sex=female&stature=1.62&mass=60 preselects a body
+{ const q = new URLSearchParams(location.search); for (const [key, id] of [["sex", "sex"], ["stature", "stature"], ["mass", "mass"], ["legLength", "legLength"], ["shoulderBreadth", "shoulderBreadth"]] as const) { const v = q.get(key); if (v !== null) { const el = $<HTMLInputElement>(id); el.value = v; el.dispatchEvent(new Event("input")); } } }
 function resize() { const w = canvas.clientWidth || 800, h = canvas.clientHeight || 600; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 window.addEventListener("resize", resize);
 resize();

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SKELETON_TEMPLATE, VRM_REQUIRED_BONES, SEGMENT_TABLES, BONE_SEGMENTS, ROM_DEGREES, predictSegmentLengths, REGRESSION_KEYS, POPULATION, regressionFit } from "../../packages/body-anatomy/src/index.ts";
+import { SKELETON_TEMPLATE, VRM_REQUIRED_BONES, SEGMENT_TABLES, BONE_SEGMENTS, TRUNK_ROW_SPANS, ROM_DEGREES, predictSegmentLengths, REGRESSION_KEYS, POPULATION, regressionFit } from "../../packages/body-anatomy/src/index.ts";
 
 test("T2: the rig template is the 55-bone VRM humanoid set with unique ids and parents before children", () => {
   assert.equal(SKELETON_TEMPLATE.length, 55);
@@ -34,6 +34,7 @@ test("T2: segment mass fractions sum to the whole body for each sex, and every m
   for (const sex of ["male", "female"] as const) {
     let total = 0;
     for (const [bone, map] of Object.entries(BONE_SEGMENTS)) { const row = SEGMENT_TABLES[sex][map.row]; assert.ok(row, `${sex} ${bone} -> ${map.row}`); total += row.massFraction * map.share; }
+    for (const [row, [a, b]] of Object.entries(TRUNK_ROW_SPANS[sex])) { assert.ok(a < b && a >= 0 && b <= 1, `${sex} ${row} span`); total += SEGMENT_TABLES[sex][row].massFraction; }
     assert.ok(Math.abs(total - 1) < 0.002, `${sex} total ${total}`);
   }
 });

@@ -24,7 +24,9 @@
 
 進捗（2026-11-06、第1増分）: `body-contracts` / `body-anatomy` / `body-morph` / `body-kinematics` / `body-surface`（仮のカプセル） / `body-runtime` / `body-io` を実装し、`npm run test:body`（T0〜T2、26 件）が通る。形態 T4 [morph-v1](../../research/body/protocols/morph-v1.json) を事前登録して開発・確認の両分割で合格（[判断記録](../../research/body/decisions/0001-morph-v1.md)）。GLB は Khronos glTF Validator でエラー 0。
 
-進捗（2026-11-08、第2増分）: MakeHuman の CC0 基準メッシュを `assets/body/base-mesh` に取り込み、`body-surface/fit.ts` で骨格に適合（体節ごとの伸縮 + 周径で半径を合わせる反復）。生成した体表の 12 周径が目標の ±3% 以内で、胸・腰・大腿は 4 体型のテストで確認（FR-MORPH-02 の周径条件）。three.js の最小ビューア `viewer/`（`npm run viewer:dev`）を追加し、CLI と同じ `BodyRuntime` をブラウザで動かす。GLB は基準メッシュでも Khronos Validator でエラー 0。**未了**: 自己交差の検査（FR-MORPH-02 の一部）、`human-body/motion` 形式、大きく曲げた姿勢での変形品質。IK は B2。
+進捗（2026-11-08、第2増分）: MakeHuman の CC0 基準メッシュを `assets/body/base-mesh` に取り込み、`body-surface/fit.ts` で骨格に適合（体節ごとの伸縮 + 周径で半径を合わせる反復）。生成した体表の 12 周径が目標の ±3% 以内で、胸・腰・大腿は 4 体型のテストで確認（FR-MORPH-02 の周径条件）。three.js の最小ビューア `viewer/`（`npm run viewer:dev`）を追加し、CLI と同じ `BodyRuntime` をブラウザで動かす。GLB は基準メッシュでも Khronos Validator でエラー 0。
+
+進捗（2026-11-09、第3増分、体表の形の改善）: 関節の配置（手指・足・顎・眼・鎖骨）を基準メッシュの関節から導き、四肢を伸ばした中立位を既定にしたので、手と首元の破綻がなくなった。体幹の半径倍率を一つの連続曲線にし、ANSUR II の胸・腰・臀の奥行き／幅の回帰（anatomy 0.2.0）で断面の縦横比も合わせる。体幹の質量は de Leva の 3 区分を高さの重なりで配分し、立位重心高は身長の 56% になった。**未了**: 自己交差の検査、`human-body/motion` 形式、大きく曲げた姿勢での変形品質、体脂肪率・筋量による形の変化（形態 L2）。IK は B2。
 
 ## B2: 運動学 L1・運動制御 L1・リターゲット
 

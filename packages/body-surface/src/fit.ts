@@ -7,7 +7,8 @@
  * the girth targets come from the body-anatomy regression, basis R/M).
  */
 import { type JointAngles, type Pose, type Quat, type Skeleton, type Vec3, add3, length3, rotate3, scale3, vec3 } from "../../body-contracts/src/index.ts";
-import { forwardKinematics, restPose, jointRotation } from "../../body-kinematics/src/index.ts";
+import { forwardKinematics, restPose, jointRotation, applyLimits } from "../../body-kinematics/src/index.ts";
+import { neutralizedBase } from "../../body-anatomy/src/index.ts";
 import asset from "../../../assets/body/base-mesh/makehuman-base.json" with { type: "json" };
 
 export const BASE_MESH = asset as { format: string; version: string; source: Record<string, string>; vertexCount: number; triangleCount: number; positions: number[]; triangles: number[]; joints: Record<string, number[]> };
@@ -70,13 +71,11 @@ function pointSegmentDistance(v: Vec3, f: Frame) {
   return length3(add3(rel, scale3(f.axis, -u)));
 }
 
-/** The bind pose: joint angles that bring the generated skeleton's limbs to the base mesh's modelled directions (basis E). */
-export function baseMeshBindPose(): Pose {
+/** The bind pose: the reference body's modelled limb angles (shoulder abduction, elbow flexion, wrist, hip, knee), restricted to our DOFs and limits (basis E). */
+export function baseMeshBindPose(skeleton?: Skeleton): Pose {
   const pose = restPose();
-  const angleFromDown = (a: Vec3, b: Vec3) => { const d = add3(b, scale3(a, -1)); return Math.atan2(Math.abs(d.x), -d.y); };
-  const arm = angleFromDown(J("l-shoulder"), J("l-elbow")), leg = angleFromDown(J("l-upper-leg"), J("l-knee"));
-  pose.joints.leftUpperArm = { z: arm }; pose.joints.rightUpperArm = { z: -arm };
-  pose.joints.leftUpperLeg = { z: leg }; pose.joints.rightUpperLeg = { z: -leg };
+  pose.joints = structuredClone(neutralizedBase().bindAngles);
+  if (skeleton) pose.joints = applyLimits(skeleton, pose.joints, "clamp").joints;
   return pose;
 }
 
@@ -136,8 +135,8 @@ function scaleAt(profile: [number, string][], scale: Record<string, number>, u: 
 export type FittedMesh = {
   positions: Float32Array; normals: Float32Array; joints: Uint16Array; weights: Float32Array; indices: Uint32Array;
   boneOrder: string[]; vertexCount: number; triangleCount: number; bindPose: Pose;
-  /** Measured girths (m) of the fitted mesh at the landmarks, next to their targets. */
-  girths: Record<string, { measured: number; target: number }>;
+  /** Measured girths (m) of the fitted mesh at the landmarks, next to their targets; trunk landmarks also report the cross-section depth/breadth aspect. */
+  girths: Record<string, { measured: number; target: number; aspect?: number; aspectTarget?: number }>;
 };
 
 export type Ring = { a: number; b: number; f: number }[][]; // per cut triangle: two edge hits
@@ -182,7 +181,7 @@ function measure(positions: ArrayLike<number>, triangles: ArrayLike<number>, fra
   return best ?? { perimeter: 0, ring: [] };
 }
 
-type BaseBinding = { frames: Map<string, Frame>; joints: Uint16Array; weights: Float32Array; dominant: Uint16Array; local: Float32Array; girths: Record<string, number>; rings: Record<string, Ring>; footBreadth: number };
+type BaseBinding = { frames: Map<string, Frame>; joints: Uint16Array; weights: Float32Array; dominant: Uint16Array; local: Float32Array; girths: Record<string, number>; rings: Record<string, Ring>; ringT: Record<string, number>; footBreadth: number };
 let cachedBinding: { order: string; binding: BaseBinding } | null = null;
 /** Skin the base mesh to its own segments (nearest two, inverse-distance^4) and precompute local coordinates. Cached per bone order. */
 function bindBaseMesh(order: string[]): BaseBinding {
@@ -192,7 +191,9 @@ function bindBaseMesh(order: string[]): BaseBinding {
   for (const bone of order) { const ends = segmentEndpoints(bone); if (ends) frames.set(bone, frame(ends[0], ends[1], bone)); }
   const framed = order.map((b, i) => [b, i] as const).filter(([b]) => frames.has(b));
   const n = BASE_MESH.vertexCount, P = BASE_MESH.positions;
-  const joints = new Uint16Array(n * 4), weights = new Float32Array(n * 4), dominant = new Uint16Array(n), local = new Float32Array(n * 6);
+  const joints = new Uint16Array(n * 4), weights = new Float32Array(n * 4), dominant = new Uint16Array(n), local = new Float32Array(n * 8);
+  const hipMidY = (J("l-upper-leg").y + J("r-upper-leg").y) / 2, neckY = J("neck").y;
+  const trunkT = (y: number) => Math.min(1.3, Math.max(-0.3, (y - hipMidY) / (neckY - hipMidY)));
   const at = (v: number) => vec3(P[v * 3], P[v * 3 + 1], P[v * 3 + 2]);
   // Pass 1: raw nearest segment, to estimate each segment's typical surface distance (its "radius").
   const samples = new Map<number, number[]>();
@@ -233,33 +234,63 @@ function bindBaseMesh(order: string[]): BaseBinding {
     joints[v * 4 + 1] = weights[v * 4 + 1] > 0 ? b2 : 0; // glTF: a zero weight must reference joint 0
     for (const [slot, index] of [[0, b1], [1, b2]] as const) {
       const f = frames.get(order[index])!; const rel = add3(pos, scale3(f.origin, -1));
-      local[v * 6 + slot * 3] = dot(rel, f.axis) / f.length; local[v * 6 + slot * 3 + 1] = dot(rel, f.p); local[v * 6 + slot * 3 + 2] = dot(rel, f.q);
+      local[v * 8 + slot * 4] = dot(rel, f.axis) / f.length; local[v * 8 + slot * 4 + 1] = dot(rel, f.p); local[v * 8 + slot * 4 + 2] = dot(rel, f.q); local[v * 8 + slot * 4 + 3] = trunkT(pos.y);
     }
   }
   const girths: Record<string, number> = {}, rings: Record<string, Ring> = {};
-  for (const lm of LANDMARKS) { const m = measure(P, BASE_MESH.triangles, frames, dominant, order, lm); girths[lm.key] = m.perimeter; rings[lm.key] = m.ring; }
+  const ringT: Record<string, number> = {};
+  for (const lm of LANDMARKS) {
+    const m = measure(P, BASE_MESH.triangles, frames, dominant, order, lm); girths[lm.key] = m.perimeter; rings[lm.key] = m.ring;
+    let ySum = 0, count = 0; for (const [h0, h1] of m.ring) for (const h of [h0, h1]) { ySum += P[h.a * 3 + 1] + (P[h.b * 3 + 1] - P[h.a * 3 + 1]) * h.f; count++; }
+    ringT[lm.key] = count ? trunkT(ySum / count) : 0;
+  }
   const footIndex = order.indexOf("leftFoot"), toesIndex = order.indexOf("leftToes");
   let minX = Infinity, maxX = -Infinity;
   for (let v = 0; v < n; v++) if (dominant[v] === footIndex || dominant[v] === toesIndex) { minX = Math.min(minX, P[v * 3]); maxX = Math.max(maxX, P[v * 3]); }
-  const binding = { frames, joints, weights, dominant, local, girths, rings, footBreadth: maxX - minX };
+  const binding = { frames, joints, weights, dominant, local, girths, rings, ringT, footBreadth: maxX - minX };
   cachedBinding = { order: key, binding };
   return binding;
 }
 
-export type GirthTargets = Record<string, number>; // metres, keys as LANDMARKS plus footBreadth
+export type GirthTargets = Record<string, number>; // metres, keys as LANDMARKS plus footBreadth and the trunk depth/breadth pairs
+/** Trunk landmarks whose cross-section aspect (depth / breadth) is matched as well as the girth (basis R targets, E method). */
+const ASPECT: Record<string, [depth: string, breadth: string]> = {
+  buttockCircumference: ["buttockDepth", "hipBreadthStanding"],
+  waistCircumference: ["waistDepth", "waistBreadth"],
+  chestCircumference: ["chestDepth", "chestBreadth"],
+};
+/** Depth (z extent) over breadth (x extent) of a ring on a mesh. */
+export function ringAspect(positions: ArrayLike<number>, ring: Ring): number {
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  for (const pair of ring) for (const h of pair) {
+    const x = positions[h.a * 3] + (positions[h.b * 3] - positions[h.a * 3]) * h.f, z = positions[h.a * 3 + 2] + (positions[h.b * 3 + 2] - positions[h.a * 3 + 2]) * h.f;
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z);
+  }
+  return (maxZ - minZ) / (maxX - minX);
+}
 
 export function buildFittedSurface(skeleton: Skeleton, targets: GirthTargets): FittedMesh {
   const order = skeleton.bones.map(b => b.id);
   const base = bindBaseMesh(order);
-  const bindPose = baseMeshBindPose();
+  const bindPose = baseMeshBindPose(skeleton);
   const world = forwardKinematics(skeleton, bindPose);
   const frames = new Map<string, Frame>();
   for (const b of skeleton.bones) if (base.frames.has(b.id)) { const t = world.get(b.id)!; frames.set(b.id, frame(t.position, add3(t.position, rotate3(t.rotation, b.tip)), b.id)); }
-  // Radial scales per landmark, refined by fixed-point iteration because blended vertices pull girths toward neighbouring bones.
-  const scale: Record<string, number> = {};
-  for (const lm of LANDMARKS) scale[lm.key] = targets[lm.key] / base.girths[lm.key];
+  // Radial scales per landmark, refined by fixed-point iteration because blended vertices pull girths toward
+  // neighbouring bones. Trunk landmarks also carry an anisotropy rho = (target depth/breadth) / (measured),
+  // applied as sqrt(rho) forward and 1/sqrt(rho) sideways so bellies grow forward rather than uniformly (basis E).
+  const scale: Record<string, number> = {}, rho: Record<string, number> = {};
+  for (const lm of LANDMARKS) { scale[lm.key] = targets[lm.key] / base.girths[lm.key]; rho[lm.key] = 1; }
+  rho.none = 1;
+  // The upper thigh carries the buttock anisotropy and fades to isotropic, so the hip band and the thighs meet without a lateral shelf (basis E).
+  const rhoProfiles = new Map(order.map(b => [b, /UpperLeg$/.test(b) ? ([[0, "buttockCircumference"], [0.15, "none"], [1, "none"]] as [number, string][]) : ([[0, "none"], [1, "none"]] as [number, string][])]));
   scale.footBreadth = targets.footBreadth / base.footBreadth;
+  const aspectTarget: Record<string, number> = {};
+  for (const [key, [d, b]] of Object.entries(ASPECT)) if (targets[d] && targets[b]) aspectTarget[key] = targets[d] / targets[b];
   const profiles = new Map(order.map(b => [b, profileFor(b)]));
+  // The trunk's radial scale is one continuous profile over the trunk height, so the hips, belly and chest bands join without steps (basis E).
+  const trunkProfile: [number, string][] = [[-0.3, "buttockCircumference"], [0, "buttockCircumference"], [base.ringT.waistCircumference, "waistCircumference"], [base.ringT.chestCircumference, "chestCircumference"], [1.3, "chestCircumference"]];
+  const isTrunk = new Set(["hips", "spine", "chest", "upperChest"]);
   const n = BASE_MESH.vertexCount;
   const positions = new Float32Array(n * 3);
   const place = () => {
@@ -269,23 +300,32 @@ export function buildFittedSurface(skeleton: Skeleton, targets: GirthTargets): F
       for (const slot of [0, 1]) {
         const bone = order[base.joints[v * 4 + slot]], w = base.weights[v * 4 + slot];
         const f = frames.get(bone)!;
-        const u = base.local[v * 6 + slot * 3], s = base.local[v * 6 + slot * 3 + 1], t = base.local[v * 6 + slot * 3 + 2];
-        const k = scaleAt(profiles.get(bone)!, scale, u);
-        const p = add3(f.origin, add3(scale3(f.axis, u * f.length), scale3(add3(scale3(f.p, s), scale3(f.q, t)), k)));
+        const u = base.local[v * 8 + slot * 4], s = base.local[v * 8 + slot * 4 + 1], t = base.local[v * 8 + slot * 4 + 2];
+        let kp: number, kq: number;
+        if (isTrunk.has(bone)) {
+          const tt = base.local[v * 8 + slot * 4 + 3];
+          const k = scaleAt(trunkProfile, scale, tt), r = Math.sqrt(scaleAt(trunkProfile, rho, tt));
+          kp = k * r; kq = k / r;
+        } else { const k = scaleAt(profiles.get(bone)!, scale, u), r = Math.sqrt(scaleAt(rhoProfiles.get(bone)!, rho, u)); kp = k * r; kq = k / r; }
+        const p = add3(f.origin, add3(scale3(f.axis, u * f.length), add3(scale3(f.p, s * kp), scale3(f.q, t * kq))));
         out = add3(out, scale3(p, w));
       }
       positions[v * 3] = out.x; positions[v * 3 + 1] = out.y; positions[v * 3 + 2] = out.z;
     }
   };
-  for (let iteration = 0; iteration < 8; iteration++) {
+  for (let iteration = 0; iteration < 10; iteration++) {
     place();
-    for (const lm of LANDMARKS) { const measured = ringLength(positions, base.rings[lm.key]); if (measured > 0) scale[lm.key] = Math.min(2.0, Math.max(0.6, scale[lm.key] * targets[lm.key] / measured)); }
+    for (const lm of LANDMARKS) {
+      const measured = ringLength(positions, base.rings[lm.key]);
+      if (measured > 0) scale[lm.key] = Math.min(2.0, Math.max(0.6, scale[lm.key] * targets[lm.key] / measured));
+      if (aspectTarget[lm.key]) { const a = ringAspect(positions, base.rings[lm.key]); if (a > 0) rho[lm.key] = Math.min(2.0, Math.max(0.5, rho[lm.key] * aspectTarget[lm.key] / a)); }
+    }
   }
   place();
   const indices = Uint32Array.from(BASE_MESH.triangles);
   const normals = vertexNormals(positions, indices);
   const girths: FittedMesh["girths"] = {};
-  for (const lm of LANDMARKS) girths[lm.key] = { measured: ringLength(positions, base.rings[lm.key]), target: targets[lm.key] };
+  for (const lm of LANDMARKS) girths[lm.key] = { measured: ringLength(positions, base.rings[lm.key]), target: targets[lm.key], ...(aspectTarget[lm.key] ? { aspect: ringAspect(positions, base.rings[lm.key]), aspectTarget: aspectTarget[lm.key] } : {}) };
   return { positions, normals, joints: base.joints, weights: base.weights, indices, boneOrder: order, vertexCount: n, triangleCount: indices.length / 3, bindPose, girths };
 }
 

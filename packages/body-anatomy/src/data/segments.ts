@@ -42,14 +42,22 @@ const female: SegmentTable = {
 export const SEGMENT_TABLES: Record<"male" | "female", SegmentTable> = { male, female };
 
 /**
+ * Where de Leva's three trunk rows sit along the trunk (hip joint centre = 0, cervicale = 1), from the
+ * segment lengths in the same table (male UPT/MPT/LPT 170.7/215.5/145.7 mm, female 142.5/205.3/181.5 mm;
+ * basis R, transcribed, verify). Rig bones take trunk mass in proportion to how much of each row they span.
+ */
+export const TRUNK_ROW_SPANS: Record<"male" | "female", Record<"lowerTrunk" | "middleTrunk" | "upperTrunk", [number, number]>> = {
+  male: { lowerTrunk: [0, 145.7 / 531.9], middleTrunk: [145.7 / 531.9, (145.7 + 215.5) / 531.9], upperTrunk: [(145.7 + 215.5) / 531.9, 1] },
+  female: { lowerTrunk: [0, 181.5 / 529.3], middleTrunk: [181.5 / 529.3, (181.5 + 205.3) / 529.3], upperTrunk: [(181.5 + 205.3) / 529.3, 1] },
+};
+export const TRUNK_BONES = ["hips", "spine", "chest", "upperChest"] as const;
+
+/**
  * Mapping from rig bones to table rows (basis E for the splits). The fractions divide a table
- * row's mass among several bones; they sum to 1 per row.
+ * row's mass among several bones; they sum to 1 per row. Trunk bones are not listed here: they
+ * take the three trunk rows by height overlap (TRUNK_ROW_SPANS).
  */
 export const BONE_SEGMENTS: Record<string, { row: string; share: number }> = {
-  hips: { row: "lowerTrunk", share: 1 },
-  spine: { row: "middleTrunk", share: 1 },
-  chest: { row: "upperTrunk", share: 0.5 },
-  upperChest: { row: "upperTrunk", share: 0.5 },
   neck: { row: "head", share: 0.2 },
   head: { row: "head", share: 0.8 },
   leftUpperArm: { row: "upperArm", share: 1 }, rightUpperArm: { row: "upperArm", share: 1 },

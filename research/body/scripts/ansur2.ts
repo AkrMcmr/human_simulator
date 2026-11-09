@@ -33,6 +33,13 @@ export const DERIVED_SEGMENTS: Record<string, { formula: string; compute: (c: (n
   neckCircumference: { formula: "neckcircumference", compute: c => c("neckcircumference") },
   headCircumference: { formula: "headcircumference", compute: c => c("headcircumference") },
   handCircumference: { formula: "handcircumference", compute: c => c("handcircumference") },
+  // cross-section depth (front-back) and breadth (side-side) at the trunk landmarks, for the surface fit's anisotropy
+  waistBreadth: { formula: "waistbreadth", compute: c => c("waistbreadth") },
+  waistDepth: { formula: "waistdepth", compute: c => c("waistdepth") },
+  chestBreadth: { formula: "chestbreadth", compute: c => c("chestbreadth") },
+  chestDepth: { formula: "chestdepth", compute: c => c("chestdepth") },
+  buttockDepth: { formula: "buttockdepth", compute: c => c("buttockdepth") },
+  hipBreadthStanding: { formula: "hipbreadth", compute: c => c("hipbreadth") },
 };
 
 export function loadAnsur2(path: string, sex: "male" | "female"): Subject[] {

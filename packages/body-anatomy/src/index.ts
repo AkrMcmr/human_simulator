@@ -5,11 +5,12 @@
  */
 import type { Axis, DofLimit, JointType, Sex } from "../../body-contracts/src/index.ts";
 import { ROM_DEGREES, ROM_SOURCE, ROM_VERSION, SPINE_SHARE, NECK_SHARE } from "./data/rom.ts";
-import { SEGMENT_TABLES, SEGMENT_SOURCE, SEGMENT_VERSION, BONE_SEGMENTS } from "./data/segments.ts";
+import { SEGMENT_TABLES, SEGMENT_SOURCE, SEGMENT_VERSION, BONE_SEGMENTS, TRUNK_ROW_SPANS, TRUNK_BONES } from "./data/segments.ts";
 import regression from "./data/ansur2-regression.json" with { type: "json" };
+export { BASE_JOINTS, BASE_MEASURES, BASE_JOINTS_SOURCE, baseJoint, neutralizedBase, quatFromTo, mean3, type NeutralBase } from "./base-skeleton.ts";
 
-export const ANATOMY_VERSION = "0.1.0";
-export { ROM_DEGREES, ROM_SOURCE, ROM_VERSION, SPINE_SHARE, NECK_SHARE, SEGMENT_TABLES, SEGMENT_SOURCE, SEGMENT_VERSION, BONE_SEGMENTS, regression };
+export const ANATOMY_VERSION = "0.2.0"; // 0.2.0: regression extended with trunk depth/breadth; reference-body joint layout added
+export { ROM_DEGREES, ROM_SOURCE, ROM_VERSION, SPINE_SHARE, NECK_SHARE, SEGMENT_TABLES, SEGMENT_SOURCE, SEGMENT_VERSION, BONE_SEGMENTS, TRUNK_ROW_SPANS, TRUNK_BONES, regression };
 
 export type Side = "left" | "right" | "center";
 export type TemplateBone = { id: string; parent: string | null; core: string | null; side: Side; joint: JointType; dofs: DofLimit[]; segmentRow: string | null };

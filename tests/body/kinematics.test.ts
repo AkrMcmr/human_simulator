@@ -14,6 +14,8 @@ test("FR-KIN-02: forward kinematics in the rest pose reproduces the summed offse
   for (const b of sk.bones) near(world.get(b.id)!.position, rest.get(b.id)!);
   const foot = sk.bones.find(b => b.id === "leftFoot")!;
   assert.ok(Math.abs(tipPosition(foot, world.get("leftFoot")!).y) < 1e-9, "the foot tip rests on the ground");
+  const hand = sk.bones.find(b => b.id === "leftIndexDistal")!;
+  assert.ok(tipPosition(hand, world.get("leftIndexDistal")!).z > world.get("leftHand")!.position.z + 0.03, "fingers point forward in the neutral pose, as on the reference body");
 });
 test("FR-KIN-02: a known hip flexion moves the knee forward by the thigh length (analytic check)", () => {
   const sk = buildSkeleton(spec);
